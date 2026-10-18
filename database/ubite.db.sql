@@ -1,4 +1,4 @@
--- UBite - exportación de ubite.db (2026-10-18 00:32:07)
+-- UBite - exportación de ubite.db (2026-10-18 00:50:23)
 BEGIN TRANSACTION;
 CREATE TABLE IF NOT EXISTS "cliente" (
 	"id_cliente"	INTEGER,
@@ -94,10 +94,10 @@ CREATE TABLE IF NOT EXISTS "notificacion" (
 	PRIMARY KEY("id_notificacion" AUTOINCREMENT),
 	FOREIGN KEY("id_pedido") REFERENCES "pedido"("id_pedido")
 );
-INSERT INTO "cliente" VALUES (1,'Camila Rojas','3001234567','2026-10-17 23:46:07',NULL);
-INSERT INTO "cliente" VALUES (2,'Andrés Pérez','3109876543','2026-10-17 23:56:07',NULL);
-INSERT INTO "cliente" VALUES (3,'Mateo Díaz','3205551234','2026-10-18 00:01:07',NULL);
-INSERT INTO "cliente" VALUES (4,'Laura Méndez','3157778899','2026-10-18 00:11:07',NULL);
+INSERT INTO "cliente" VALUES (1,'Camila Rojas','3001234567','2026-10-18 00:04:23',NULL);
+INSERT INTO "cliente" VALUES (2,'Andrés Pérez','3109876543','2026-10-18 00:14:23',NULL);
+INSERT INTO "cliente" VALUES (3,'Mateo Díaz','3205551234','2026-10-18 00:19:23',NULL);
+INSERT INTO "cliente" VALUES (4,'Laura Méndez','3157778899','2026-10-18 00:29:23',NULL);
 INSERT INTO "usuario" VALUES (1,'Ana Torres','cajero','acajero','scrypt:32768:8:1$NBBMK4VB5P2olwLg$f51019ebe3290a83f4d36d0084e9a67e6075185af2f04c580544334c9afaf40c2ea9419741495d39badeee98fbaf19af7340d1fd21fa410cd21d0a62e1f0c059',1);
 INSERT INTO "usuario" VALUES (2,'Luis Gómez','administrador','admin','scrypt:32768:8:1$SSkTOC1QYaNWyhIM$5be104d577671fadc6d63d737ae425eb2a902d549f94d877b1b0f64151a37434586c83ccf19389bf819b9a968d95388e1dd2ff18d02d2a53950b3bfa85fdcc12',1);
 INSERT INTO "categoria" VALUES (1,'Bebidas');
@@ -112,32 +112,32 @@ INSERT INTO "producto" VALUES (6,'Chocolatina','Unidad',2000.0,15,5,1,2);
 INSERT INTO "producto" VALUES (7,'Empanada','De carne, se calienta al pedir',3000.0,16,5,1,3);
 INSERT INTO "producto" VALUES (8,'Sándwich de jamón y queso','Se calienta al pedir',7000.0,9,3,1,3);
 INSERT INTO "producto" VALUES (9,'Pastel de pollo','Se calienta al pedir',4000.0,12,4,1,3);
-INSERT INTO "pedido" VALUES (1,'A-001',1,NULL,'2026-10-17 23:47:07','qr','listo',6000.0);
-INSERT INTO "pedido" VALUES (2,'A-002',2,NULL,'2026-10-17 23:57:07','qr','en_cola',8500.0);
-INSERT INTO "pedido" VALUES (3,'P-001',3,1,'2026-10-18 00:02:07','presencial','entregado',7000.0);
-INSERT INTO "pedido" VALUES (4,'A-003',4,NULL,'2026-10-18 00:12:07','qr','cancelado',2000.0);
+INSERT INTO "pedido" VALUES (1,'A-001',1,NULL,'2026-10-18 00:05:23','qr','listo',6000.0);
+INSERT INTO "pedido" VALUES (2,'A-002',2,NULL,'2026-10-18 00:15:23','qr','en_cola',8500.0);
+INSERT INTO "pedido" VALUES (3,'P-001',3,1,'2026-10-18 00:20:23','presencial','entregado',7000.0);
+INSERT INTO "pedido" VALUES (4,'A-003',4,NULL,'2026-10-18 00:30:23','qr','cancelado',2000.0);
 INSERT INTO "detalle_pedido" VALUES (1,1,4,1,2500.0,2500.0);
 INSERT INTO "detalle_pedido" VALUES (2,1,2,1,3500.0,3500.0);
 INSERT INTO "detalle_pedido" VALUES (3,2,7,2,3000.0,6000.0);
 INSERT INTO "detalle_pedido" VALUES (4,2,3,1,2500.0,2500.0);
 INSERT INTO "detalle_pedido" VALUES (5,3,8,1,7000.0,7000.0);
 INSERT INTO "detalle_pedido" VALUES (6,4,6,1,2000.0,2000.0);
-INSERT INTO "pago" VALUES (1,1,NULL,'app','nequi','aprobado',6000.0,'SBX-NEQ-000001','2026-10-17 23:48:07');
-INSERT INTO "pago" VALUES (2,2,NULL,'app','pse','rechazado',8500.0,'SBX-PSE-000002','2026-10-17 23:58:07');
-INSERT INTO "pago" VALUES (3,3,1,'efectivo','efectivo','aprobado',7000.0,NULL,'2026-10-18 00:02:07');
-INSERT INTO "transaccion" VALUES (1,1,NULL,'registro_pedido','2026-10-17 23:47:07','confirmada','Pedido registrado por QR; stock descontado');
-INSERT INTO "transaccion" VALUES (2,1,NULL,'pago','2026-10-17 23:48:07','confirmada','Pago aprobado por la pasarela (pruebas); pedido con prioridad');
-INSERT INTO "transaccion" VALUES (3,1,1,'cambio_estado','2026-10-17 23:51:07','confirmada','en_cola -> listo');
-INSERT INTO "transaccion" VALUES (4,2,NULL,'registro_pedido','2026-10-17 23:57:07','confirmada','Pedido registrado por QR; stock descontado');
-INSERT INTO "transaccion" VALUES (5,2,NULL,'pago','2026-10-17 23:58:07','revertida','Pago rechazado por la pasarela (pruebas); paga en caja al recoger');
-INSERT INTO "transaccion" VALUES (6,3,1,'registro_pedido','2026-10-18 00:02:07','confirmada','Pedido presencial registrado; stock descontado');
-INSERT INTO "transaccion" VALUES (7,3,1,'pago','2026-10-18 00:02:07','confirmada','Cobro en caja al registrar el pedido');
-INSERT INTO "transaccion" VALUES (8,3,1,'cambio_estado','2026-10-18 00:05:07','confirmada','en_preparacion -> listo');
-INSERT INTO "transaccion" VALUES (9,3,1,'cambio_estado','2026-10-18 00:07:07','confirmada','listo -> entregado');
-INSERT INTO "transaccion" VALUES (10,4,NULL,'registro_pedido','2026-10-18 00:12:07','confirmada','Pedido registrado por QR; stock descontado');
-INSERT INTO "transaccion" VALUES (11,4,NULL,'cancelacion','2026-10-18 00:15:07','confirmada','Cancelado por el cliente en cola; stock devuelto');
-INSERT INTO "notificacion" VALUES (1,1,'Tu pedido A-001 está listo. Ya está pago, solo acércate a recogerlo.','push','enviada','2026-10-17 23:51:07');
-INSERT INTO "notificacion" VALUES (2,3,'Tu pedido P-001 está listo. Ya está pago, solo acércate a recogerlo.','pagina','vista','2026-10-18 00:05:07');
+INSERT INTO "pago" VALUES (1,1,NULL,'app','nequi','aprobado',6000.0,'SBX-NEQ-000001','2026-10-18 00:06:23');
+INSERT INTO "pago" VALUES (2,2,NULL,'app','pse','rechazado',8500.0,'SBX-PSE-000002','2026-10-18 00:16:23');
+INSERT INTO "pago" VALUES (3,3,1,'efectivo','efectivo','aprobado',7000.0,NULL,'2026-10-18 00:20:23');
+INSERT INTO "transaccion" VALUES (1,1,NULL,'registro_pedido','2026-10-18 00:05:23','confirmada','Pedido registrado por QR; stock descontado');
+INSERT INTO "transaccion" VALUES (2,1,NULL,'pago','2026-10-18 00:06:23','confirmada','Pago aprobado por la pasarela (pruebas); pedido con prioridad');
+INSERT INTO "transaccion" VALUES (3,1,1,'cambio_estado','2026-10-18 00:09:23','confirmada','en_cola -> listo');
+INSERT INTO "transaccion" VALUES (4,2,NULL,'registro_pedido','2026-10-18 00:15:23','confirmada','Pedido registrado por QR; stock descontado');
+INSERT INTO "transaccion" VALUES (5,2,NULL,'pago','2026-10-18 00:16:23','revertida','Pago rechazado por la pasarela (pruebas); paga en caja al recoger');
+INSERT INTO "transaccion" VALUES (6,3,1,'registro_pedido','2026-10-18 00:20:23','confirmada','Pedido presencial registrado; stock descontado');
+INSERT INTO "transaccion" VALUES (7,3,1,'pago','2026-10-18 00:20:23','confirmada','Cobro en caja al registrar el pedido');
+INSERT INTO "transaccion" VALUES (8,3,1,'cambio_estado','2026-10-18 00:23:23','confirmada','en_preparacion -> listo');
+INSERT INTO "transaccion" VALUES (9,3,1,'cambio_estado','2026-10-18 00:25:23','confirmada','listo -> entregado');
+INSERT INTO "transaccion" VALUES (10,4,NULL,'registro_pedido','2026-10-18 00:30:23','confirmada','Pedido registrado por QR; stock descontado');
+INSERT INTO "transaccion" VALUES (11,4,NULL,'cancelacion','2026-10-18 00:33:23','confirmada','Cancelado por el cliente en cola; stock devuelto');
+INSERT INTO "notificacion" VALUES (1,1,'Tu pedido A-001 está listo. Ya está pago, solo acércate a recogerlo.','push','enviada','2026-10-18 00:09:23');
+INSERT INTO "notificacion" VALUES (2,3,'Tu pedido P-001 está listo. Ya está pago, solo acércate a recogerlo.','pagina','vista','2026-10-18 00:23:23');
 CREATE INDEX IF NOT EXISTS "idx_detalle_pedido" ON "detalle_pedido" ("id_pedido");
 CREATE INDEX IF NOT EXISTS "idx_notificacion_pedido" ON "notificacion" ("id_pedido");
 CREATE INDEX IF NOT EXISTS "idx_pago_pedido" ON "pago" ("id_pedido");
