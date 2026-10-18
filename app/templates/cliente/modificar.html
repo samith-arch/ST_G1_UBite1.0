@@ -1,30 +1,41 @@
 {% extends "cliente/_base.html" %}
+{% set titulo_barra = "Modificar pedido" %}
+{% set atras = url_for('cliente.seguimiento', codigo=pedido.codigo) %}
+{% set iconos = {"Bebidas": "bi-cup-straw", "Snacks": "bi-bag", "Comidas": "bi-egg-fried"} %}
 {% block titulo_pagina %}Modificar {{ pedido.codigo }}{% endblock %}
 {% block contenido %}
-<a class="small suave" href="{{ url_for('cliente.seguimiento', codigo=pedido.codigo) }}"><i class="bi bi-chevron-left"></i> Volver a mi pedido</a>
-<p class="etiqueta mt-3 mb-1">Pedido {{ pedido.codigo }} · sigue en cola</p>
-<h1 class="titulo display-6 mb-3">Cambia las cantidades</h1>
-<p class="suave small">Pon 0 en lo que quieras quitar. El inventario se ajusta solo por la diferencia.</p>
-
-<form method="post">
+<form method="post" class="columna-movil" id="modificar">
   <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+  <p class="etiqueta mb-1">Pedido {{ pedido.codigo }} · sigue en cola</p>
+  <h1 class="titulo display-6 mb-3">Agrega o quita productos</h1>
+
   {% for categoria, productos in menu.items() %}
   <h2 class="etiqueta mt-3 mb-0">{{ categoria }}</h2>
   {% for p in productos %}
   {% set actual = actuales.get(p.id_producto, 0) %}
   {% set maximo = p.stock_actual + actual %}
-  {% if maximo > 0 %}
-  <div class="fila-menu">
+  <div class="fila-menu {% if maximo == 0 %}agotado{% endif %}">
+    <span class="icono d-none d-sm-flex"><i class="bi {{ iconos.get(categoria, 'bi-basket') }}"></i></span>
     <div class="info">
       <div class="nombre-prod"><span>{{ p.nombre }}</span><span class="puntos"></span><span class="precio">{{ p.precio|pesos }}</span></div>
-      <div class="detalle">máximo {{ maximo }}</div>
+      <div class="detalle">{% if maximo == 0 %}Agotado por hoy{% else %}puedes pedir hasta {{ maximo }}{% endif %}</div>
     </div>
-    <input class="form-control mono text-center" style="width:72px" type="number" min="0" max="{{ maximo }}"
-           name="cant_{{ p.id_producto }}" value="{{ actual }}" aria-label="Cantidad de {{ p.nombre }}">
+    <div class="contador stepper" data-precio="{{ p.precio }}">
+      <button type="button" class="btn-mas menos" aria-label="Quitar {{ p.nombre }}"><i class="bi bi-dash"></i></button>
+      <input class="cant-input mono" type="number" name="cant_{{ p.id_producto }}" value="{{ actual }}" min="0" max="{{ maximo }}"
+             aria-label="Cantidad de {{ p.nombre }}" {% if maximo == 0 %}readonly{% endif %}>
+      <button type="button" class="btn-mas mas" aria-label="Agregar {{ p.nombre }}"><i class="bi bi-plus"></i></button>
+    </div>
   </div>
-  {% endif %}
   {% endfor %}
   {% endfor %}
-  <button class="btn btn-ubite w-100 mt-4" type="submit">Guardar cambios</button>
+
+  <div class="barra-pedido mt-4">
+    <button class="boton-barra" type="submit">
+      <span>$ <span id="total">{{ pedido.total|pesos }}</span></span>
+      <span class="accion">Guardar cambios <i class="bi bi-chevron-right"></i></span>
+    </button>
+  </div>
 </form>
 {% endblock %}
+{% block scripts %}<script src="{{ url_for('static', filename='js/contador.js') }}"></script>{% endblock %}

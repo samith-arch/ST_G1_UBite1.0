@@ -1,18 +1,29 @@
 {% extends "base.html" %}
-{% block clase_main %}container-xl py-4{% endblock %}
+{% set menu_personal = [
+  ("caja.cola", "Pedidos en curso", "Pedidos", "bi-grid"),
+  ("caja.presencial", "Pedido presencial", "Presencial", "bi-bag"),
+  ("caja.historial", "Historial", "Historial", "bi-clock-history"),
+] %}
+{% block clase_main %}container-xl py-4 con-barra-inferior{% endblock %}
 {% block encabezado %}
 <header class="barra">
-  <div class="container-xl d-flex flex-wrap gap-3 justify-content-between align-items-center">
-    <a class="marca" href="{{ url_for('caja.cola') }}">
+  <div class="container-xl d-flex justify-content-between align-items-center">
+    {% if titulo_barra %}
+    <a class="d-lg-none barra-titulo" href="{{ url_for('caja.cola') }}"><i class="bi bi-arrow-left"></i><span class="titulo">{{ titulo_barra }}</span></a>
+    {% endif %}
+    <a class="marca {% if titulo_barra %}d-none d-lg-inline-block{% endif %}" href="{{ url_for('caja.cola') }}">
       <span class="nombre">UBite</span><span class="sub">Cafetería UMB · Personal</span>
     </a>
-    <nav class="nav-personal d-flex flex-wrap gap-4 align-items-center">
-      <a href="{{ url_for('caja.cola') }}" class="{{ 'activo' if request.endpoint == 'caja.cola' }}">Pedidos en curso</a>
-      <a href="{{ url_for('caja.presencial') }}" class="{{ 'activo' if request.endpoint == 'caja.presencial' }}">Pedido presencial</a>
-      <a href="{{ url_for('caja.historial') }}" class="{{ 'activo' if request.endpoint == 'caja.historial' }}">Historial</a>
+    <nav class="nav-personal d-none d-lg-flex gap-4 align-items-center">
+      {% for ruta, texto, _, _ in menu_personal %}
+      <a href="{{ url_for(ruta) }}" class="{{ 'activo' if request.endpoint == ruta }}">{{ texto }}</a>
+      {% endfor %}
       <span class="small"><i class="bi bi-person"></i> {{ current_user.nombre.split(' ')[0] }} · {{ current_user.rol }}</span>
-      <a href="{{ url_for('auth.salir') }}" class="small"><i class="bi bi-box-arrow-right"></i> Salir</a>
+      <a href="{{ url_for('auth.salir') }}" class="etiqueta"><i class="bi bi-box-arrow-right"></i> Salir</a>
     </nav>
+    {% if not titulo_barra %}
+    <a class="icono-btn d-lg-none" href="{{ url_for('auth.salir') }}" aria-label="Salir"><i class="bi bi-box-arrow-right"></i></a>
+    {% endif %}
   </div>
 </header>
 {% endblock %}
@@ -21,4 +32,11 @@
   {% for categoria, m in mensajes %}<div class="mensaje-flash {{ 'error' if categoria == 'error' }}" role="status">{{ m }}</div>{% endfor %}
 {% endwith %}
 {% block panel %}{% endblock %}
+
+<nav class="barra-inferior d-lg-none" aria-label="Navegación">
+  {% for ruta, _, corto, icono in menu_personal %}
+  <a href="{{ url_for(ruta) }}" class="{{ 'activo' if request.endpoint == ruta }}"><i class="bi {{ icono }}"></i><span>{{ corto }}</span></a>
+  {% endfor %}
+  <a href="{{ url_for('auth.salir') }}"><i class="bi bi-box-arrow-right"></i><span>Salir</span></a>
+</nav>
 {% endblock %}

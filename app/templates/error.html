@@ -1,6 +1,7 @@
 {% extends "cliente/_base.html" %}
 {% block titulo_pagina %}{{ titulo }}{% endblock %}
 {% block contenido %}
+<div class="columna-movil">
 <div class="text-center pt-4">
   <div class="mx-auto mb-3 d-flex align-items-center justify-content-center" style="width:64px;height:64px;border:1.5px solid var(--tinta);border-radius:50%;color:var(--tinta);font-size:1.6rem">
     <i class="bi bi-arrow-counterclockwise"></i>
@@ -14,4 +15,5 @@
 </div>
 {% endif %}
 <a class="btn btn-ubite w-100" href="{{ volver or url_for('cliente.inicio') }}">{{ texto_volver or "Volver al inicio" }}</a>
+</div>
 {% endblock %}

@@ -1,11 +1,8 @@
-"""Crea database/ubite.db desde schema.sql y datos_prueba.sql y la exporta
-a database/ubite.db.sql (mismo formato que "Export > Database to SQL file"
-de DB Browser for SQLite).
-
-Uso, desde la raíz del repositorio:
-    python database/crear_bd.py            # crea la base y la exporta
-    python database/crear_bd.py --exportar # solo exporta la base actual
-"""
+# crea database/ubite.db con schema.sql y datos_prueba.sql y la exporta a ubite.db.sql
+# (mismo formato que "Export > Database to SQL file" de DB Browser)
+#
+#   python database/crear_bd.py             crea la base y la exporta
+#   python database/crear_bd.py --exportar  solo exporta la base actual
 import os
 import sqlite3
 import sys

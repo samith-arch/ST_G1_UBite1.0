@@ -1,22 +1,13 @@
-"""Lógica de negocio y coordinación de transacciones de UBite.
-
-Cada función pública que escribe en la base de datos corre dentro de
-transaccion(): si cualquier paso falla se hace ROLLBACK y no queda nada a
-medias. Las rutas solo llaman a estas funciones y muestran el resultado.
-"""
-from sqlalchemy import case, exists, func, select
+from sqlalchemy import case, exists, func
 
 from .database import db, transaccion
 from .models import (Cliente, DetallePedido, Notificacion, Pago, Pedido,
                      Producto, Transaccion, ahora)
 
-ESTADOS_ACTIVOS = ("en_cola", "en_preparacion", "listo")
+ACTIVOS = ("en_cola", "en_preparacion", "listo")
 
 
 class ErrorNegocio(Exception):
-    """Error esperado de una regla de negocio (sin stock, estado no permitido...).
-    Lleva un título y un mensaje pensados para mostrarle al usuario."""
-
     def __init__(self, titulo, mensaje, detalle=None):
         super().__init__(mensaje)
         self.titulo = titulo
@@ -24,9 +15,6 @@ class ErrorNegocio(Exception):
         self.detalle = detalle or []
 
 
-# ---------------------------------------------------------------------------
-# Consultas
-# ---------------------------------------------------------------------------
 def menu_por_categoria():
     productos = (Producto.query.filter_by(activo=True)
                  .order_by(Producto.id_categoria, Producto.nombre).all())
@@ -40,109 +28,103 @@ def buscar_pedido(codigo):
     return Pedido.query.filter_by(codigo=codigo.upper().strip()).first()
 
 
-def _pagado_expr():
-    return exists().where(Pago.id_pedido == Pedido.id_pedido, Pago.estado == "aprobado")
-
-
 def cola_activa():
-    """Pedidos en curso en el orden en que se atienden: primero los pagados en
-    la aplicación (prioridad) y después por hora de llegada."""
-    pagado = _pagado_expr()
-    return (Pedido.query.filter(Pedido.estado.in_(ESTADOS_ACTIVOS))
+    # primero los que ya estan pagos, despues por hora de llegada
+    pagado = exists().where(Pago.id_pedido == Pedido.id_pedido, Pago.estado == "aprobado")
+    return (Pedido.query.filter(Pedido.estado.in_(ACTIVOS))
             .order_by(case((pagado, 0), else_=1), Pedido.fecha_hora).all())
 
 
 def posicion_en_cola(pedido):
-    """Cuántos pedidos se van a atender antes que este."""
     if pedido.estado != "en_cola":
         return 0
-    cola = [p for p in cola_activa() if p.estado == "en_cola"]
-    for i, p in enumerate(cola):
-        if p.id_pedido == pedido.id_pedido:
-            return i
-    return 0
+    cola = [p.id_pedido for p in cola_activa() if p.estado == "en_cola"]
+    return cola.index(pedido.id_pedido) if pedido.id_pedido in cola else 0
 
 
 def pedidos_del_dia():
-    hoy = ahora().date()
-    return (Pedido.query.filter(func.date(Pedido.fecha_hora) == hoy.isoformat())
+    hoy = ahora().date().isoformat()
+    return (Pedido.query.filter(func.date(Pedido.fecha_hora) == hoy)
             .order_by(Pedido.fecha_hora.desc()).all())
 
 
-# ---------------------------------------------------------------------------
-# Operaciones transaccionales
-# ---------------------------------------------------------------------------
-def _validar_items(items):
-    """items: {id_producto: cantidad}. Devuelve [(producto, cantidad)] o lanza
-    ErrorNegocio si algún producto no existe, no está activo o no alcanza."""
+def _validar(items):
     if not items:
-        raise ErrorNegocio("Tu pedido está vacío", "Agrega al menos un producto antes de confirmar.")
-    lineas, faltantes = [], []
+        raise ErrorNegocio("Tu pedido está vacío", "Agrega al menos un producto.")
+    lineas, faltan = [], []
     for id_producto, cantidad in items.items():
-        producto = db.session.get(Producto, int(id_producto))
-        if producto is None or not producto.activo:
-            faltantes.append("Un producto ya no está en el menú")
-            continue
         if cantidad <= 0:
             continue
-        if not producto.validar_stock(cantidad):
-            faltantes.append(f"{producto.nombre}: pediste {cantidad}, quedan {producto.stock_actual}")
-            continue
-        lineas.append((producto, cantidad))
-    if faltantes:
+        p = db.session.get(Producto, int(id_producto))
+        if p is None or not p.activo:
+            faltan.append("Un producto ya no está en el menú")
+        elif not p.validar_stock(cantidad):
+            faltan.append(f"{p.nombre}: pediste {cantidad}, quedan {p.stock_actual}")
+        else:
+            lineas.append((p, cantidad))
+    if faltan:
         raise ErrorNegocio("No alcanzó el stock",
-                           "Mientras armabas tu pedido otra persona compró algunos productos. "
-                           "No se registró nada; ajusta las cantidades e intenta de nuevo.",
-                           faltantes)
+                           "Alguien compró antes que tú. No se guardó nada, ajusta las "
+                           "cantidades e intenta otra vez.", faltan)
     if not lineas:
-        raise ErrorNegocio("Tu pedido está vacío", "Agrega al menos un producto antes de confirmar.")
+        raise ErrorNegocio("Tu pedido está vacío", "Agrega al menos un producto.")
     return lineas
 
 
-def _siguiente_codigo():
-    # Se calcula dentro de la transacción de escritura, así que no se repite
-    ultimo = db.session.execute(select(func.max(Pedido.id_pedido))).scalar() or 0
-    return f"UB-{ultimo + 1:04d}"
+def siguiente_codigo(origen):
+    # A-001 para pedidos por QR, P-001 para los que se toman en caja
+    letra = "P" if origen == "presencial" else "A"
+    codigos = db.session.scalars(
+        db.select(Pedido.codigo).where(Pedido.codigo.like(f"{letra}-%"))).all()
+    numeros = [int(c[2:]) for c in codigos if c[2:].isdigit()]
+    return f"{letra}-{max(numeros, default=0) + 1:03d}"
 
 
 def registrar_pedido(nombre, telefono, items, origen="qr", usuario=None):
-    """Registra cliente, pedido, detalles, descuento de stock y la transacción
-    en un solo bloque atómico. Devuelve el código del pedido."""
-    nombre, telefono = nombre.strip(), telefono.strip()
     with transaccion():
-        lineas = _validar_items(items)
+        lineas = _validar(items)
 
-        cliente = Cliente.query.filter_by(telefono=telefono, nombre=nombre).first()
+        cliente = Cliente.query.filter_by(nombre=nombre, telefono=telefono).first()
         if cliente is None:
             cliente = Cliente(nombre=nombre, telefono=telefono)
             db.session.add(cliente)
 
-        pedido = Pedido(codigo=_siguiente_codigo(), cliente=cliente, origen=origen,
-                        usuario=usuario, estado="en_cola")
+        # el pedido en caja se cobra de una vez y pasa directo a preparacion
+        presencial = origen == "presencial"
+        pedido = Pedido(codigo=siguiente_codigo(origen), cliente=cliente, origen=origen,
+                        usuario=usuario, estado="en_preparacion" if presencial else "en_cola")
         db.session.add(pedido)
-        for producto, cantidad in lineas:
-            producto.descontar_stock(cantidad)
-            pedido.detalles.append(DetallePedido(
-                producto=producto, cantidad=cantidad, precio_unitario=producto.precio,
-                subtotal=producto.precio * cantidad))
+        for p, cantidad in lineas:
+            p.descontar_stock(cantidad)
+            pedido.detalles.append(DetallePedido(producto=p, cantidad=cantidad,
+                                                 precio_unitario=p.precio,
+                                                 subtotal=p.precio * cantidad))
         pedido.calcular_total()
 
-        quien = "por el cajero" if origen == "presencial" else "por QR"
-        Transaccion.registrar(pedido, "registro_pedido", usuario=usuario,
-                              descripcion=f"Pedido registrado {quien}; stock descontado")
+        if presencial:
+            Transaccion.registrar(pedido, "registro_pedido", usuario=usuario,
+                                  descripcion="Pedido presencial registrado; stock descontado")
+            db.session.add(Pago(pedido=pedido, usuario=usuario, metodo="efectivo",
+                                medio="efectivo", estado="aprobado", monto=pedido.total))
+            Transaccion.registrar(pedido, "pago", usuario=usuario,
+                                  descripcion="Cobro en caja al registrar el pedido")
+        else:
+            Transaccion.registrar(pedido, "registro_pedido",
+                                  descripcion="Pedido registrado por QR; stock descontado")
         db.session.flush()
         return pedido.codigo
 
 
 def modificar_pedido(codigo, items):
-    """Cambia las cantidades de un pedido que sigue en cola. Ajusta el stock
-    solo por la diferencia y recalcula el total."""
     try:
         _modificar(codigo, items)
     except ErrorNegocio as e:
-        if e.detalle:  # falló por stock: se hizo rollback y se deja constancia
-            _registrar_revertida(codigo, "modificacion_pedido",
-                                 "Modificación revertida por falta de stock: " + "; ".join(e.detalle))
+        if e.detalle:
+            # el cambio se deshizo, pero queda la constancia
+            with transaccion():
+                pedido = buscar_pedido(codigo)
+                Transaccion.registrar(pedido, "modificacion_pedido", resultado="revertida",
+                                      descripcion="Sin stock: " + "; ".join(e.detalle))
         raise
 
 
@@ -151,74 +133,79 @@ def _modificar(codigo, items):
         pedido = buscar_pedido(codigo)
         if pedido is None:
             raise ErrorNegocio("Pedido no encontrado", "No existe un pedido con ese código.")
-        if pedido.estado != "en_cola":
+        if pedido.estado != "en_cola" or pedido.pagado:
             raise ErrorNegocio("Ya no se puede modificar",
-                               "Tu pedido ya está en preparación, así que no se puede cambiar.")
-        if pedido.pagado:
-            raise ErrorNegocio("Ya no se puede modificar",
-                               "Este pedido ya se pagó en la aplicación. Si necesitas algo más, "
-                               "haz un pedido nuevo.")
+                               "El pedido ya está en preparación o ya se pagó.")
 
-        actuales = {d.id_producto: d for d in pedido.detalles}
-        nuevos = {int(k): v for k, v in items.items() if v > 0}
-        if not nuevos:
+        antes = {d.id_producto: d for d in pedido.detalles}
+        despues = {int(k): v for k, v in items.items() if v > 0}
+        if not despues:
             raise ErrorNegocio("El pedido no puede quedar vacío",
-                               "Si ya no quieres nada, mejor cancela el pedido.")
+                               "Si ya no quieres nada, cancela el pedido.")
 
-        faltantes = []
-        for id_producto in set(actuales) | set(nuevos):
-            antes = actuales[id_producto].cantidad if id_producto in actuales else 0
-            despues = nuevos.get(id_producto, 0)
-            diferencia = despues - antes
-            producto = db.session.get(Producto, id_producto)
-            if diferencia > 0:
-                if not producto.validar_stock(diferencia):
-                    faltantes.append(f"{producto.nombre}: quedan {producto.stock_actual} adicionales")
+        faltan = []
+        for id_producto in set(antes) | set(despues):
+            p = db.session.get(Producto, id_producto)
+            viejo = antes[id_producto].cantidad if id_producto in antes else 0
+            nuevo = despues.get(id_producto, 0)
+            if nuevo > viejo:
+                if not p.validar_stock(nuevo - viejo):
+                    faltan.append(f"{p.nombre}: solo quedan {p.stock_actual} más")
                     continue
-                producto.descontar_stock(diferencia)
-            elif diferencia < 0:
-                producto.devolver_stock(-diferencia)
+                p.descontar_stock(nuevo - viejo)
+            elif nuevo < viejo:
+                p.devolver_stock(viejo - nuevo)
 
-            if despues == 0:
-                pedido.detalles.remove(actuales[id_producto])
-            elif id_producto in actuales:
-                d = actuales[id_producto]
-                d.cantidad, d.subtotal = despues, d.precio_unitario * despues
+            if nuevo == 0:
+                pedido.detalles.remove(antes[id_producto])
+            elif id_producto in antes:
+                antes[id_producto].cantidad = nuevo
+                antes[id_producto].subtotal = antes[id_producto].precio_unitario * nuevo
             else:
-                pedido.detalles.append(DetallePedido(
-                    producto=producto, cantidad=despues, precio_unitario=producto.precio,
-                    subtotal=producto.precio * despues))
-        if faltantes:
-            raise ErrorNegocio("No alcanzó el stock",
-                               "No se hizo ningún cambio en tu pedido.", faltantes)
+                pedido.detalles.append(DetallePedido(producto=p, cantidad=nuevo,
+                                                     precio_unitario=p.precio,
+                                                     subtotal=p.precio * nuevo))
+        if faltan:
+            raise ErrorNegocio("No alcanzó el stock", "No se cambió nada de tu pedido.", faltan)
 
         pedido.calcular_total()
         Transaccion.registrar(pedido, "modificacion_pedido",
-                              descripcion="Cantidades modificadas en cola; stock ajustado")
+                              descripcion="Cantidades cambiadas en cola; stock ajustado")
 
 
 def cancelar_pedido(codigo, usuario=None):
-    """Cancela un pedido en cola y devuelve el stock de sus productos."""
     with transaccion():
         pedido = buscar_pedido(codigo)
         if pedido is None:
             raise ErrorNegocio("Pedido no encontrado", "No existe un pedido con ese código.")
-        if pedido.estado != "en_cola":
-            raise ErrorNegocio("Ya no se puede cancelar",
-                               "El pedido ya está en preparación o fue entregado.")
-        if pedido.pagado:
-            raise ErrorNegocio("Ya no se puede cancelar",
-                               "Este pedido ya se pagó en la aplicación; acércate a la caja.")
+
+        pago = next((p for p in pedido.pagos if p.estado == "aprobado"), None)
+        if usuario is None:
+            # el cliente solo cancela mientras esta en cola y sin pagar
+            if pedido.estado != "en_cola" or pago:
+                raise ErrorNegocio("Ya no se puede cancelar",
+                                   "Tu pedido ya está en preparación o ya se pagó. "
+                                   "Acércate a la caja.")
+            nota = "Cancelado por el cliente en cola"
+        else:
+            if pedido.estado not in ACTIVOS:
+                raise ErrorNegocio("Ya no se puede cancelar",
+                                   f"El pedido {pedido.codigo} ya fue entregado o cancelado.")
+            if pago and pago.metodo == "app":
+                raise ErrorNegocio("Pagado en la app",
+                                   "La devolución de un pago en línea se hace por la pasarela.")
+            nota = f"Cancelado en caja estando {pedido.estado.replace('_', ' ')}"
+            if pago:
+                nota += f"; se devolvieron $ {pago.monto:,.0f} en efectivo".replace(",", ".")
+
         pedido.cambiar_estado("cancelado")
         for d in pedido.detalles:
             d.producto.devolver_stock(d.cantidad)
-        quien = "por el cajero" if usuario else "por el cliente"
         Transaccion.registrar(pedido, "cancelacion", usuario=usuario,
-                              descripcion=f"Cancelado {quien} en cola; stock devuelto")
+                              descripcion=nota + "; stock devuelto")
 
 
 def cambiar_estado(id_pedido, nuevo, usuario):
-    """en_cola -> en_preparacion -> listo. Al quedar listo se avisa al cliente."""
     with transaccion():
         pedido = db.session.get(Pedido, id_pedido)
         if pedido is None:
@@ -228,33 +215,30 @@ def cambiar_estado(id_pedido, nuevo, usuario):
             pedido.cambiar_estado(nuevo)
         except ValueError:
             raise ErrorNegocio("Cambio no permitido",
-                               f"El pedido {pedido.codigo} está {anterior.replace('_', ' ')}.")
+                               f"{pedido.codigo} está {anterior.replace('_', ' ')}.")
         Transaccion.registrar(pedido, "cambio_estado", usuario=usuario,
                               descripcion=f"{anterior} -> {nuevo}")
         if nuevo == "listo":
             if pedido.pagado:
-                mensaje = f"Tu pedido {pedido.codigo} está listo. Ya está pago, solo acércate a recogerlo."
+                texto = f"Tu pedido {pedido.codigo} está listo. Ya está pago, solo acércate a recogerlo."
             else:
-                mensaje = f"Tu pedido {pedido.codigo} está listo. Acércate a la caja para pagar y recogerlo."
-            db.session.add(Notificacion(pedido=pedido, mensaje=mensaje, canal="pagina",
+                texto = f"Tu pedido {pedido.codigo} está listo. Acércate a la caja para pagar y recogerlo."
+            db.session.add(Notificacion(pedido=pedido, mensaje=texto, canal="pagina",
                                         estado="enviada", fecha_envio=ahora()))
         return pedido.codigo
 
 
 def entregar_pedido(id_pedido, usuario):
-    """Entrega un pedido listo. Si no se pagó en la app, en la misma
-    transacción se registra el cobro en efectivo."""
     with transaccion():
         pedido = db.session.get(Pedido, id_pedido)
         if pedido is None:
             raise ErrorNegocio("Pedido no encontrado", "El pedido ya no existe.")
         if pedido.estado != "listo":
-            raise ErrorNegocio("Cambio no permitido",
-                               f"El pedido {pedido.codigo} todavía no está listo.")
+            raise ErrorNegocio("Cambio no permitido", f"{pedido.codigo} todavía no está listo.")
         pedido.cambiar_estado("entregado")
         if pedido.pagado:
             Transaccion.registrar(pedido, "cambio_estado", usuario=usuario,
-                                  descripcion="listo -> entregado (pagado en la app)")
+                                  descripcion="listo -> entregado")
         else:
             db.session.add(Pago(pedido=pedido, usuario=usuario, metodo="efectivo",
                                 medio="efectivo", estado="aprobado", monto=pedido.total))
@@ -263,19 +247,9 @@ def entregar_pedido(id_pedido, usuario):
         return pedido.codigo
 
 
-def marcar_notificaciones_vistas(pedido):
+def marcar_vistas(pedido):
     ids = [n.id_notificacion for n in pedido.notificaciones if n.estado == "enviada"]
-    if not ids:
-        return
-    with transaccion():
-        for i in ids:
-            db.session.get(Notificacion, i).estado = "vista"
-
-
-def _registrar_revertida(codigo, tipo, descripcion):
-    """Deja constancia de una operación que se deshizo con ROLLBACK. Va en su
-    propia transacción, porque la original ya no guardó nada."""
-    with transaccion():
-        pedido = buscar_pedido(codigo)
-        if pedido is not None:
-            Transaccion.registrar(pedido, tipo, resultado="revertida", descripcion=descripcion)
+    if ids:
+        with transaccion():
+            for i in ids:
+                db.session.get(Notificacion, i).estado = "vista"

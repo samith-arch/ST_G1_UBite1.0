@@ -1,8 +1,10 @@
 {% extends "cliente/_base.html" %}
+{% set titulo_barra = "Tu pedido" %}
+{% set atras = url_for('cliente.menu') %}
 {% block titulo_pagina %}Tu pedido{% endblock %}
 {% block contenido %}
-<a class="small suave" href="{{ url_for('cliente.menu') }}"><i class="bi bi-chevron-left"></i> Seguir pidiendo</a>
-<h1 class="titulo display-6 mt-2 mb-4">Revisa tu pedido</h1>
+<div class="columna-movil">
+<p class="etiqueta mb-3">Pedido para {{ session.cliente.nombre }}</p>
 
 {% if not lineas %}
 <div class="tarjeta text-center py-5">
@@ -12,34 +14,32 @@
 {% else %}
 <div class="tarjeta mb-3">
   {% for p, cant in lineas %}
-  <div class="d-flex align-items-center justify-content-between py-2 {% if not loop.last %}border-bottom{% endif %}">
-    <div>
-      <div class="fw-bold">{{ p.nombre }}</div>
-      <div class="small suave mono">{{ p.precio|pesos }} c/u</div>
-    </div>
+  <div class="linea-pedido">
+    <span class="fw-bold flex-fill">{{ p.nombre }}</span>
     <form method="post" action="{{ url_for('cliente.carrito_cambiar') }}" class="contador">
       <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
       <input type="hidden" name="id_producto" value="{{ p.id_producto }}">
       <input type="hidden" name="volver" value="{{ url_for('cliente.carrito') }}">
-      <button class="btn-mas" name="delta" value="-1" aria-label="Quitar uno"><i class="bi bi-dash"></i></button>
+      <button class="btn-mas chico" name="delta" value="-1" aria-label="Quitar uno"><i class="bi bi-dash"></i></button>
       <span class="cant">{{ cant }}</span>
-      <button class="btn-mas" name="delta" value="1" aria-label="Agregar uno" {% if cant >= p.stock_actual %}disabled{% endif %}><i class="bi bi-plus"></i></button>
+      <button class="btn-mas chico" name="delta" value="1" aria-label="Agregar uno" {% if cant >= p.stock_actual %}disabled{% endif %}><i class="bi bi-plus"></i></button>
     </form>
+    <span class="mono subtotal">{{ (p.precio * cant)|pesos }}</span>
   </div>
   {% endfor %}
   <div class="lineas-total">
-    <div class="fila total"><span class="etiqueta">Total</span><span class="mono fs-4">$ {{ total|pesos }}</span></div>
+    <div class="fila total suave"><span>Subtotal · {{ unidades_carrito }} producto(s)</span><span class="mono">{{ total|pesos }}</span></div>
+    <div class="fila pt-2"><span class="etiqueta">Total</span><span class="mono fs-4">$ {{ total|pesos }}</span></div>
   </div>
 </div>
 
-<div class="aviso mb-4 fw-normal">
-  <i class="bi bi-info-circle me-1"></i>
-  Tu pedido entra a la cola apenas lo confirmes. Mientras esté en cola puedes cambiarlo o cancelarlo, y cuando esté listo te avisamos para que pases a la caja a pagar y recogerlo.
-</div>
+<p class="small suave mb-4">Tu pedido entra a la cola de inmediato. Lo pagas en la caja cuando te avisemos que está listo.</p>
 
-<form method="post" action="{{ url_for('cliente.confirmar') }}">
+<form method="post" action="{{ url_for('cliente.confirmar') }}" class="mb-3">
   <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
-  <button class="btn btn-ubite w-100" type="submit">Confirmar pedido · $ {{ total|pesos }}</button>
+  <button class="btn btn-ubite w-100" type="submit">Hacer pedido · pago al recoger</button>
 </form>
+<a class="btn btn-suave w-100" href="{{ url_for('cliente.menu') }}">Seguir agregando</a>
 {% endif %}
+</div>
 {% endblock %}

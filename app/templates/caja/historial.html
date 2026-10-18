@@ -1,8 +1,9 @@
 {% extends "caja/_base.html" %}
+{% set titulo_barra = "Historial" %}
 {% block titulo_pagina %}Historial{% endblock %}
 {% block panel %}
 <p class="etiqueta mb-1">Hoy</p>
-<h1 class="titulo display-5 mb-4">Historial de pedidos</h1>
+<h1 class="titulo display-5 mb-4 d-none d-lg-block">Historial de pedidos</h1>
 <div class="row g-3 mb-4">
   <div class="col-sm-4"><div class="tarjeta"><p class="etiqueta mb-1">Pedidos</p><div class="mono fs-3">{{ pedidos|length }}</div></div></div>
   <div class="col-sm-4"><div class="tarjeta"><p class="etiqueta mb-1">Entregados</p><div class="mono fs-3">{{ entregados }}</div></div></div>

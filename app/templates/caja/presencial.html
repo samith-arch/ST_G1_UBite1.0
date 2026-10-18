@@ -1,49 +1,76 @@
 {% extends "caja/_base.html" %}
+{% set titulo_barra = "Pedido presencial" %}
+{% set iconos = {"Bebidas": "bi-cup-straw", "Snacks": "bi-bag", "Comidas": "bi-egg-fried"} %}
 {% block titulo_pagina %}Pedido presencial{% endblock %}
 {% block panel %}
-<p class="etiqueta mb-1">Cliente sin QR</p>
-<h1 class="titulo display-5 mb-4">Registrar pedido en caja</h1>
-
-<form method="post" class="row g-4">
+<form method="post" class="presencial" id="presencial">
   <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
-  <div class="col-lg-4">
-    <div class="tarjeta">
-      <label class="etiqueta" for="nombre">Nombre del cliente</label>
-      <input class="form-control linea-campo mb-4" id="nombre" name="nombre" maxlength="60" value="{{ form.get('nombre', '') }}" required>
-      <label class="etiqueta" for="telefono">Celular</label>
-      <input class="form-control linea-campo mb-4" id="telefono" name="telefono" inputmode="numeric" maxlength="12" value="{{ form.get('telefono', '') }}" required>
-      <div class="lineas-total"><div class="fila total"><span class="etiqueta">Total</span><span class="mono fs-4">$ <span id="total">0</span></span></div></div>
-      <button class="btn btn-ubite w-100 mt-3" type="submit">Enviar a la cola</button>
-      <p class="small suave mt-2 mb-0">Se cobra en caja al entregar, igual que los pedidos por QR.</p>
+
+  <div class="zona-titulo">
+    <p class="etiqueta mb-1">Pedido tomado en caja · sin QR</p>
+    <h1 class="titulo display-5 mb-0 d-none d-lg-block">Pedido presencial</h1>
+  </div>
+
+  <div class="zona-datos tarjeta">
+    <h2 class="titulo fs-3 d-none d-lg-block">Pedido en caja</h2>
+    <p class="mono small suave">Código asignado: {{ codigo }}</p>
+    <label class="etiqueta" for="nombre">Nombre del cliente</label>
+    <div class="campo-icono mb-3"><i class="bi bi-person"></i>
+      <input class="form-control linea-campo" id="nombre" name="nombre" maxlength="60" value="{{ form.get('nombre', '') }}" required>
+    </div>
+    <label class="etiqueta" for="telefono">Celular (opcional)</label>
+    <div class="campo-icono"><i class="bi bi-telephone"></i>
+      <input class="form-control linea-campo" id="telefono" name="telefono" inputmode="numeric" maxlength="13" value="{{ form.get('telefono', '') }}">
     </div>
   </div>
-  <div class="col-lg-8">
-    {% for categoria, productos in menu.items() %}
-    <h2 class="etiqueta mt-2 mb-0">{{ categoria }}</h2>
-    {% for p in productos %}
-    <div class="fila-menu {% if p.stock_actual == 0 %}agotado{% endif %}">
-      <div class="info">
-        <div class="nombre-prod"><span>{{ p.nombre }}</span><span class="puntos"></span><span class="precio">{{ p.precio|pesos }}</span></div>
-        <div class="detalle">{% if p.stock_actual == 0 %}Agotado{% else %}quedan {{ p.stock_actual }}{% endif %}</div>
+
+  <div class="zona-productos">
+    <label class="etiqueta" for="buscar">Agregar producto</label>
+    <div class="d-flex gap-3 align-items-end mb-2">
+      <div class="campo-icono flex-fill"><i class="bi bi-search"></i>
+        <input class="form-control linea-campo" id="buscar" placeholder="Buscar en el menú…" autocomplete="off">
       </div>
-      <input class="form-control mono text-center cantidad" style="width:72px" type="number" min="0" max="{{ p.stock_actual }}"
-             name="cant_{{ p.id_producto }}" value="{{ form.get('cant_' ~ p.id_producto, 0) }}" data-precio="{{ p.precio }}"
-             {% if p.stock_actual == 0 %}disabled{% endif %} aria-label="Cantidad de {{ p.nombre }}">
+      <select class="form-select selector-categoria" id="categoria" aria-label="Categoría">
+        <option value="">Todo</option>
+        {% for categoria in menu %}<option>{{ categoria }}</option>{% endfor %}
+      </select>
     </div>
+    {% for categoria, productos in menu.items() %}
+    <section class="categoria" data-categoria="{{ categoria }}">
+      <h2 class="etiqueta mt-3 mb-0">{{ categoria }}</h2>
+      {% for p in productos %}
+      <div class="fila-menu {% if p.stock_actual == 0 %}agotado{% endif %}" data-nombre="{{ p.nombre|lower }}">
+        <span class="icono d-none d-sm-flex"><i class="bi {{ iconos.get(categoria, 'bi-basket') }}"></i></span>
+        <div class="info">
+          <div class="fw-bold">{{ p.nombre }}</div>
+          <div class="detalle mono">{{ p.precio|pesos }} · {% if p.stock_actual %}quedan {{ p.stock_actual }}{% else %}agotado{% endif %}</div>
+        </div>
+        <div class="contador stepper" data-precio="{{ p.precio }}" data-nombre="{{ p.nombre }}">
+          <button type="button" class="btn-mas menos" aria-label="Quitar {{ p.nombre }}"><i class="bi bi-dash"></i></button>
+          <input class="cant-input mono" type="number" name="cant_{{ p.id_producto }}" min="0" max="{{ p.stock_actual }}"
+                 value="{{ form.get('cant_' ~ p.id_producto, 0) }}" aria-label="Cantidad de {{ p.nombre }}">
+          <button type="button" class="btn-mas mas" aria-label="Agregar {{ p.nombre }}"><i class="bi bi-plus"></i></button>
+        </div>
+      </div>
+      {% endfor %}
+    </section>
     {% endfor %}
-    {% endfor %}
+  </div>
+
+  <div class="zona-resumen tarjeta lineas-total">
+    <div id="lineas"><p class="small suave mb-0">Todavía no hay productos.</p></div>
+    <div class="fila total"><span class="etiqueta">Total</span><span class="mono fs-4">$ <span id="total">0</span></span></div>
+    <div class="fila align-items-center">
+      <label class="suave" for="recibido"><i class="bi bi-cash-coin"></i> Recibido en efectivo</label>
+      <input class="form-control linea-campo mono text-end recibido" id="recibido" inputmode="numeric" placeholder="0">
+    </div>
+    <div class="fila suave"><span>Cambio</span><span class="mono" id="cambio">0</span></div>
+    <button class="btn btn-ubite w-100 mt-3" type="submit" id="cobrar">Cobrar y registrar · $ <span id="total-boton">0</span></button>
+    <p class="small suave mt-2 mb-0">Se registra en una sola transacción: pedido, productos, descuento de stock y pago en efectivo. El pedido entra directo a «En preparación».</p>
   </div>
 </form>
 {% endblock %}
 {% block scripts %}
-<script>
-  const campos = document.querySelectorAll(".cantidad");
-  function total() {
-    let t = 0;
-    campos.forEach((c) => { t += (Number(c.value) || 0) * Number(c.dataset.precio); });
-    document.getElementById("total").textContent = t.toLocaleString("es-CO");
-  }
-  campos.forEach((c) => c.addEventListener("input", total));
-  total();
-</script>
+<script src="{{ url_for('static', filename='js/contador.js') }}"></script>
+<script src="{{ url_for('static', filename='js/presencial.js') }}"></script>
 {% endblock %}

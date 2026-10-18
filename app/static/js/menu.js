@@ -1,5 +1,5 @@
-// Menú del cliente: suma o resta productos sin recargar la página.
-// Si el JavaScript no carga, los formularios funcionan igual recargando.
+// suma o resta productos sin recargar la pagina
+// (si el js falla, el formulario se envia normal)
 (function () {
   const csrf = document.querySelector('meta[name="csrf-token"]').content;
   const aviso = document.getElementById("aviso");
@@ -24,7 +24,7 @@
         cant.classList.toggle("oculto", d.cantidad === 0);
         menos.classList.toggle("oculto", d.cantidad === 0);
         mas.disabled = d.cantidad >= Number(mas.dataset.stock);
-        document.getElementById("unidades").textContent = d.unidades;
+        document.querySelectorAll(".unidades-carrito").forEach((e) => (e.textContent = d.unidades));
         document.getElementById("total").textContent = pesos(d.total);
         document.getElementById("barra-pedido").classList.toggle("oculta", d.unidades === 0);
         aviso.textContent = d.aviso || "";
@@ -35,7 +35,7 @@
     });
   });
 
-  // Búsqueda y filtro por categoría
+  // buscador y filtro por categoria
   const buscar = document.getElementById("buscar");
   let filtro = "";
   function aplicar() {

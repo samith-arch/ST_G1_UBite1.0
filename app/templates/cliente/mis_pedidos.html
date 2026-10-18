@@ -1,7 +1,10 @@
 {% extends "cliente/_base.html" %}
+{% set titulo_barra = "Mis pedidos" %}
+{% set atras = url_for('cliente.menu') %}
 {% block titulo_pagina %}Mis pedidos{% endblock %}
 {% block contenido %}
-<h1 class="titulo display-6 mb-4">Mis pedidos</h1>
+<div class="columna-movil">
+<h1 class="titulo display-6 mb-4 d-none d-md-block">Mis pedidos</h1>
 {% for p in pedidos %}
 <a class="tarjeta d-flex justify-content-between align-items-center mb-2 text-decoration-none text-reset" href="{{ url_for('cliente.seguimiento', codigo=p.codigo) }}">
   <div>
@@ -14,4 +17,5 @@
 <p class="suave">Todavía no has hecho pedidos desde este celular.</p>
 {% endfor %}
 <a class="btn btn-contorno w-100 mt-3" href="{{ url_for('cliente.menu') }}">Ir al menú</a>
+</div>
 {% endblock %}

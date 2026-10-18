@@ -1,33 +1,39 @@
 {% extends "cliente/_base.html" %}
-{% block titulo_pagina %}Bienvenido{% endblock %}
+{% block titulo_pagina %}Bienvenida{% endblock %}
 {% block contenido %}
-<p class="etiqueta mb-2">Escaneaste el código de la cafetería</p>
-<h1 class="titulo display-5 mb-3">Pide sin hacer fila</h1>
-<p class="suave mb-4">Arma tu pedido desde el celular, te avisamos aquí mismo cuando esté listo y lo pagas en la caja al recogerlo.</p>
+<div class="row align-items-center g-4 py-md-5">
+  <div class="col-md-6 order-md-2 text-center">
+    {% include "_ilustracion.html" %}
+  </div>
+  <div class="col-md-6 order-md-1">
+    <p class="etiqueta mb-2">Bienvenida</p>
+    <h1 class="titulo display-5 mb-3">Pide sin hacer fila.</h1>
+    <p class="suave mb-4">Arma tu pedido desde el celular o el computador y te avisamos cuando esté listo para recoger.</p>
 
-<form method="post" novalidate class="tarjeta">
-  <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
-  <div class="mb-4">
-    <label class="etiqueta" for="nombre">Tu nombre</label>
-    <input class="form-control linea-campo" id="nombre" name="nombre" maxlength="60" autocomplete="given-name"
-           placeholder="Así te llamamos al entregar" value="{{ form.get('nombre') or (cliente.nombre if cliente else '') }}" required>
-    {% if errores.nombre %}<div class="error-campo">{{ errores.nombre }}</div>{% endif %}
+    <form method="post" novalidate>
+      <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+      <div class="row g-3">
+        <div class="col-lg-6">
+          <label class="etiqueta" for="nombre">Nombre</label>
+          <div class="campo-icono"><i class="bi bi-person"></i>
+            <input class="form-control linea-campo" id="nombre" name="nombre" maxlength="60" autocomplete="given-name"
+                   value="{{ form.get('nombre') or (cliente.nombre if cliente else '') }}" required>
+          </div>
+          {% if errores.nombre %}<div class="error-campo">{{ errores.nombre }}</div>{% endif %}
+        </div>
+        <div class="col-lg-6">
+          <label class="etiqueta" for="telefono">Celular</label>
+          <div class="campo-icono"><i class="bi bi-telephone"></i>
+            <input class="form-control linea-campo" id="telefono" name="telefono" inputmode="numeric" maxlength="13" autocomplete="tel"
+                   value="{{ form.get('telefono') or (cliente.telefono if cliente else '') }}" required>
+          </div>
+          {% if errores.telefono %}<div class="error-campo">{{ errores.telefono }}</div>{% endif %}
+        </div>
+      </div>
+      <p class="small suave mt-3 mb-4">Tu celular solo se usa para avisarte o llamarte si no recoges. Al continuar aceptas ese uso de tus datos (Ley 1581 de 2012).</p>
+      <button class="btn btn-ubite w-100 w-md-auto px-md-5" type="submit">Ver el menú</button>
+    </form>
+    <p class="small suave mt-4 mb-0">¿Trabajas en la cafetería? <a href="{{ url_for('auth.login') }}">Inicia sesión aquí</a></p>
   </div>
-  <div class="mb-4">
-    <label class="etiqueta" for="telefono">Celular</label>
-    <input class="form-control linea-campo" id="telefono" name="telefono" inputmode="numeric" maxlength="12" autocomplete="tel"
-           placeholder="3001234567" value="{{ form.get('telefono') or (cliente.telefono if cliente else '') }}" required>
-    {% if errores.telefono %}<div class="error-campo">{{ errores.telefono }}</div>{% endif %}
-  </div>
-  <div class="form-check mb-4">
-    <input class="form-check-input" type="checkbox" value="si" id="acepta" name="acepta" {% if form.get('acepta') or cliente %}checked{% endif %}>
-    <label class="form-check-label small suave" for="acepta">
-      Autorizo el uso de mi nombre y celular solo para identificar mi pedido y avisarme cuando esté listo (Ley 1581 de 2012).
-    </label>
-    {% if errores.acepta %}<div class="error-campo">{{ errores.acepta }}</div>{% endif %}
-  </div>
-  <button class="btn btn-ubite w-100" type="submit">Ver el menú</button>
-</form>
-
-<p class="small suave text-center mt-4 mb-0">¿Trabajas en la cafetería? <a href="{{ url_for('auth.login') }}">Entra aquí</a></p>
+</div>
 {% endblock %}

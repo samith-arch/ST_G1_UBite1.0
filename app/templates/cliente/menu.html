@@ -2,6 +2,7 @@
 {% block titulo_pagina %}Menú{% endblock %}
 {% set iconos = {"Bebidas": "bi-cup-straw", "Snacks": "bi-bag", "Comidas": "bi-egg-fried"} %}
 {% block contenido %}
+<div class="columna-movil">
 <div class="d-flex justify-content-between align-items-baseline">
   <p class="etiqueta mb-1">Hola, {{ session.cliente.nombre.split(' ')[0] }}</p>
   <a class="small suave" href="{{ url_for('cliente.salir') }}">No soy yo</a>
@@ -46,11 +47,12 @@
 
 <div id="aviso" class="aviso-error mt-3 oculto" role="status"></div>
 
-<div class="barra-pedido mt-4 {% if not unidades %}oculta{% endif %}" id="barra-pedido">
+<div class="barra-pedido mt-4 {% if not unidades_carrito %}oculta{% endif %}" id="barra-pedido">
   <a href="{{ url_for('cliente.carrito') }}">
-    <span><span id="unidades">{{ unidades }}</span> producto(s) · $ <span id="total">{{ total|pesos }}</span></span>
+    <span><span class="unidades-carrito">{{ unidades_carrito }}</span> producto(s) · $ <span id="total">{{ total|pesos }}</span></span>
     <span class="accion">Ver pedido <i class="bi bi-chevron-right"></i></span>
   </a>
+</div>
 </div>
 {% endblock %}
 {% block scripts %}<script src="{{ url_for('static', filename='js/menu.js') }}"></script>{% endblock %}

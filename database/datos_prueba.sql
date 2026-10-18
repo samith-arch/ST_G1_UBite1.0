@@ -1,22 +1,12 @@
--- =====================================================================
--- UBite - Datos iniciales de prueba
--- Se ejecuta después de schema.sql. Las fechas no se escriben a mano:
--- se calculan con la hora en que se ejecuta el script, restando unos
--- minutos a cada operación para que el historial quede en el orden en
--- que pasaría en la cafetería (cliente, pedido, pago, listo, entrega).
--- Cada pedido se registra como lo haría la aplicación: pedido, detalle,
--- descuento de stock y registro en transaccion dentro de una transacción.
+-- datos de prueba (correr despues de schema.sql)
+-- las fechas se calculan con la hora en que se corre el script
 --
--- Usuarios de prueba (solo para el entorno local):
---   cajero        -> usuario: acajero  / contraseña: Cajero2026*
---   administrador -> usuario: admin    / contraseña: Admin2026*
--- =====================================================================
+-- usuarios de prueba, solo para trabajar en local:
+--   cajero         acajero / Cajero2026*
+--   administrador  admin   / Admin2026*
 
 PRAGMA foreign_keys = ON;
 
--- ---------------------------------------------------------------------
--- Datos básicos
--- ---------------------------------------------------------------------
 BEGIN TRANSACTION;
 
 INSERT INTO "usuario" ("nombre", "rol", "username", "password_hash") VALUES
@@ -44,12 +34,10 @@ INSERT INTO "cliente" ("nombre", "telefono", "fecha_registro") VALUES
 
 COMMIT;
 
--- ---------------------------------------------------------------------
--- Pedido UB-0001: por QR, pagado en la app (Nequi, sandbox), ya está listo
--- 1 Papas fritas (2500) + 1 Gaseosa (3500) = 6000
--- ---------------------------------------------------------------------
+-- A-001: por QR, pagado en la app (nequi, pruebas) y ya listo
+-- 1 papas fritas + 1 gaseosa = 6000
 BEGIN TRANSACTION;
-INSERT INTO "pedido" ("codigo", "id_cliente", "origen", "total", "fecha_hora") VALUES ('UB-0001', 1, 'qr', 6000, datetime('now','localtime','-45 minutes'));
+INSERT INTO "pedido" ("codigo", "id_cliente", "origen", "total", "fecha_hora") VALUES ('A-001', 1, 'qr', 6000, datetime('now','localtime','-45 minutes'));
 INSERT INTO "detalle_pedido" ("id_pedido", "id_producto", "cantidad", "precio_unitario", "subtotal") VALUES
  (1, 4, 1, 2500, 2500),
  (1, 2, 1, 3500, 3500);
@@ -62,7 +50,7 @@ BEGIN TRANSACTION;
 INSERT INTO "pago" ("id_pedido", "metodo", "medio", "estado", "monto", "referencia", "fecha") VALUES
  (1, 'app', 'nequi', 'aprobado', 6000, 'SBX-NEQ-000001', datetime('now','localtime','-44 minutes'));
 INSERT INTO "transaccion" ("id_pedido", "tipo", "resultado", "descripcion", "fecha_hora") VALUES
- (1, 'pago', 'confirmada', 'Pago aprobado por la pasarela (sandbox); pedido con prioridad', datetime('now','localtime','-44 minutes'));
+ (1, 'pago', 'confirmada', 'Pago aprobado por la pasarela (pruebas); pedido con prioridad', datetime('now','localtime','-44 minutes'));
 COMMIT;
 
 BEGIN TRANSACTION;
@@ -70,16 +58,13 @@ UPDATE "pedido" SET "estado" = 'listo' WHERE "id_pedido" = 1;
 INSERT INTO "transaccion" ("id_pedido", "id_usuario", "tipo", "resultado", "descripcion", "fecha_hora") VALUES
  (1, 1, 'cambio_estado', 'confirmada', 'en_cola -> listo', datetime('now','localtime','-41 minutes'));
 INSERT INTO "notificacion" ("id_pedido", "mensaje", "canal", "estado", "fecha_envio") VALUES
- (1, 'Tu pedido UB-0001 está listo. Ya está pago, solo acércate a recogerlo.', 'push', 'enviada', datetime('now','localtime','-41 minutes'));
+ (1, 'Tu pedido A-001 está listo. Ya está pago, solo acércate a recogerlo.', 'push', 'enviada', datetime('now','localtime','-41 minutes'));
 COMMIT;
 
--- ---------------------------------------------------------------------
--- Pedido UB-0002: por QR, el pago en la app fue rechazado y el cliente
--- pagará en caja al recoger; sigue en cola
--- 2 Empanadas (3000) + 1 Jugo en caja (2500) = 8500
--- ---------------------------------------------------------------------
+-- A-002: por QR, el pago en la app fue rechazado; sigue en cola y paga en caja
+-- 2 empanadas + 1 jugo en caja = 8500
 BEGIN TRANSACTION;
-INSERT INTO "pedido" ("codigo", "id_cliente", "origen", "total", "fecha_hora") VALUES ('UB-0002', 2, 'qr', 8500, datetime('now','localtime','-35 minutes'));
+INSERT INTO "pedido" ("codigo", "id_cliente", "origen", "total", "fecha_hora") VALUES ('A-002', 2, 'qr', 8500, datetime('now','localtime','-35 minutes'));
 INSERT INTO "detalle_pedido" ("id_pedido", "id_producto", "cantidad", "precio_unitario", "subtotal") VALUES
  (2, 7, 2, 3000, 6000),
  (2, 3, 1, 2500, 2500);
@@ -93,45 +78,42 @@ BEGIN TRANSACTION;
 INSERT INTO "pago" ("id_pedido", "metodo", "medio", "estado", "monto", "referencia", "fecha") VALUES
  (2, 'app', 'pse', 'rechazado', 8500, 'SBX-PSE-000002', datetime('now','localtime','-34 minutes'));
 INSERT INTO "transaccion" ("id_pedido", "tipo", "resultado", "descripcion", "fecha_hora") VALUES
- (2, 'pago', 'revertida', 'Pago rechazado por la pasarela (sandbox); el pedido sigue en cola para pago en caja', datetime('now','localtime','-34 minutes'));
+ (2, 'pago', 'revertida', 'Pago rechazado por la pasarela (pruebas); paga en caja al recoger', datetime('now','localtime','-34 minutes'));
 COMMIT;
 
--- ---------------------------------------------------------------------
--- Pedido UB-0003: presencial, registrado por el cajero, pagado en efectivo
--- y entregado
--- 1 Sándwich de jamón y queso (7000) = 7000
--- ---------------------------------------------------------------------
+-- P-001: tomado en caja, cobrado al registrarlo y ya entregado
+-- 1 sandwich de jamon y queso = 7000
 BEGIN TRANSACTION;
-INSERT INTO "pedido" ("codigo", "id_cliente", "id_usuario", "origen", "total", "fecha_hora") VALUES ('UB-0003', 3, 1, 'presencial', 7000, datetime('now','localtime','-30 minutes'));
+INSERT INTO "pedido" ("codigo", "id_cliente", "id_usuario", "origen", "estado", "total", "fecha_hora") VALUES ('P-001', 3, 1, 'presencial', 'en_preparacion', 7000, datetime('now','localtime','-30 minutes'));
 INSERT INTO "detalle_pedido" ("id_pedido", "id_producto", "cantidad", "precio_unitario", "subtotal") VALUES
  (3, 8, 1, 7000, 7000);
 UPDATE "producto" SET "stock_actual" = "stock_actual" - 1 WHERE "id_producto" = 8;
 INSERT INTO "transaccion" ("id_pedido", "id_usuario", "tipo", "resultado", "descripcion", "fecha_hora") VALUES
- (3, 1, 'registro_pedido', 'confirmada', 'Pedido presencial registrado por el cajero; stock descontado', datetime('now','localtime','-30 minutes'));
+ (3, 1, 'registro_pedido', 'confirmada', 'Pedido presencial registrado; stock descontado', datetime('now','localtime','-30 minutes'));
+INSERT INTO "pago" ("id_pedido", "id_usuario", "metodo", "medio", "estado", "monto", "fecha") VALUES
+ (3, 1, 'efectivo', 'efectivo', 'aprobado', 7000, datetime('now','localtime','-30 minutes'));
+INSERT INTO "transaccion" ("id_pedido", "id_usuario", "tipo", "resultado", "descripcion", "fecha_hora") VALUES
+ (3, 1, 'pago', 'confirmada', 'Cobro en caja al registrar el pedido', datetime('now','localtime','-30 minutes'));
 COMMIT;
 
 BEGIN TRANSACTION;
 UPDATE "pedido" SET "estado" = 'listo' WHERE "id_pedido" = 3;
 INSERT INTO "transaccion" ("id_pedido", "id_usuario", "tipo", "resultado", "descripcion", "fecha_hora") VALUES
- (3, 1, 'cambio_estado', 'confirmada', 'en_cola -> listo', datetime('now','localtime','-27 minutes'));
+ (3, 1, 'cambio_estado', 'confirmada', 'en_preparacion -> listo', datetime('now','localtime','-27 minutes'));
 INSERT INTO "notificacion" ("id_pedido", "mensaje", "canal", "estado", "fecha_envio") VALUES
- (3, 'Tu pedido UB-0003 está listo. Acércate a la caja para pagar y recogerlo.', 'pagina', 'vista', datetime('now','localtime','-27 minutes'));
+ (3, 'Tu pedido P-001 está listo. Ya está pago, solo acércate a recogerlo.', 'pagina', 'vista', datetime('now','localtime','-27 minutes'));
 COMMIT;
 
 BEGIN TRANSACTION;
-INSERT INTO "pago" ("id_pedido", "id_usuario", "metodo", "medio", "estado", "monto", "fecha") VALUES
- (3, 1, 'efectivo', 'efectivo', 'aprobado', 7000, datetime('now','localtime','-25 minutes'));
 UPDATE "pedido" SET "estado" = 'entregado' WHERE "id_pedido" = 3;
 INSERT INTO "transaccion" ("id_pedido", "id_usuario", "tipo", "resultado", "descripcion", "fecha_hora") VALUES
- (3, 1, 'pago', 'confirmada', 'Cobro en caja al entregar; listo -> entregado', datetime('now','localtime','-25 minutes'));
+ (3, 1, 'cambio_estado', 'confirmada', 'listo -> entregado', datetime('now','localtime','-25 minutes'));
 COMMIT;
 
--- ---------------------------------------------------------------------
--- Pedido UB-0004: por QR, cancelado por el cliente mientras estaba en cola
--- 1 Chocolatina (2000) = 2000; el stock se devuelve al cancelar
--- ---------------------------------------------------------------------
+-- A-003: por QR, el cliente lo cancelo mientras estaba en cola
+-- 1 chocolatina = 2000 (el stock se devuelve)
 BEGIN TRANSACTION;
-INSERT INTO "pedido" ("codigo", "id_cliente", "origen", "total", "fecha_hora") VALUES ('UB-0004', 4, 'qr', 2000, datetime('now','localtime','-20 minutes'));
+INSERT INTO "pedido" ("codigo", "id_cliente", "origen", "total", "fecha_hora") VALUES ('A-003', 4, 'qr', 2000, datetime('now','localtime','-20 minutes'));
 INSERT INTO "detalle_pedido" ("id_pedido", "id_producto", "cantidad", "precio_unitario", "subtotal") VALUES
  (4, 6, 1, 2000, 2000);
 UPDATE "producto" SET "stock_actual" = "stock_actual" - 1 WHERE "id_producto" = 6;

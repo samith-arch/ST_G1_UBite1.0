@@ -1,5 +1,4 @@
-"""Modelos de SQLAlchemy. Cada clase corresponde 1:1 con una tabla del
-modelo relacional (database/schema.sql)."""
+# modelos, uno por cada tabla de database/schema.sql
 from datetime import datetime
 
 from flask_login import UserMixin
@@ -8,7 +7,6 @@ from .database import db
 
 
 def ahora():
-    """Hora local del equipo, igual que datetime('now','localtime') en SQLite."""
     return datetime.now().replace(microsecond=0)
 
 
@@ -38,7 +36,6 @@ class Usuario(UserMixin, db.Model):
     activo = db.Column(db.Boolean, nullable=False, default=True)
 
     def get_id(self):
-        # Flask-Login usa este valor para recordar la sesión
         return str(self.id_usuario)
 
     @property
@@ -96,11 +93,11 @@ class Pedido(db.Model):
         db.CheckConstraint("total >= 0", name="ck_pedido_total"),
     )
 
-    # Cambios de estado permitidos (los valida la lógica de negocio)
+    # estados a los que puede pasar un pedido
     TRANSICIONES = {
         "en_cola": {"en_preparacion", "listo", "cancelado"},
-        "en_preparacion": {"listo"},
-        "listo": {"entregado"},
+        "en_preparacion": {"listo", "cancelado"},
+        "listo": {"entregado", "cancelado"},
         "entregado": set(),
         "cancelado": set(),
     }

@@ -1,16 +1,5 @@
-"""Conexión a SQLite y manejo de transacciones.
-
-Para que las propiedades ACID se cumplan en SQLite se hacen dos cosas:
-
-1. Se desactiva el manejo automático de transacciones del módulo sqlite3 de
-   Python (isolation_level = None) y es SQLAlchemy quien emite el BEGIN.
-2. Las operaciones que escriben (registrar, modificar o cancelar un pedido,
-   cambiar su estado, cobrarlo) se abren con BEGIN IMMEDIATE, que toma el
-   permiso de escritura desde el inicio. Si dos clientes piden la última
-   unidad de un producto al mismo tiempo, el segundo espera a que el primero
-   termine y cuando continúa ya ve el stock actualizado.
-"""
 import os
+import sqlite3
 from contextlib import contextmanager
 from contextvars import ContextVar
 
@@ -22,8 +11,6 @@ BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 DB_PATH = os.path.join(BASE_DIR, "database", "ubite.db")
 
 db = SQLAlchemy()
-
-# Indica si la transacción que se va a abrir es de escritura
 _escritura = ContextVar("escritura", default=False)
 
 
@@ -31,34 +18,39 @@ def get_database_uri():
     return f"sqlite:///{DB_PATH}"
 
 
+def revisar_base():
+    # si el archivo no existe sqlite crea uno vacio, mejor avisar de una vez
+    tablas = 0
+    if os.path.exists(DB_PATH):
+        con = sqlite3.connect(DB_PATH)
+        tablas = con.execute("SELECT count(*) FROM sqlite_master WHERE name = 'pedido'").fetchone()[0]
+        con.close()
+    if not tablas:
+        raise SystemExit("La base de datos no existe o está vacía. "
+                         "Ejecuta primero: python database/crear_bd.py")
+
+
 @event.listens_for(Engine, "connect")
 def _configurar_sqlite(conexion, _registro):
-    # SQLAlchemy se encarga del BEGIN, no el módulo sqlite3
+    # el BEGIN lo manda sqlalchemy y no el modulo sqlite3
     conexion.isolation_level = None
     cursor = conexion.cursor()
-    # SQLite no revisa las llaves foráneas si no se activan en cada conexión
     cursor.execute("PRAGMA foreign_keys = ON")
-    # Si otra transacción está escribiendo, se espera hasta 10 s antes de fallar
     cursor.execute("PRAGMA busy_timeout = 10000")
     cursor.close()
 
 
 @event.listens_for(Engine, "begin")
-def _iniciar_transaccion(conexion):
+def _iniciar(conexion):
+    # las escrituras toman el bloqueo desde el inicio (BEGIN IMMEDIATE),
+    # asi dos pedidos al tiempo no pueden vender la misma unidad
     conexion.exec_driver_sql("BEGIN IMMEDIATE" if _escritura.get() else "BEGIN")
 
 
 @contextmanager
 def transaccion():
-    """Bloque de escritura atómico: todo lo que se haga dentro se confirma
-    junto con COMMIT o se deshace completo con ROLLBACK si algo falla.
-
-        with transaccion():
-            ...  # leer y escribir con db.session
-    """
     marca = _escritura.set(True)
     try:
-        # Se cierra cualquier lectura abierta para que el nuevo BEGIN sea IMMEDIATE
         db.session.rollback()
         yield db.session
         db.session.commit()

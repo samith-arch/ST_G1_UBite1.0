@@ -1,15 +1,25 @@
 {% extends "base.html" %}
 {% block encabezado %}
 <header class="barra">
-  <div class="container contenedor-movil d-flex justify-content-between align-items-center">
-    <a class="marca" href="{{ url_for('cliente.menu') if session.get('cliente') else url_for('cliente.inicio') }}">
+  <div class="container contenedor-cliente d-flex justify-content-between align-items-center">
+    {% if titulo_barra %}
+    <a class="d-md-none barra-titulo" href="{{ atras }}"><i class="bi bi-arrow-left"></i><span class="titulo">{{ titulo_barra }}</span></a>
+    {% endif %}
+    <a class="marca {% if titulo_barra %}d-none d-md-inline-block{% endif %}" href="{{ url_for('cliente.menu') if session.get('cliente') else url_for('cliente.inicio') }}">
       <span class="nombre">UBite</span><span class="sub">Cafetería UMB</span>
     </a>
-    {% if session.get('mis_pedidos') %}
-    <a class="icono-btn" href="{{ url_for('cliente.mis_pedidos') }}" title="Mis pedidos" aria-label="Mis pedidos">
-      <i class="bi bi-clock-history"></i>
-    </a>
+    <nav class="nav-cliente d-none d-md-flex align-items-center gap-4">
+      {% if session.get('cliente') %}
+      <a href="{{ url_for('cliente.menu') }}">Menú</a>
+      <a href="{{ url_for('cliente.mis_pedidos') }}">Mis pedidos</a>
+      <span class="suave"><i class="bi bi-person"></i> {{ session.cliente.nombre.split(' ')[0] }}</span>
+      <a class="btn btn-contorno btn-sm" href="{{ url_for('cliente.carrito') }}"><i class="bi bi-bag"></i> Pedido · <span class="unidades-carrito">{{ unidades_carrito }}</span></a>
+      {% endif %}
+    </nav>
+    {% if session.get('mis_pedidos') and not titulo_barra %}
+    <a class="icono-btn d-md-none" href="{{ url_for('cliente.mis_pedidos') }}" aria-label="Mis pedidos"><i class="bi bi-clock-history"></i></a>
     {% endif %}
   </div>
 </header>
 {% endblock %}
+{% block clase_main %}container contenedor-cliente py-4{% endblock %}

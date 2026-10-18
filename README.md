@@ -127,9 +127,11 @@ producción en esta fase.
 
 ## 11. Riesgos y deuda técnica
 
-- Implementado: flujo del cliente (QR, menú con stock, pedido, seguimiento, modificar y
-  cancelar en cola) y panel del cajero (cola con prioridad, preparación, listo, cobro en
-  caja, pedido presencial e historial del día).
+- Implementado: flujo del cliente (QR, menú con stock, pedido, seguimiento, aviso de
+  pedido listo, modificar y cancelar en cola) y panel del cajero (cola con prioridad,
+  preparación, listo, cobro y entrega, cancelación en caja, pedido presencial cobrado al
+  registrarlo e historial del día). Los pedidos por QR usan el código A-001 y los
+  presenciales P-001.
 - Pendiente: panel del administrador (productos, inventario y reportes), pago en la
   aplicación con pasarela en modo de pruebas y notificaciones Web Push.
 - El aviso al celular se hará con notificaciones web (Web Push); depende de que el cliente

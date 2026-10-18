@@ -1,5 +1,5 @@
-from flask import Blueprint, flash, redirect, render_template, request, url_for
-from flask_login import current_user, login_user, logout_user
+from flask import Blueprint, flash, redirect, render_template, request, session, url_for
+from flask_login import login_user, logout_user
 from werkzeug.security import check_password_hash
 
 from ..models import Usuario
@@ -7,31 +7,26 @@ from ..models import Usuario
 bp = Blueprint("auth", __name__, url_prefix="/personal")
 
 
-def _inicio_segun_rol(usuario):
-    # El panel del administrador se agrega en la siguiente etapa;
-    # por ahora los dos roles entran a la cola de pedidos
-    return url_for("caja.cola")
-
-
 @bp.route("/login", methods=["GET", "POST"])
 def login():
-    if current_user.is_authenticated:
-        return redirect(_inicio_segun_rol(current_user))
-    if request.method == "POST":
-        usuario = Usuario.query.filter_by(username=request.form.get("usuario", "").strip()).first()
-        if usuario and usuario.activo and check_password_hash(usuario.password_hash,
-                                                              request.form.get("contrasena", "")):
-            login_user(usuario)
-            destino = request.args.get("next", "")
-            # Solo se aceptan rutas internas, para no redirigir a otro sitio
-            if not destino.startswith("/") or destino.startswith("//"):
-                destino = _inicio_segun_rol(usuario)
-            return redirect(destino)
+    if request.method == "GET":
+        # cada vez que se abre el login se pide usuario y contraseña de nuevo
+        logout_user()
+        return render_template("auth/login.html")
+
+    usuario = Usuario.query.filter_by(username=request.form.get("usuario", "").strip()).first()
+    clave = request.form.get("contrasena", "")
+    if not usuario or not usuario.activo or not check_password_hash(usuario.password_hash, clave):
         flash("Usuario o contraseña incorrectos.")
-    return render_template("auth/login.html")
+        return render_template("auth/login.html"), 401
+
+    session.permanent = True
+    login_user(usuario)
+    return redirect(url_for("caja.cola"))
 
 
 @bp.route("/salir")
 def salir():
     logout_user()
+    session.permanent = False
     return redirect(url_for("auth.login"))

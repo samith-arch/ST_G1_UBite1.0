@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block titulo_pagina %}¡Tu pedido está listo!{% endblock %}
+{% block contenido %}
+<div class="columna-movil text-center pt-5">
+  <div class="campana mx-auto mb-3"><span><i class="bi bi-bell"></i></span></div>
+  <p class="etiqueta mb-2">Pedido {{ pedido.codigo }}</p>
+  <h1 class="titulo display-5 mb-3">¡Tu pedido está listo!</h1>
+  <p class="suave mb-3">
+    {% if pedido.pagado %}Acércate a la caja con tu código. Ya pagaste, así que te lo entregan de una.
+    {% else %}Acércate a la caja con tu código, pagas $ {{ pedido.total|pesos }} y lo recoges.{% endif %}
+  </p>
+  <span class="chip chip-oscuro mb-5">Listo</span>
+  <a class="btn btn-ubite w-100 mt-5" href="{{ url_for('cliente.seguimiento', codigo=pedido.codigo, ver=1) }}">Entendido</a>
+</div>
+{% endblock %}
