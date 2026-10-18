@@ -1,0 +1,84 @@
+{% extends "caja/_base.html" %}
+{% block titulo_pagina %}Pedidos en curso{% endblock %}
+{% set titulos = {"en_cola": "En cola", "en_preparacion": "En preparación", "listo": "Listos para recoger"} %}
+
+{% macro tarjeta(p) %}
+<div class="tarjeta-pedido {% if p.pagado %}prioridad{% endif %}">
+  <div class="d-flex justify-content-between align-items-start">
+    <span class="cod">{{ p.codigo }}</span>
+    {% if p.estado == "listo" %}<span class="chip chip-oscuro">Listo</span>
+    {% elif p.pagado %}<span class="chip">Pagado</span>
+    {% else %}<span class="chip chip-punteado">Pendiente de pago</span>{% endif %}
+  </div>
+  <div class="fw-bold mt-1">{{ p.cliente.nombre }}</div>
+  <div class="small suave">{% for d in p.detalles %}{{ d.cantidad }} {{ d.producto.nombre }}{% if not loop.last %} · {% endif %}{% endfor %}</div>
+  <div class="d-flex justify-content-between align-items-center small mt-2 mb-2">
+    <span class="suave">
+      {% if p.pagado %}<i class="bi bi-phone"></i> Pagado en la app · prioridad
+      {% else %}<i class="bi bi-cash-coin"></i> Paga en caja al recoger{% endif %}
+      · {{ "QR" if p.origen == "qr" else "Presencial" }} · {{ p.fecha_hora.strftime('%I:%M %p').lower() }}
+    </span>
+    <span class="mono fs-6">{{ p.total|pesos }}</span>
+  </div>
+  <form method="post" action="{{ url_for('caja.cambiar_estado', id_pedido=p.id_pedido) }}" class="d-flex gap-2">
+    <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+    <input type="hidden" name="codigo" value="{{ p.codigo }}">
+    {% if p.estado == "en_cola" %}
+      <button class="btn btn-ubite flex-fill" name="accion" value="preparar">Iniciar preparación</button>
+      {% if not p.pagado %}
+      <button class="btn btn-suave" name="accion" value="cancelar" onclick="return confirm('¿Cancelar {{ p.codigo }}? El stock se devuelve.')">Cancelar</button>
+      {% endif %}
+    {% elif p.estado == "en_preparacion" %}
+      <button class="btn btn-ubite flex-fill" name="accion" value="listo">Marcar como listo</button>
+    {% elif p.estado == "listo" %}
+      {% if p.pagado %}
+      <button class="btn btn-contorno flex-fill" name="accion" value="entregar">Marcar entregado</button>
+      {% else %}
+      <button class="btn btn-ubite flex-fill" name="accion" value="entregar" onclick="return confirm('Cobrar $ {{ p.total|pesos }} en efectivo y entregar {{ p.codigo }}?')">Cobrar y entregar</button>
+      {% endif %}
+    {% endif %}
+  </form>
+</div>
+{% endmacro %}
+
+{% block panel %}
+<div class="d-flex flex-wrap justify-content-between align-items-end gap-3 mb-4">
+  <div>
+    <p class="etiqueta mb-1" id="fecha-hoy"></p>
+    <h1 class="titulo display-5 mb-0">Pedidos de hoy</h1>
+  </div>
+  <div class="d-flex gap-3 align-items-center">
+    <form method="get" class="d-flex align-items-center gap-2" style="border-bottom:1px solid var(--tinta)">
+      <i class="bi bi-search suave"></i>
+      <input class="form-control linea-campo border-0" name="buscar" value="{{ buscar }}" placeholder="Buscar código">
+    </form>
+    <a class="btn btn-contorno" href="{{ url_for('caja.presencial') }}">+ Pedido presencial</a>
+  </div>
+</div>
+
+{% if buscar %}
+<div class="mb-4" style="max-width:420px">
+  {% if encontrado %}{{ tarjeta(encontrado) }}
+    {% if encontrado.estado in ("entregado", "cancelado") %}<p class="small suave">Este pedido está {{ ESTADOS[encontrado.estado]|lower }}.</p>{% endif %}
+  {% else %}<p class="suave">No hay un pedido con el código {{ buscar }}.</p>{% endif %}
+  <a class="small" href="{{ url_for('caja.cola') }}">Quitar búsqueda</a>
+</div>
+{% endif %}
+
+<div class="row g-4" id="tablero">
+  {% for estado, pedidos in columnas.items() %}
+  <div class="col-lg-4 columna-cola">
+    <h2 class="etiqueta"><span>{{ titulos[estado] }}</span><span class="mono">{{ pedidos|length }}</span></h2>
+    {% for p in pedidos %}{{ tarjeta(p) }}{% else %}<p class="small suave">Sin pedidos.</p>{% endfor %}
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+  // Fecha del encabezado y recarga cada 15 s para ver los pedidos nuevos
+  document.getElementById("fecha-hoy").textContent =
+    new Date().toLocaleDateString("es-CO", { weekday: "long", day: "numeric", month: "long" });
+  setInterval(() => { if (!document.querySelector("input:focus")) location.reload(); }, 15000);
+</script>
+{% endblock %}

@@ -1,0 +1,17 @@
+{% extends "cliente/_base.html" %}
+{% block titulo_pagina %}Mis pedidos{% endblock %}
+{% block contenido %}
+<h1 class="titulo display-6 mb-4">Mis pedidos</h1>
+{% for p in pedidos %}
+<a class="tarjeta d-flex justify-content-between align-items-center mb-2 text-decoration-none text-reset" href="{{ url_for('cliente.seguimiento', codigo=p.codigo) }}">
+  <div>
+    <div class="mono fs-5">{{ p.codigo }}</div>
+    <div class="small suave">{{ p.fecha_hora.strftime('%d/%m %I:%M %p').lower() }} · $ {{ p.total|pesos }}</div>
+  </div>
+  <span class="chip {% if p.estado == 'listo' %}chip-oscuro{% endif %}">{{ ESTADOS[p.estado] }}</span>
+</a>
+{% else %}
+<p class="suave">Todavía no has hecho pedidos desde este celular.</p>
+{% endfor %}
+<a class="btn btn-contorno w-100 mt-3" href="{{ url_for('cliente.menu') }}">Ir al menú</a>
+{% endblock %}

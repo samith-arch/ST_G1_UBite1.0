@@ -1,0 +1,31 @@
+{% extends "caja/_base.html" %}
+{% block titulo_pagina %}Historial{% endblock %}
+{% block panel %}
+<p class="etiqueta mb-1">Hoy</p>
+<h1 class="titulo display-5 mb-4">Historial de pedidos</h1>
+<div class="row g-3 mb-4">
+  <div class="col-sm-4"><div class="tarjeta"><p class="etiqueta mb-1">Pedidos</p><div class="mono fs-3">{{ pedidos|length }}</div></div></div>
+  <div class="col-sm-4"><div class="tarjeta"><p class="etiqueta mb-1">Entregados</p><div class="mono fs-3">{{ entregados }}</div></div></div>
+  <div class="col-sm-4"><div class="tarjeta"><p class="etiqueta mb-1">Vendido</p><div class="mono fs-3">$ {{ vendido|pesos }}</div></div></div>
+</div>
+<div class="table-responsive">
+<table class="table tabla-ubite align-middle">
+  <thead><tr><th>Código</th><th>Hora</th><th>Cliente</th><th>Origen</th><th>Pago</th><th>Estado</th><th class="text-end">Total</th></tr></thead>
+  <tbody>
+  {% for p in pedidos %}
+  <tr>
+    <td class="mono">{{ p.codigo }}</td>
+    <td>{{ p.fecha_hora.strftime('%I:%M %p').lower() }}</td>
+    <td>{{ p.cliente.nombre }}</td>
+    <td>{{ "QR" if p.origen == "qr" else "Presencial" }}</td>
+    <td>{% set pago = p.pagos|selectattr("estado", "equalto", "aprobado")|first %}{{ ("App" if pago.metodo == "app" else "Efectivo") if pago else "Pendiente" }}</td>
+    <td><span class="chip">{{ ESTADOS[p.estado] }}</span></td>
+    <td class="text-end mono">{{ p.total|pesos }}</td>
+  </tr>
+  {% else %}
+  <tr><td colspan="7" class="suave">Todavía no hay pedidos hoy.</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+</div>
+{% endblock %}

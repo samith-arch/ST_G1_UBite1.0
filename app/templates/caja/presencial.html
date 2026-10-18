@@ -1,0 +1,49 @@
+{% extends "caja/_base.html" %}
+{% block titulo_pagina %}Pedido presencial{% endblock %}
+{% block panel %}
+<p class="etiqueta mb-1">Cliente sin QR</p>
+<h1 class="titulo display-5 mb-4">Registrar pedido en caja</h1>
+
+<form method="post" class="row g-4">
+  <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+  <div class="col-lg-4">
+    <div class="tarjeta">
+      <label class="etiqueta" for="nombre">Nombre del cliente</label>
+      <input class="form-control linea-campo mb-4" id="nombre" name="nombre" maxlength="60" value="{{ form.get('nombre', '') }}" required>
+      <label class="etiqueta" for="telefono">Celular</label>
+      <input class="form-control linea-campo mb-4" id="telefono" name="telefono" inputmode="numeric" maxlength="12" value="{{ form.get('telefono', '') }}" required>
+      <div class="lineas-total"><div class="fila total"><span class="etiqueta">Total</span><span class="mono fs-4">$ <span id="total">0</span></span></div></div>
+      <button class="btn btn-ubite w-100 mt-3" type="submit">Enviar a la cola</button>
+      <p class="small suave mt-2 mb-0">Se cobra en caja al entregar, igual que los pedidos por QR.</p>
+    </div>
+  </div>
+  <div class="col-lg-8">
+    {% for categoria, productos in menu.items() %}
+    <h2 class="etiqueta mt-2 mb-0">{{ categoria }}</h2>
+    {% for p in productos %}
+    <div class="fila-menu {% if p.stock_actual == 0 %}agotado{% endif %}">
+      <div class="info">
+        <div class="nombre-prod"><span>{{ p.nombre }}</span><span class="puntos"></span><span class="precio">{{ p.precio|pesos }}</span></div>
+        <div class="detalle">{% if p.stock_actual == 0 %}Agotado{% else %}quedan {{ p.stock_actual }}{% endif %}</div>
+      </div>
+      <input class="form-control mono text-center cantidad" style="width:72px" type="number" min="0" max="{{ p.stock_actual }}"
+             name="cant_{{ p.id_producto }}" value="{{ form.get('cant_' ~ p.id_producto, 0) }}" data-precio="{{ p.precio }}"
+             {% if p.stock_actual == 0 %}disabled{% endif %} aria-label="Cantidad de {{ p.nombre }}">
+    </div>
+    {% endfor %}
+    {% endfor %}
+  </div>
+</form>
+{% endblock %}
+{% block scripts %}
+<script>
+  const campos = document.querySelectorAll(".cantidad");
+  function total() {
+    let t = 0;
+    campos.forEach((c) => { t += (Number(c.value) || 0) * Number(c.dataset.precio); });
+    document.getElementById("total").textContent = t.toLocaleString("es-CO");
+  }
+  campos.forEach((c) => c.addEventListener("input", total));
+  total();
+</script>
+{% endblock %}

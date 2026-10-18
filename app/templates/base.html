@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="csrf-token" content="{{ csrf_token() }}">
+  <title>{% block titulo_pagina %}UBite{% endblock %} · Cafetería UMB</title>
+  <link href="{{ url_for('static', filename='vendor/fuentes/fuentes.css') }}" rel="stylesheet">
+  <link href="{{ url_for('static', filename='vendor/bootstrap/bootstrap.min.css') }}" rel="stylesheet">
+  <link href="{{ url_for('static', filename='vendor/bootstrap-icons/bootstrap-icons.min.css') }}" rel="stylesheet">
+  <link href="{{ url_for('static', filename='css/ubite.css') }}" rel="stylesheet">
+</head>
+<body>
+  {% block encabezado %}{% endblock %}
+  <main class="{% block clase_main %}container contenedor-movil py-4{% endblock %}">
+    {% block contenido %}{% endblock %}
+  </main>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

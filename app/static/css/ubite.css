@@ -1,0 +1,122 @@
+/* UBite - estilos sobre Bootstrap 5.3
+   Paleta tomada de los mockups de Figma (papel crema y tinta azul pizarra) */
+:root {
+  --papel: #F1E9DA;
+  --papel-claro: #F8F3EA;
+  --lavado: #E3DEDA;
+  --linea: #D4C8B3;
+  --tinta: #575D82;
+  --tinta-oscura: #33374F;
+  --tinta-suave: #5E6176;
+  --alerta: #8A3B2E;
+
+  --f-titulo: "Playfair Display", Georgia, serif;
+  --f-etiqueta: "Josefin Sans", Arial, sans-serif;
+  --f-texto: "Karla", Arial, sans-serif;
+  --f-mono: "DM Mono", "Courier New", monospace;
+
+  --bs-body-bg: var(--papel);
+  --bs-body-color: var(--tinta-oscura);
+  --bs-body-font-family: var(--f-texto);
+  --bs-border-color: var(--linea);
+  --bs-link-color-rgb: 51, 55, 79;
+  --bs-link-hover-color-rgb: 87, 93, 130;
+}
+
+html { background: var(--papel); }
+body { min-height: 100vh; background: var(--papel); color: var(--tinta-oscura); font-family: var(--f-texto); }
+
+/* ---------- Tipografía ---------- */
+.titulo { font-family: var(--f-titulo); font-style: italic; font-weight: 400; color: var(--tinta-oscura); line-height: 1.1; }
+.etiqueta { font-family: var(--f-etiqueta); font-weight: 600; font-size: .72rem; letter-spacing: .18em; text-transform: uppercase; color: var(--tinta-suave); }
+.mono { font-family: var(--f-mono); }
+.suave { color: var(--tinta-suave); }
+.codigo-grande { font-family: var(--f-mono); font-size: clamp(2.6rem, 9vw, 3.4rem); letter-spacing: .02em; color: var(--tinta-oscura); line-height: 1; }
+
+/* ---------- Encabezado ---------- */
+.barra { border-bottom: 1px solid var(--linea); padding: 14px 0; background: var(--papel); }
+.marca { text-decoration: none; display: inline-block; line-height: 1; }
+.marca .nombre { font-family: var(--f-titulo); font-style: italic; font-size: 1.7rem; color: var(--tinta); }
+.marca .sub { font-family: var(--f-etiqueta); font-weight: 600; font-size: .62rem; letter-spacing: .16em; text-transform: uppercase; color: var(--tinta-suave); display: block; margin-top: 2px; }
+.barra .icono-btn { color: var(--tinta); font-size: 1.35rem; text-decoration: none; }
+.nav-personal a { font-size: .92rem; color: var(--tinta-suave); text-decoration: none; padding-bottom: 2px; }
+.nav-personal a.activo, .nav-personal a:hover { color: var(--tinta-oscura); border-bottom: 1px solid var(--tinta-oscura); }
+
+.contenedor-movil { max-width: 560px; }
+
+/* ---------- Botones ---------- */
+.btn { font-family: var(--f-etiqueta); font-weight: 600; letter-spacing: .1em; border-radius: 4px; padding: .7rem 1.1rem; }
+.btn-ubite { background: var(--tinta); border: 1px solid var(--tinta); color: var(--papel-claro); }
+.btn-ubite:hover, .btn-ubite:focus { background: var(--tinta-oscura); border-color: var(--tinta-oscura); color: #fff; }
+.btn-contorno { background: transparent; border: 1px solid var(--tinta); color: var(--tinta); }
+.btn-contorno:hover { background: var(--papel-claro); color: var(--tinta-oscura); }
+.btn-suave { background: var(--lavado); border: 1px solid var(--lavado); color: var(--tinta-oscura); }
+.btn-suave:hover { background: var(--linea); }
+.btn-mas { width: 34px; height: 34px; padding: 0; display: inline-flex; align-items: center; justify-content: center; border: 1px solid var(--tinta); color: var(--tinta); background: transparent; border-radius: 4px; font-size: 1.1rem; }
+.btn-mas:hover { background: var(--tinta); color: var(--papel-claro); }
+.btn-mas:disabled { border-color: var(--linea); color: var(--linea); background: transparent; }
+.btn:focus-visible, .btn-mas:focus-visible, .form-control:focus { box-shadow: 0 0 0 3px rgba(87, 93, 130, .3); }
+
+/* ---------- Formularios ---------- */
+.form-control.linea-campo { background: transparent; border: 0; border-bottom: 1px solid var(--tinta); border-radius: 0; padding-left: 0; font-size: 1.05rem; color: var(--tinta-oscura); }
+.form-control.linea-campo:focus { background: transparent; border-bottom-color: var(--tinta-oscura); box-shadow: none; outline: 2px solid transparent; }
+.form-control::placeholder { color: var(--tinta-suave); opacity: .8; }
+.error-campo { color: var(--alerta); font-size: .85rem; margin-top: 4px; }
+.form-check-input:checked { background-color: var(--tinta); border-color: var(--tinta); }
+
+/* ---------- Menú ---------- */
+.filtros a { color: var(--tinta-suave); text-decoration: none; margin-right: 14px; font-size: .98rem; }
+.filtros a.activo { color: var(--tinta-oscura); border-bottom: 1px solid var(--tinta-oscura); }
+.fila-menu { display: flex; align-items: center; gap: 14px; padding: 14px 0; border-bottom: 1px solid var(--linea); }
+.fila-menu .icono { width: 44px; height: 44px; border: 1px solid var(--tinta); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--tinta); flex: none; font-size: 1.15rem; }
+.fila-menu .info { flex: 1; min-width: 0; }
+.fila-menu .nombre-prod { font-weight: 700; display: flex; align-items: baseline; gap: 6px; }
+.fila-menu .nombre-prod .puntos { flex: 1; border-bottom: 1px dotted var(--tinta-suave); transform: translateY(-4px); min-width: 12px; }
+.fila-menu .precio { font-family: var(--f-mono); font-weight: 500; }
+.fila-menu .detalle { font-size: .85rem; color: var(--tinta-suave); }
+.fila-menu.agotado { opacity: .45; }
+.contador { display: flex; align-items: center; gap: 8px; }
+.contador .cant { font-family: var(--f-mono); min-width: 18px; text-align: center; }
+
+.barra-pedido { position: sticky; bottom: 12px; z-index: 10; }
+.barra-pedido a { display: flex; gap: 12px; justify-content: space-between; align-items: center; background: var(--tinta); color: var(--papel-claro); text-decoration: none; padding: 16px 18px; border-radius: 6px; font-family: var(--f-mono); }
+.barra-pedido a .accion { font-family: var(--f-etiqueta); font-weight: 600; letter-spacing: .12em; font-size: .85rem; }
+.barra-pedido.oculta { display: none; }
+
+/* ---------- Tarjetas ---------- */
+.tarjeta { background: var(--papel-claro); border: 1px solid var(--linea); border-radius: 6px; padding: 16px 18px; }
+.chip { display: inline-block; font-family: var(--f-etiqueta); font-weight: 600; font-size: .66rem; letter-spacing: .14em; text-transform: uppercase; background: var(--lavado); color: var(--tinta-oscura); padding: 4px 8px; border-radius: 3px; }
+.chip-oscuro { background: var(--tinta); color: var(--papel-claro); }
+.chip-punteado { background: transparent; border: 1px dashed var(--tinta-suave); color: var(--tinta-suave); }
+.aviso { background: var(--lavado); border-radius: 6px; padding: 14px 16px; font-weight: 600; }
+.aviso-error { background: #F3E1DC; color: var(--alerta); border-radius: 6px; padding: 12px 16px; }
+
+.lineas-total .fila { display: flex; justify-content: space-between; padding: 4px 0; }
+.lineas-total .fila .mono { font-weight: 500; }
+.lineas-total .total { border-top: 1px dashed var(--tinta-suave); margin-top: 8px; padding-top: 12px; }
+
+/* Línea de tiempo del pedido */
+.pasos { list-style: none; padding: 0; margin: 0; }
+.pasos li { position: relative; padding: 0 0 18px 34px; }
+.pasos li::before { content: ""; position: absolute; left: 10px; top: 22px; bottom: -2px; width: 1px; background: var(--tinta); }
+.pasos li:last-child::before { display: none; }
+.pasos .punto { position: absolute; left: 0; top: 1px; width: 21px; height: 21px; border-radius: 50%; border: 1.5px solid var(--linea); background: var(--papel-claro); display: flex; align-items: center; justify-content: center; font-size: .7rem; color: var(--papel-claro); }
+.pasos .hecho .punto { background: var(--tinta); border-color: var(--tinta); }
+.pasos .actual .punto { border-color: var(--tinta); }
+.pasos .actual .punto::after { content: ""; width: 9px; height: 9px; border-radius: 50%; background: var(--tinta); }
+.pasos .pendiente { color: var(--tinta-suave); }
+.pasos .pendiente::before { background: var(--linea); }
+.pasos small { display: block; color: var(--tinta-suave); }
+
+/* ---------- Panel del personal ---------- */
+.columna-cola h2 { border-bottom: 1.5px solid var(--tinta-suave); padding-bottom: 8px; display: flex; justify-content: space-between; }
+.tarjeta-pedido { background: var(--papel-claro); border: 1px solid var(--linea); border-radius: 6px; padding: 14px 16px; margin-bottom: 12px; }
+.tarjeta-pedido.prioridad { border-left: 3px solid var(--tinta); }
+.tarjeta-pedido .cod { font-family: var(--f-mono); font-size: 1.35rem; }
+.mensaje-flash { background: var(--lavado); border-radius: 6px; padding: 10px 14px; margin-bottom: 10px; }
+.mensaje-flash.error { background: #F3E1DC; color: var(--alerta); }
+.tabla-ubite { --bs-table-bg: transparent; --bs-table-color: var(--tinta-oscura); }
+.tabla-ubite th { font-family: var(--f-etiqueta); font-size: .7rem; letter-spacing: .14em; text-transform: uppercase; color: var(--tinta-suave); font-weight: 600; }
+
+.ilustracion { color: var(--tinta); max-width: 100%; }
+.oculto { display: none !important; }

@@ -1,0 +1,64 @@
+{% extends "cliente/_base.html" %}
+{% block titulo_pagina %}Pedido {{ pedido.codigo }}{% endblock %}
+{% set orden = ["en_cola", "en_preparacion", "listo", "entregado"] %}
+{% set i = orden.index(pedido.estado) if pedido.estado in orden else -1 %}
+{% block contenido %}
+<div id="seguimiento" data-url="{{ url_for('cliente.estado', codigo=pedido.codigo) }}" data-estado="{{ pedido.estado }}" data-posicion="{{ posicion }}">
+  <p class="etiqueta mb-1">Código de pedido</p>
+  <div class="codigo-grande mb-3">{{ pedido.codigo }}</div>
+  <div class="mb-3 d-flex gap-2 flex-wrap">
+    <span class="chip">{{ "Pagado" if pedido.pagado else "Pagas en caja" }}</span>
+    <span class="chip {% if pedido.estado == 'listo' %}chip-oscuro{% endif %}">{{ ESTADOS[pedido.estado] }}</span>
+  </div>
+
+  {% if pedido.estado == "cancelado" %}
+  <div class="aviso mb-3">Cancelaste este pedido. El inventario ya se devolvió.</div>
+  {% elif pedido.estado == "listo" %}
+  <div class="aviso mb-3"><i class="bi bi-bell me-1"></i>
+    {% if pedido.pagado %}¡Tu pedido está listo! Ya pagaste, solo acércate a recogerlo.
+    {% else %}¡Tu pedido está listo! Acércate a la caja, di tu código y paga para recogerlo.{% endif %}
+  </div>
+  {% elif pedido.estado == "en_cola" %}
+  <div class="aviso mb-3 fw-normal">
+    {% if posicion == 0 %}Eres el siguiente en la cola.{% else %}Hay {{ posicion }} pedido(s) antes que el tuyo.{% endif %}
+    Te avisamos en esta página cuando esté listo.
+  </div>
+  {% endif %}
+
+  {% if pedido.estado != "cancelado" %}
+  <div class="tarjeta mb-3">
+    <ul class="pasos">
+      <li class="{{ 'hecho' if i > 0 else 'actual' }}"><span class="punto">{% if i > 0 %}<i class="bi bi-check"></i>{% endif %}</span>
+        <strong>Pedido en cola</strong><small>{{ pedido.fecha_hora.strftime('%I:%M %p').lower() }}</small></li>
+      <li class="{{ 'hecho' if i > 1 else ('actual' if i == 1 else 'pendiente') }}"><span class="punto">{% if i > 1 %}<i class="bi bi-check"></i>{% endif %}</span>
+        <strong>En preparación</strong><small>Estamos alistando tu pedido</small></li>
+      <li class="{{ 'hecho' if i > 2 else ('actual' if i == 2 else 'pendiente') }}"><span class="punto">{% if i > 2 %}<i class="bi bi-check"></i>{% endif %}</span>
+        <strong>Listo para recoger</strong><small>{{ "Solo recógelo" if pedido.pagado else "Pagas en caja al recogerlo" }}</small></li>
+      <li class="{{ 'hecho' if i == 3 else 'pendiente' }}"><span class="punto">{% if i == 3 %}<i class="bi bi-check"></i>{% endif %}</span>
+        <strong>Entregado</strong></li>
+    </ul>
+  </div>
+  {% endif %}
+
+  <div class="tarjeta lineas-total mb-4">
+    {% for d in pedido.detalles %}
+    <div class="fila"><span>{{ d.producto.nombre }} ×{{ d.cantidad }}</span><span class="mono">{{ d.subtotal|pesos }}</span></div>
+    {% endfor %}
+    <div class="fila total"><span class="etiqueta">{{ "Total pagado" if pedido.pagado else "Total a pagar" }}</span><span class="mono fs-4">$ {{ pedido.total|pesos }}</span></div>
+  </div>
+
+  {% if pedido.estado == "en_cola" and not pedido.pagado %}
+  <div class="d-flex gap-2">
+    <a class="btn btn-contorno flex-fill" href="{{ url_for('cliente.modificar', codigo=pedido.codigo) }}">Modificar</a>
+    <form method="post" action="{{ url_for('cliente.cancelar', codigo=pedido.codigo) }}" class="flex-fill"
+          onsubmit="return confirm('¿Seguro que quieres cancelar el pedido {{ pedido.codigo }}?')">
+      <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+      <button class="btn btn-suave w-100">Cancelar pedido</button>
+    </form>
+  </div>
+  {% elif pedido.estado in ("entregado", "cancelado") %}
+  <a class="btn btn-ubite w-100" href="{{ url_for('cliente.menu') }}">Hacer otro pedido</a>
+  {% endif %}
+</div>
+{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', filename='js/seguimiento.js') }}"></script>{% endblock %}

@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block encabezado %}
+<header class="barra">
+  <div class="container contenedor-movil d-flex justify-content-between align-items-center">
+    <a class="marca" href="{{ url_for('cliente.menu') if session.get('cliente') else url_for('cliente.inicio') }}">
+      <span class="nombre">UBite</span><span class="sub">Cafetería UMB</span>
+    </a>
+    {% if session.get('mis_pedidos') %}
+    <a class="icono-btn" href="{{ url_for('cliente.mis_pedidos') }}" title="Mis pedidos" aria-label="Mis pedidos">
+      <i class="bi bi-clock-history"></i>
+    </a>
+    {% endif %}
+  </div>
+</header>
+{% endblock %}

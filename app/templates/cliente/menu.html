@@ -1,0 +1,56 @@
+{% extends "cliente/_base.html" %}
+{% block titulo_pagina %}Menú{% endblock %}
+{% set iconos = {"Bebidas": "bi-cup-straw", "Snacks": "bi-bag", "Comidas": "bi-egg-fried"} %}
+{% block contenido %}
+<div class="d-flex justify-content-between align-items-baseline">
+  <p class="etiqueta mb-1">Hola, {{ session.cliente.nombre.split(' ')[0] }}</p>
+  <a class="small suave" href="{{ url_for('cliente.salir') }}">No soy yo</a>
+</div>
+<h1 class="titulo display-6 mb-3">¿Qué se te antoja hoy?</h1>
+
+<label class="etiqueta" for="buscar">Buscar</label>
+<div class="d-flex align-items-center gap-2 mb-3" style="border-bottom:1px solid var(--tinta)">
+  <i class="bi bi-search suave"></i>
+  <input id="buscar" class="form-control linea-campo border-0" placeholder="Jugo, empanada, papas…" autocomplete="off">
+</div>
+
+<nav class="filtros mb-2" aria-label="Categorías">
+  <a href="#" class="activo" data-filtro="">Todo</a>
+  {% for categoria in menu %}<a href="#" data-filtro="{{ categoria }}">{{ categoria }}</a>{% endfor %}
+</nav>
+
+{% for categoria, productos in menu.items() %}
+<section class="categoria mt-3" data-categoria="{{ categoria }}">
+  <h2 class="etiqueta mb-0">{{ categoria }}</h2>
+  {% for p in productos %}
+  {% set cant = carrito.get(p.id_producto|string, 0) %}
+  <div class="fila-menu {% if p.stock_actual == 0 %}agotado{% endif %}" data-nombre="{{ p.nombre|lower }}">
+    <span class="icono"><i class="bi {{ iconos.get(categoria, 'bi-basket') }}"></i></span>
+    <div class="info">
+      <div class="nombre-prod"><span>{{ p.nombre }}</span><span class="puntos"></span><span class="precio">{{ p.precio|pesos }}</span></div>
+      <div class="detalle">
+        {% if p.stock_actual == 0 %}Agotado por hoy{% else %}{{ p.descripcion or '' }} · quedan <span class="stock">{{ p.stock_actual }}</span>{% endif %}
+      </div>
+    </div>
+    <form method="post" action="{{ url_for('cliente.carrito_cambiar') }}" class="contador" data-id="{{ p.id_producto }}">
+      <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+      <input type="hidden" name="id_producto" value="{{ p.id_producto }}">
+      <button class="btn-mas menos {% if not cant %}oculto{% endif %}" name="delta" value="-1" aria-label="Quitar {{ p.nombre }}"><i class="bi bi-dash"></i></button>
+      <span class="cant {% if not cant %}oculto{% endif %}">{{ cant }}</span>
+      <button class="btn-mas mas" name="delta" value="1" aria-label="Agregar {{ p.nombre }}" {% if p.stock_actual == 0 or cant >= p.stock_actual %}disabled{% endif %} data-stock="{{ p.stock_actual }}"><i class="bi bi-plus"></i></button>
+    </form>
+  </div>
+  {% endfor %}
+</section>
+{% endfor %}
+
+<div id="aviso" class="aviso-error mt-3 oculto" role="status"></div>
+
+<div class="barra-pedido mt-4 {% if not unidades %}oculta{% endif %}" id="barra-pedido">
+  <a href="{{ url_for('cliente.carrito') }}">
+    <span><span id="unidades">{{ unidades }}</span> producto(s) · $ <span id="total">{{ total|pesos }}</span></span>
+    <span class="accion">Ver pedido <i class="bi bi-chevron-right"></i></span>
+  </a>
+</div>
+{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', filename='js/menu.js') }}"></script>{% endblock %}

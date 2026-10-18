@@ -15,7 +15,7 @@ notificación al teléfono del usuario cuando el pedido ya esté listo.
 ### 1.1 Requerimientos funcionales
 
 - Escanear un código QR ubicado en la cafetería
-- Diligenciar un formulario con datos como: nombre, teléfono o correo y el pedido
+- Diligenciar un formulario con datos como: nombre, teléfono y el pedido
 - Enviar el pedido al sistema para procesarlo
 - Recibir una notificación en el teléfono cuando el pedido esté listo
 - Consultar el historial de pedidos
@@ -25,8 +25,8 @@ notificación al teléfono del usuario cuando el pedido ya esté listo.
 
 Diseñar un sistema transaccional que permita a los estudiantes y al personal de una
 cafetería universitaria realizar pedidos mediante un código QR, garantizando el registro
-consistente y seguro durante cada transacción, el control automático del inventario de
-insumos y la reducción de los tiempos de espera en el punto físico.
+consistente y seguro durante cada transacción, el control automático del stock de los
+productos y la reducción de los tiempos de espera en el punto físico.
 
 ### 1.3 Stakeholders
 
@@ -49,7 +49,7 @@ insumos y la reducción de los tiempos de espera en el punto físico.
 
 El sistema conecta tres tipos de actores: el cliente (vía navegador, al escanear el QR),
 el cajero/administrador (vía interfaz interna) y la base de datos que centraliza clientes,
-productos, insumos y pedidos.
+productos, pedidos, pagos, transacciones y notificaciones.
 
 ## 4. Estrategia de solución
 
@@ -59,24 +59,36 @@ Seguridad que valida cada operación según el rol del usuario (cliente, cajero,
 administrador).
 
 ## 5. Vista de bloques de construcción
+```text
 ubite/
 ├── app/
-│ ├── init.py # factory de la aplicación Flask
-│ ├── models.py # modelos SQLAlchemy (refleja el modelo relacional)
-│ ├── database.py # configuración de conexión a SQLite
-│ └── routes/ # rutas del sistema (se implementan en fases siguientes)
+│   ├── __init__.py          # crea la aplicación Flask, sesión, CSRF y blueprints
+│   ├── database.py          # conexión a SQLite y transacciones (BEGIN IMMEDIATE, commit/rollback)
+│   ├── models.py            # modelos SQLAlchemy (1:1 con el modelo relacional)
+│   ├── servicios.py         # lógica de negocio y coordinación de transacciones
+│   ├── routes/
+│   │   ├── __init__.py      # control de acceso por rol
+│   │   ├── cliente.py       # QR, menú, carrito, pedido, seguimiento, modificar y cancelar
+│   │   ├── auth.py          # inicio de sesión del personal (Flask-Login)
+│   │   └── caja.py          # cola de pedidos, cobro en caja, pedido presencial, historial
+│   ├── templates/           # vistas HTML (Jinja2 + Bootstrap)
+│   └── static/              # CSS, JavaScript, Bootstrap, íconos y fuentes locales
 ├── database/
-│ ├── ubite.sql # script exportado desde DB Browser for SQLite
-│ └── ubite.db # archivo de base de datos
+│   ├── schema.sql           # creación de las 9 tablas (PK, FK, CHECK, UNIQUE, índices)
+│   ├── datos_prueba.sql     # datos iniciales de prueba
+│   ├── crear_bd.py          # crea ubite.db y la exporta a ubite.db.sql
+│   ├── ubite.db.sql         # exportación de la base (DB Browser for SQLite)
+│   └── ubite.db             # archivo de base de datos
 ├── requirements.txt
-├── run.py # punto de entrada de la aplicación
+├── run.py                   # punto de entrada de la aplicación
 └── README.md
+```
 
 
 ## 6. Vista de tiempo de ejecución
 
 Flujo de una transacción: el cliente interactúa con la interfaz web → la solicitud pasa
-a la lógica de negocio, que valida disponibilidad de insumos y calcula el total → se
+a la lógica de negocio, que valida disponibilidad de productos y calcula el total → se
 delega el registro al módulo de gestión de transacciones (ACID) → este usa la capa de
 acceso a datos para leer/escribir en la base de datos → la respuesta (confirmación, error
 o notificación) recorre el mismo camino de vuelta al usuario. El componente de Seguridad
@@ -94,8 +106,9 @@ producción en esta fase.
   incompletos.
 - **Seguridad basada en roles** (cliente, cajero, administrador) validada en cada
   operación del sistema.
-- **Descuento automático de inventario** al confirmarse una venta, mediante la relación
-  producto-insumo.
+- **Descuento automático de inventario** al confirmarse un pedido, sobre el stock de cada
+  producto (`producto.stock_actual`); el stock se devuelve si el pedido se cancela.
+- **Trazabilidad**: cada operación queda en la tabla `transaccion` (confirmada o revertida).
 
 ## 9. Decisiones de arquitectura
 
@@ -114,18 +127,19 @@ producción en esta fase.
 
 ## 11. Riesgos y deuda técnica
 
-- Aún no se implementan las operaciones CRUD completas ni la interfaz de usuario (se
-  desarrollan en fases posteriores).
-- El envío de notificaciones al teléfono del usuario está definido a nivel de
-  requerimiento, pero su mecanismo concreto (SMS, push, correo) está pendiente de
-  decisión técnica.
+- Implementado: flujo del cliente (QR, menú con stock, pedido, seguimiento, modificar y
+  cancelar en cola) y panel del cajero (cola con prioridad, preparación, listo, cobro en
+  caja, pedido presencial e historial del día).
+- Pendiente: panel del administrador (productos, inventario y reportes), pago en la
+  aplicación con pasarela en modo de pruebas y notificaciones Web Push.
+- El aviso al celular se hará con notificaciones web (Web Push); depende de que el cliente
+  dé permiso en el navegador, por eso se mantiene la página de seguimiento como respaldo.
 
 ## 12. Glosario
 
 | Término | Definición |
 |---|---|
 | ACID | Atomicidad, Consistencia, Aislamiento, Durabilidad — propiedades que garantizan transacciones confiables |
-| Insumo | Materia prima usada para preparar un producto (ej. café, leche, pan) |
 | Pedido | Solicitud de uno o más productos realizada por un cliente |
 
 ---
@@ -154,11 +168,26 @@ pip install -r requirements.txt
 
 ### 3. Crear la base de datos
 
-1. Abrir **DB Browser for SQLite**.
-2. `New Database` → guardar como `database/ubite.db` dentro del repositorio clonado.
-3. Ir a la pestaña **Execute SQL**, pegar el contenido de `database/ubite.sql` y ejecutar
-   (▶ Execute).
-4. `Write Changes` para guardar los cambios en el archivo `.db`.
+El repositorio ya incluye `database/ubite.db`. Para volver a crearla desde cero:
+
+```bash
+python database/crear_bd.py
+```
+
+El script borra `ubite.db`, ejecuta `schema.sql` y `datos_prueba.sql` y deja la
+exportación actualizada en `database/ubite.db.sql`. Las fechas de los registros son las
+del momento en que se ejecuta.
+
+También se puede hacer con **DB Browser for SQLite**: `New Database` → `database/ubite.db`,
+pestaña **Execute SQL**, ejecutar `schema.sql` y luego `datos_prueba.sql`, `Write Changes`
+y exportar con `File > Export > Database to SQL file` sobre `database/ubite.db.sql`.
+
+Usuarios de prueba (solo entorno local):
+
+| Rol | Usuario | Contraseña |
+|---|---|---|
+| Cajero | `acajero` | `Cajero2026*` |
+| Administrador | `admin` | `Admin2026*` |
 
 ### 4. Ejecutar el proyecto
 
@@ -166,13 +195,18 @@ pip install -r requirements.txt
 python run.py
 ```
 
-La aplicación quedará disponible en `http://127.0.0.1:5000`.
+La aplicación quedará disponible en:
+
+- Cliente (la dirección a la que lleva el código QR): `http://127.0.0.1:5000/`
+- Personal de la cafetería: `http://127.0.0.1:5000/personal/login`
+
+Para probarla desde un celular conectado a la misma red Wi-Fi, ejecutar
+`flask --app run run --host 0.0.0.0` y abrir `http://<IP-del-computador>:5000/`.
 
 ---
 
 ## Integrantes
 
-- Tovar Valencia, Juan David
 - Pedraza Vanegas, Joseph
 - Amariles Nieto, Samith
 

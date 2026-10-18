@@ -1,0 +1,33 @@
+{% extends "cliente/_base.html" %}
+{% block titulo_pagina %}Bienvenido{% endblock %}
+{% block contenido %}
+<p class="etiqueta mb-2">Escaneaste el código de la cafetería</p>
+<h1 class="titulo display-5 mb-3">Pide sin hacer fila</h1>
+<p class="suave mb-4">Arma tu pedido desde el celular, te avisamos aquí mismo cuando esté listo y lo pagas en la caja al recogerlo.</p>
+
+<form method="post" novalidate class="tarjeta">
+  <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+  <div class="mb-4">
+    <label class="etiqueta" for="nombre">Tu nombre</label>
+    <input class="form-control linea-campo" id="nombre" name="nombre" maxlength="60" autocomplete="given-name"
+           placeholder="Así te llamamos al entregar" value="{{ form.get('nombre') or (cliente.nombre if cliente else '') }}" required>
+    {% if errores.nombre %}<div class="error-campo">{{ errores.nombre }}</div>{% endif %}
+  </div>
+  <div class="mb-4">
+    <label class="etiqueta" for="telefono">Celular</label>
+    <input class="form-control linea-campo" id="telefono" name="telefono" inputmode="numeric" maxlength="12" autocomplete="tel"
+           placeholder="3001234567" value="{{ form.get('telefono') or (cliente.telefono if cliente else '') }}" required>
+    {% if errores.telefono %}<div class="error-campo">{{ errores.telefono }}</div>{% endif %}
+  </div>
+  <div class="form-check mb-4">
+    <input class="form-check-input" type="checkbox" value="si" id="acepta" name="acepta" {% if form.get('acepta') or cliente %}checked{% endif %}>
+    <label class="form-check-label small suave" for="acepta">
+      Autorizo el uso de mi nombre y celular solo para identificar mi pedido y avisarme cuando esté listo (Ley 1581 de 2012).
+    </label>
+    {% if errores.acepta %}<div class="error-campo">{{ errores.acepta }}</div>{% endif %}
+  </div>
+  <button class="btn btn-ubite w-100" type="submit">Ver el menú</button>
+</form>
+
+<p class="small suave text-center mt-4 mb-0">¿Trabajas en la cafetería? <a href="{{ url_for('auth.login') }}">Entra aquí</a></p>
+{% endblock %}

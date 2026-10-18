@@ -1,0 +1,30 @@
+{% extends "cliente/_base.html" %}
+{% block titulo_pagina %}Modificar {{ pedido.codigo }}{% endblock %}
+{% block contenido %}
+<a class="small suave" href="{{ url_for('cliente.seguimiento', codigo=pedido.codigo) }}"><i class="bi bi-chevron-left"></i> Volver a mi pedido</a>
+<p class="etiqueta mt-3 mb-1">Pedido {{ pedido.codigo }} · sigue en cola</p>
+<h1 class="titulo display-6 mb-3">Cambia las cantidades</h1>
+<p class="suave small">Pon 0 en lo que quieras quitar. El inventario se ajusta solo por la diferencia.</p>
+
+<form method="post">
+  <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+  {% for categoria, productos in menu.items() %}
+  <h2 class="etiqueta mt-3 mb-0">{{ categoria }}</h2>
+  {% for p in productos %}
+  {% set actual = actuales.get(p.id_producto, 0) %}
+  {% set maximo = p.stock_actual + actual %}
+  {% if maximo > 0 %}
+  <div class="fila-menu">
+    <div class="info">
+      <div class="nombre-prod"><span>{{ p.nombre }}</span><span class="puntos"></span><span class="precio">{{ p.precio|pesos }}</span></div>
+      <div class="detalle">máximo {{ maximo }}</div>
+    </div>
+    <input class="form-control mono text-center" style="width:72px" type="number" min="0" max="{{ maximo }}"
+           name="cant_{{ p.id_producto }}" value="{{ actual }}" aria-label="Cantidad de {{ p.nombre }}">
+  </div>
+  {% endif %}
+  {% endfor %}
+  {% endfor %}
+  <button class="btn btn-ubite w-100 mt-4" type="submit">Guardar cambios</button>
+</form>
+{% endblock %}

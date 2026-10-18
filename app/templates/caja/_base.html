@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block clase_main %}container-xl py-4{% endblock %}
+{% block encabezado %}
+<header class="barra">
+  <div class="container-xl d-flex flex-wrap gap-3 justify-content-between align-items-center">
+    <a class="marca" href="{{ url_for('caja.cola') }}">
+      <span class="nombre">UBite</span><span class="sub">Cafetería UMB · Personal</span>
+    </a>
+    <nav class="nav-personal d-flex flex-wrap gap-4 align-items-center">
+      <a href="{{ url_for('caja.cola') }}" class="{{ 'activo' if request.endpoint == 'caja.cola' }}">Pedidos en curso</a>
+      <a href="{{ url_for('caja.presencial') }}" class="{{ 'activo' if request.endpoint == 'caja.presencial' }}">Pedido presencial</a>
+      <a href="{{ url_for('caja.historial') }}" class="{{ 'activo' if request.endpoint == 'caja.historial' }}">Historial</a>
+      <span class="small"><i class="bi bi-person"></i> {{ current_user.nombre.split(' ')[0] }} · {{ current_user.rol }}</span>
+      <a href="{{ url_for('auth.salir') }}" class="small"><i class="bi bi-box-arrow-right"></i> Salir</a>
+    </nav>
+  </div>
+</header>
+{% endblock %}
+{% block contenido %}
+{% with mensajes = get_flashed_messages(with_categories=true) %}
+  {% for categoria, m in mensajes %}<div class="mensaje-flash {{ 'error' if categoria == 'error' }}" role="status">{{ m }}</div>{% endfor %}
+{% endwith %}
+{% block panel %}{% endblock %}
+{% endblock %}

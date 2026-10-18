@@ -1,0 +1,45 @@
+{% extends "cliente/_base.html" %}
+{% block titulo_pagina %}Tu pedido{% endblock %}
+{% block contenido %}
+<a class="small suave" href="{{ url_for('cliente.menu') }}"><i class="bi bi-chevron-left"></i> Seguir pidiendo</a>
+<h1 class="titulo display-6 mt-2 mb-4">Revisa tu pedido</h1>
+
+{% if not lineas %}
+<div class="tarjeta text-center py-5">
+  <p class="mb-3">Todavía no has agregado nada.</p>
+  <a class="btn btn-ubite" href="{{ url_for('cliente.menu') }}">Ir al menú</a>
+</div>
+{% else %}
+<div class="tarjeta mb-3">
+  {% for p, cant in lineas %}
+  <div class="d-flex align-items-center justify-content-between py-2 {% if not loop.last %}border-bottom{% endif %}">
+    <div>
+      <div class="fw-bold">{{ p.nombre }}</div>
+      <div class="small suave mono">{{ p.precio|pesos }} c/u</div>
+    </div>
+    <form method="post" action="{{ url_for('cliente.carrito_cambiar') }}" class="contador">
+      <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+      <input type="hidden" name="id_producto" value="{{ p.id_producto }}">
+      <input type="hidden" name="volver" value="{{ url_for('cliente.carrito') }}">
+      <button class="btn-mas" name="delta" value="-1" aria-label="Quitar uno"><i class="bi bi-dash"></i></button>
+      <span class="cant">{{ cant }}</span>
+      <button class="btn-mas" name="delta" value="1" aria-label="Agregar uno" {% if cant >= p.stock_actual %}disabled{% endif %}><i class="bi bi-plus"></i></button>
+    </form>
+  </div>
+  {% endfor %}
+  <div class="lineas-total">
+    <div class="fila total"><span class="etiqueta">Total</span><span class="mono fs-4">$ {{ total|pesos }}</span></div>
+  </div>
+</div>
+
+<div class="aviso mb-4 fw-normal">
+  <i class="bi bi-info-circle me-1"></i>
+  Tu pedido entra a la cola apenas lo confirmes. Mientras esté en cola puedes cambiarlo o cancelarlo, y cuando esté listo te avisamos para que pases a la caja a pagar y recogerlo.
+</div>
+
+<form method="post" action="{{ url_for('cliente.confirmar') }}">
+  <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+  <button class="btn btn-ubite w-100" type="submit">Confirmar pedido · $ {{ total|pesos }}</button>
+</form>
+{% endif %}
+{% endblock %}

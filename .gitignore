@@ -1,0 +1,14 @@
+# Entorno virtual y caché de Python
+venv/
+.venv/
+__pycache__/
+*.pyc
+
+# Archivos temporales de SQLite
+database/*.db-journal
+database/*.db-wal
+database/*.db-shm
+
+# Configuración local
+.env
+.vscode/

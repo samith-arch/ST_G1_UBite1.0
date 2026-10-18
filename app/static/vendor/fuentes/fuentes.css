@@ -1,0 +1,9 @@
+/* Fuentes servidas desde el proyecto (paquetes @fontsource, licencia SIL OFL),
+   así la aplicación se ve igual aunque no haya internet en la cafetería. */
+@font-face { font-family: "Playfair Display"; font-style: italic; font-weight: 400; font-display: swap; src: url(playfair-display-latin-400-italic.woff2) format("woff2"); }
+@font-face { font-family: "Josefin Sans"; font-style: normal; font-weight: 600; font-display: swap; src: url(josefin-sans-latin-600-normal.woff2) format("woff2"); }
+@font-face { font-family: "Karla"; font-style: normal; font-weight: 400; font-display: swap; src: url(karla-latin-400-normal.woff2) format("woff2"); }
+@font-face { font-family: "Karla"; font-style: normal; font-weight: 500; font-display: swap; src: url(karla-latin-500-normal.woff2) format("woff2"); }
+@font-face { font-family: "Karla"; font-style: normal; font-weight: 700; font-display: swap; src: url(karla-latin-700-normal.woff2) format("woff2"); }
+@font-face { font-family: "DM Mono"; font-style: normal; font-weight: 400; font-display: swap; src: url(dm-mono-latin-400-normal.woff2) format("woff2"); }
+@font-face { font-family: "DM Mono"; font-style: normal; font-weight: 500; font-display: swap; src: url(dm-mono-latin-500-normal.woff2) format("woff2"); }
