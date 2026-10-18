@@ -1,0 +1,63 @@
+{% extends "caja/_base.html" %}
+{% block titulo_pagina %}Inventario{% endblock %}
+{% macro chip(p) %}
+{% set e = estado(p) %}
+<span class="chip {{ 'chip-punteado' if e in ('stock bajo', 'agotado', 'inactivo') }}">{{ e }}</span>
+{% endmacro %}
+{% block panel %}
+<div class="d-flex flex-wrap justify-content-between align-items-end gap-3 mb-3">
+  <div>
+    <p class="etiqueta mb-1">{{ productos|length }} productos · {{ categorias }} categorías</p>
+    <h1 class="titulo display-5 mb-0">Inventario</h1>
+  </div>
+  <div class="d-flex gap-2 flex-fill flex-lg-grow-0">
+    <a class="btn btn-contorno flex-fill" href="{{ url_for('inventario.entrada') }}">Entrada de stock</a>
+    {% if es_admin %}<a class="btn btn-ubite flex-fill" href="{{ url_for('inventario.producto') }}">+ Nuevo producto</a>{% endif %}
+  </div>
+</div>
+
+{% if bajos %}
+<div class="aviso mb-4"><i class="bi bi-exclamation-triangle me-1"></i>
+  {{ bajos|length }} producto(s) en o bajo el stock mínimo: {{ bajos|map(attribute="nombre")|join(", ") }}.
+</div>
+{% endif %}
+
+<div class="tarjeta d-none d-md-block">
+  <table class="table tabla-ubite align-middle mb-0">
+    <thead><tr><th>Producto</th><th>Categoría</th><th>Precio</th><th>Stock actual / mínimo</th><th>Estado</th><th class="text-end">Acciones</th></tr></thead>
+    <tbody>
+    {% for p in productos %}
+    <tr class="{{ 'text-body-secondary' if not p.activo }}">
+      <td class="fw-bold">{{ p.nombre }}</td>
+      <td class="suave">{{ p.categoria.nombre }}</td>
+      <td class="mono">$ {{ p.precio|pesos }}</td>
+      <td><div class="d-flex align-items-center gap-2">
+        <span class="mono text-nowrap">{{ p.stock_actual }} / {{ p.stock_minimo }}</span>
+        <div class="medidor flex-fill"><span style="width: {{ p.stock_actual / tope * 100 }}%"></span></div>
+      </div></td>
+      <td>{{ chip(p) }}</td>
+      <td class="text-end text-nowrap">
+        {% if es_admin %}<a class="icono-btn me-2" href="{{ url_for('inventario.producto', id_producto=p.id_producto) }}" title="Editar {{ p.nombre }}"><i class="bi bi-pencil"></i></a>{% endif %}
+        <a class="icono-btn" href="{{ url_for('inventario.entrada', producto=p.id_producto) }}" title="Entrada de stock de {{ p.nombre }}"><i class="bi bi-plus-lg"></i></a>
+      </td>
+    </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<div class="d-md-none">
+  {% for p in productos %}
+  <a class="fila-inventario" href="{{ url_for('inventario.producto', id_producto=p.id_producto) if es_admin else url_for('inventario.entrada', producto=p.id_producto) }}">
+    <div class="d-flex justify-content-between align-items-start gap-2">
+      <div><div class="fw-bold">{{ p.nombre }}</div><div class="small suave">{{ p.categoria.nombre }}</div></div>
+      <div class="d-flex align-items-center gap-2">
+        {% if estado(p) != "activo" %}{{ chip(p) }}{% endif %}
+        <span class="mono">{{ p.stock_actual }} / {{ p.stock_minimo }}</span>
+      </div>
+    </div>
+    <div class="medidor mt-2"><span style="width: {{ p.stock_actual / tope * 100 }}%"></span></div>
+  </a>
+  {% endfor %}
+</div>
+{% endblock %}

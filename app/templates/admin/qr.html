@@ -1,0 +1,29 @@
+{% extends "caja/_base.html" %}
+{% set titulo_barra = "Código QR" %}
+{% block titulo_pagina %}Código QR{% endblock %}
+{% block panel %}
+<div class="row g-4 align-items-start">
+  <div class="col-lg-5">
+    <p class="etiqueta mb-1">Para las mesas y la caja</p>
+    <h1 class="titulo display-5 mb-3 d-none d-lg-block">Código QR</h1>
+    <p class="suave">Este código abre la página de pedidos. Imprímelo y ponlo en las mesas y junto a la caja.</p>
+    <form method="get" class="mb-3">
+      <label class="etiqueta" for="url">Dirección</label>
+      <div class="d-flex gap-2">
+        <input class="form-control linea-campo mono" id="url" name="url" value="{{ direccion }}">
+        <button class="btn btn-suave">Generar</button>
+      </div>
+      <p class="small suave mt-2">Si abriste el panel con 127.0.0.1, cambia la dirección por la IP del computador (por ejemplo http://192.168.1.3:5000/) para que funcione desde los celulares.</p>
+    </form>
+    <button class="btn btn-ubite" onclick="window.print()"><i class="bi bi-printer"></i> Imprimir</button>
+  </div>
+  <div class="col-lg-5 offset-lg-1">
+    <div class="tarjeta text-center cartel-qr">
+      <p class="titulo fs-2 mb-1">UBite Café</p>
+      <p class="etiqueta">Pide sin hacer fila</p>
+      <div class="qr mx-auto my-3">{{ svg }}</div>
+      <p class="small suave mb-0">Escanea con la cámara de tu celular</p>
+    </div>
+  </div>
+</div>
+{% endblock %}

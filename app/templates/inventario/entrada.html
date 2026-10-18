@@ -1,0 +1,25 @@
+{% extends "caja/_base.html" %}
+{% set titulo_barra = "Entrada de stock" %}
+{% set atras = url_for('inventario.lista') %}
+{% block titulo_pagina %}Entrada de stock{% endblock %}
+{% block panel %}
+<div class="columna-movil mx-lg-0">
+  <p class="etiqueta mb-1">Llegó mercancía</p>
+  <h1 class="titulo display-5 mb-4 d-none d-lg-block">Entrada de stock</h1>
+  <form method="post" class="tarjeta">
+    <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+    <label class="etiqueta" for="id_producto">Producto</label>
+    <select class="form-select selector-categoria w-100 mb-4" id="id_producto" name="id_producto" required>
+      {% for p in productos %}
+      <option value="{{ p.id_producto }}" {{ 'selected' if p.id_producto == elegido }}>{{ p.nombre }} · hay {{ p.stock_actual }}</option>
+      {% endfor %}
+    </select>
+    <label class="etiqueta" for="cantidad">Unidades que llegaron</label>
+    <div class="campo-icono mb-4"><i class="bi bi-box-seam"></i>
+      <input class="form-control linea-campo mono" id="cantidad" name="cantidad" type="number" min="1" required>
+    </div>
+    <button class="btn btn-ubite w-100" type="submit">Registrar entrada</button>
+  </form>
+  <a class="small d-inline-block mt-3" href="{{ url_for('inventario.lista') }}">Volver al inventario</a>
+</div>
+{% endblock %}

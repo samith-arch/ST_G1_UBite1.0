@@ -7,6 +7,7 @@ from .. import servicios
 from ..database import db
 from ..models import Producto
 from ..servicios import ErrorNegocio
+from . import en_linea
 
 bp = Blueprint("cliente", __name__)
 
@@ -17,6 +18,7 @@ CELULAR = re.compile(r"^3\d{9}$")
 def cerrar_sesion_personal():
     # si alguien del personal pasa a la parte del cliente se cierra su sesion
     if current_user.is_authenticated:
+        en_linea.pop(current_user.id_usuario, None)
         logout_user()
         session.permanent = False
 

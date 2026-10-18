@@ -2,7 +2,7 @@
 {% set titulos = {"en_cola": "Pedido en cola", "en_preparacion": "En preparación", "listo": "Pedido listo", "entregado": "Pedido entregado", "cancelado": "Pedido cancelado"} %}
 {% set titulo_barra = titulos[pedido.estado] %}
 {% set atras = url_for('cliente.mis_pedidos') %}
-{% set paso = {"en_cola": 1, "en_preparacion": 2, "listo": 3, "entregado": 4}.get(pedido.estado, 0) %}
+{% set paso = {"en_cola": 1, "en_preparacion": 2, "listo": 3, "entregado": 5}.get(pedido.estado, 0) %}
 {% block titulo_pagina %}Pedido {{ pedido.codigo }}{% endblock %}
 
 {% macro punto(n, titulo, detalle) %}
@@ -28,18 +28,19 @@
   {% else %}
   <div class="tarjeta mb-3">
     <ul class="pasos">
-      {{ punto(0, "Pedido recibido", "Hoy " ~ pedido.fecha_hora.strftime('%I:%M %p').lower()) }}
+      {% set hora = "Hoy " ~ pedido.fecha_hora.strftime('%I:%M %p').lower() %}
       {% if pedido.estado == "en_cola" %}
-        {{ punto(1, "En cola de preparación", "Eres el siguiente" if posicion == 0 else "Hay " ~ posicion ~ " pedido(s) antes que el tuyo") }}
+        {{ punto(1, "Pedido recibido", hora ~ " · " ~ ("eres el siguiente en la cola" if posicion == 0 else "hay " ~ posicion ~ " pedido(s) antes que el tuyo")) }}
       {% else %}
-        {{ punto(1, "En cola de preparación", "") }}
+        {{ punto(1, "Pedido recibido", hora) }}
       {% endif %}
       {{ punto(2, "En preparación", "Estamos alistando tu pedido") }}
       {% if pedido.pagado %}
         {{ punto(3, "Listo para recoger", "Ya pagaste, solo lo recoges") }}
       {% else %}
-        {{ punto(3, "Paga en caja y recoge", "Te avisamos cuando esté listo · $ " ~ pedido.total|pesos) }}
+        {{ punto(3, "Listo · paga en caja y recoge", "Te avisamos cuando esté listo · $ " ~ pedido.total|pesos) }}
       {% endif %}
+      {{ punto(4, "Entregado", "") }}
     </ul>
   </div>
   {% endif %}

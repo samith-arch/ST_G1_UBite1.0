@@ -1,9 +1,9 @@
 import os
 import secrets
-from datetime import timedelta
+from datetime import datetime, timedelta
 
 from flask import Flask, abort, render_template, request, session
-from flask_login import LoginManager
+from flask_login import LoginManager, current_user
 
 from .database import db, get_database_uri, revisar_base
 
@@ -42,12 +42,21 @@ def create_app():
     with app.app_context():
         from . import models  # noqa: F401
 
+    from .routes import datos_menu, en_linea
+    from .routes.admin import bp as admin_bp
     from .routes.auth import bp as auth_bp
     from .routes.caja import bp as caja_bp
     from .routes.cliente import bp as cliente_bp
-    app.register_blueprint(cliente_bp)
-    app.register_blueprint(auth_bp)
-    app.register_blueprint(caja_bp)
+    from .routes.inventario import bp as inventario_bp
+    for bp in (cliente_bp, auth_bp, caja_bp, inventario_bp, admin_bp):
+        app.register_blueprint(bp)
+
+    app.context_processor(datos_menu)
+
+    @app.before_request
+    def marcar_actividad():
+        if current_user.is_authenticated:
+            en_linea[current_user.id_usuario] = datetime.now()
 
     def csrf_token():
         if "_csrf" not in session:

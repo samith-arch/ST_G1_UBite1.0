@@ -1,0 +1,48 @@
+{% extends "caja/_base.html" %}
+{% set titulo_barra = "Editar producto" if p else "Nuevo producto" %}
+{% set atras = url_for('inventario.lista') %}
+{% set d = datos or {} %}
+{% macro valor(campo, defecto="") %}{{ d.get(campo) if datos else (p[campo] if p and p[campo] is not none else defecto) }}{% endmacro %}
+{% block titulo_pagina %}{{ titulo_barra }}{% endblock %}
+{% block panel %}
+<div class="columna-movil mx-lg-0">
+  <p class="etiqueta mb-1">Inventario</p>
+  <h1 class="titulo display-5 mb-4 d-none d-lg-block">{{ titulo_barra }}</h1>
+  <form method="post" class="tarjeta">
+    <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+    <label class="etiqueta" for="nombre">Nombre</label>
+    <input class="form-control linea-campo mb-3" id="nombre" name="nombre" maxlength="60" value="{{ valor('nombre') }}" required>
+
+    <label class="etiqueta" for="descripcion">Descripción</label>
+    <input class="form-control linea-campo mb-3" id="descripcion" name="descripcion" maxlength="80" value="{{ valor('descripcion') }}">
+
+    <label class="etiqueta" for="categoria">Categoría</label>
+    <input class="form-control linea-campo mb-3" id="categoria" name="categoria" list="categorias" required
+           value="{{ d.get('categoria') if datos else (p.categoria.nombre if p else '') }}">
+    <datalist id="categorias">{% for c in categorias %}<option value="{{ c.nombre }}">{% endfor %}</datalist>
+
+    <div class="row g-3 mb-3">
+      <div class="col-4">
+        <label class="etiqueta" for="precio">Precio</label>
+        <input class="form-control linea-campo mono" id="precio" name="precio" type="number" min="1" step="50" value="{{ valor('precio')|replace('.0', '') }}" required>
+      </div>
+      <div class="col-4">
+        <label class="etiqueta" for="stock_actual">Stock</label>
+        <input class="form-control linea-campo mono" id="stock_actual" name="stock_actual" type="number" min="0" value="{{ valor('stock_actual', 0) }}" required>
+      </div>
+      <div class="col-4">
+        <label class="etiqueta" for="stock_minimo">Mínimo</label>
+        <input class="form-control linea-campo mono" id="stock_minimo" name="stock_minimo" type="number" min="0" value="{{ valor('stock_minimo', 0) }}" required>
+      </div>
+    </div>
+
+    <div class="form-check mb-4">
+      {% set activo = (d.get('activo') == 'si') if datos else (p.activo if p else true) %}
+      <input class="form-check-input" type="checkbox" id="activo" name="activo" value="si" {{ 'checked' if activo }}>
+      <label class="form-check-label" for="activo">Se muestra en el menú</label>
+    </div>
+    <button class="btn btn-ubite w-100" type="submit">Guardar</button>
+  </form>
+  <a class="small d-inline-block mt-3" href="{{ url_for('inventario.lista') }}">Volver al inventario</a>
+</div>
+{% endblock %}

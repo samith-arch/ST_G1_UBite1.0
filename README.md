@@ -66,11 +66,14 @@ ubite/
 │   ├── database.py          # conexión a SQLite y transacciones (BEGIN IMMEDIATE, commit/rollback)
 │   ├── models.py            # modelos SQLAlchemy (1:1 con el modelo relacional)
 │   ├── servicios.py         # lógica de negocio y coordinación de transacciones
+│   ├── gestion.py           # reporte, inventario, clientes y usuarios
 │   ├── routes/
 │   │   ├── __init__.py      # control de acceso por rol
 │   │   ├── cliente.py       # QR, menú, carrito, pedido, seguimiento, modificar y cancelar
 │   │   ├── auth.py          # inicio de sesión del personal (Flask-Login)
-│   │   └── caja.py          # cola de pedidos, cobro en caja, pedido presencial, historial
+│   │   ├── caja.py          # cola de pedidos, cobro en caja, pedido presencial, historial
+│   │   ├── inventario.py    # inventario, entradas de stock y productos
+│   │   └── admin.py         # reporte del día, clientes, usuarios y código QR
 │   ├── templates/           # vistas HTML (Jinja2 + Bootstrap)
 │   └── static/              # CSS, JavaScript, Bootstrap, íconos y fuentes locales
 ├── database/
@@ -132,8 +135,11 @@ producción en esta fase.
   preparación, listo, cobro y entrega, cancelación en caja, pedido presencial cobrado al
   registrarlo e historial del día). Los pedidos por QR usan el código A-001 y los
   presenciales P-001.
-- Pendiente: panel del administrador (productos, inventario y reportes), pago en la
-  aplicación con pasarela en modo de pruebas y notificaciones Web Push.
+- Implementado para el personal: inventario con alertas de stock mínimo y entradas de
+  stock (cajero y administrador); para el administrador, creación y edición de productos,
+  reporte del día con exportación a CSV, clientes, usuarios (crear, activar o desactivar,
+  cambiar contraseña, ver quién está en línea) y código QR para imprimir.
+- Pendiente: pago en la aplicación con pasarela en modo de pruebas y notificaciones Web Push.
 - El aviso al celular se hará con notificaciones web (Web Push); depende de que el cliente
   dé permiso en el navegador, por eso se mantiene la página de seguimiento como respaldo.
 

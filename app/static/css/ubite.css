@@ -166,3 +166,29 @@ body { min-height: 100vh; background: var(--papel); color: var(--tinta-oscura); 
 }
 
 .ilustracion { color: var(--tinta); width: 100%; max-width: 460px; }
+
+/* barra lateral del administrador */
+.lateral { position: fixed; top: 0; bottom: 0; left: 0; width: 240px; z-index: 30; flex-direction: column; padding: 24px 20px; background: var(--papel-claro); border-right: 1px solid var(--linea); overflow-y: auto; }
+.lateral nav, .lateral-links { display: flex; flex-direction: column; gap: 2px; }
+.lateral nav a, .lateral-links a { display: flex; align-items: center; gap: 12px; padding: 9px 12px; border-radius: 4px; color: var(--tinta-suave); text-decoration: none; }
+.lateral nav a:hover, .lateral-links a:hover { background: var(--lavado); color: var(--tinta-oscura); }
+.lateral nav a.activo, .lateral-links a.activo { background: var(--tinta); color: var(--papel-claro); }
+.lateral-movil { background: var(--papel-claro); }
+@media (min-width: 992px) { .con-lateral { margin-left: 240px; max-width: calc(100% - 240px); padding-left: 32px; padding-right: 32px; } }
+
+/* graficas del reporte y barras de stock */
+.grafica-horas { display: flex; align-items: flex-end; gap: 8px; height: 220px; }
+.barra-hora { flex: 1; height: 100%; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; gap: 6px; }
+.barra-hora .valor { width: 100%; background: var(--lavado); border: 1px solid var(--tinta); border-bottom: 0; }
+.barra-hora .valor.pico { background: var(--tinta); }
+.medidor { height: 6px; background: var(--lavado); border-radius: 3px; overflow: hidden; min-width: 60px; }
+.medidor span { display: block; height: 100%; background: var(--tinta); }
+.fila-inventario { display: block; padding: 14px 0; border-bottom: 1px solid var(--linea); color: var(--tinta-oscura); text-decoration: none; }
+.chip { white-space: nowrap; }
+
+.qr svg { width: 100%; max-width: 280px; height: auto; }
+@media print {
+  .barra, .lateral, .barra-inferior, .mensaje-flash, .col-lg-5:first-child { display: none !important; }
+  .con-lateral { margin: 0; max-width: 100%; }
+  .cartel-qr { border: 0; }
+}

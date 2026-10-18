@@ -1,0 +1,74 @@
+{% extends "caja/_base.html" %}
+{% block titulo_pagina %}Reporte del día{% endblock %}
+{% set meses = ["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"] %}
+{% set dias = ["lunes","martes","miércoles","jueves","viernes","sábado","domingo"] %}
+{% block panel %}
+<div class="d-flex flex-wrap justify-content-between align-items-end gap-3 mb-4">
+  <div>
+    <p class="etiqueta mb-1">
+      {{ dias[fecha.weekday()] }} {{ fecha.day }} de {{ meses[fecha.month - 1] }} de {{ fecha.year }} ·
+      {% if r.cancelados %}{{ r.cancelados }} pedido(s) cancelado(s){% else %}sin pedidos cancelados{% endif %}
+    </p>
+    <h1 class="titulo display-5 mb-0">Reporte del día</h1>
+  </div>
+  <div class="d-flex gap-2 align-items-center">
+    <a class="btn btn-suave" href="{{ url_for('admin.reporte', fecha=ayer.isoformat()) }}" aria-label="Día anterior"><i class="bi bi-chevron-left"></i></a>
+    {% if fecha < hoy %}<a class="btn btn-suave" href="{{ url_for('admin.reporte', fecha=manana.isoformat()) }}" aria-label="Día siguiente"><i class="bi bi-chevron-right"></i></a>{% endif %}
+    <a class="btn btn-contorno" href="{{ url_for('admin.exportar', fecha=fecha.isoformat()) }}">Exportar</a>
+  </div>
+</div>
+
+<div class="row g-3 mb-4">
+  <div class="col-6 col-xl-3"><div class="tarjeta h-100">
+    <p class="etiqueta mb-1">Total vendido</p><div class="mono fs-3">$ {{ r.total|pesos }}</div>
+    <p class="small suave mb-0">{% if r.variacion is not none %}{{ "%+d"|format(r.variacion) }} % frente al día anterior{% else %}sin ventas el día anterior{% endif %}</p>
+  </div></div>
+  <div class="col-6 col-xl-3"><div class="tarjeta h-100">
+    <p class="etiqueta mb-1">Pedidos</p><div class="mono fs-3">{{ r.pedidos }}</div>
+    <p class="small suave mb-0">{{ r.qr }} por QR · {{ r.presenciales }} presenciales</p>
+  </div></div>
+  <div class="col-6 col-xl-3"><div class="tarjeta h-100">
+    <p class="etiqueta mb-1">Pagados en la app</p><div class="mono fs-3">{{ r.en_app }} · {{ r.pct_app }} %</div>
+    <p class="small suave mb-0">{{ r.en_efectivo }} pagados en efectivo</p>
+  </div></div>
+  <div class="col-6 col-xl-3"><div class="tarjeta h-100">
+    <p class="etiqueta mb-1">Ticket promedio</p><div class="mono fs-3">$ {{ r.ticket|pesos }}</div>
+    <p class="small suave mb-0">por pedido pagado</p>
+  </div></div>
+</div>
+
+<div class="row g-3">
+  <div class="col-lg-8">
+    <div class="tarjeta h-100">
+      <h2 class="fs-6 fw-bold mb-1">Ventas por hora</h2>
+      {% if r.horas %}
+      {% set pico = r.horas|selectattr("pico")|map(attribute="hora")|list|sort %}
+      <p class="small suave">Horas con más ventas: {% for h in pico %}{{ h }}:00{{ " y " if not loop.last }}{% endfor %}</p>
+      <div class="grafica-horas">
+        {% for h in r.horas %}
+        <div class="barra-hora" title="{{ h.hora }}:00 · $ {{ h.valor|pesos }}">
+          <span class="valor {{ 'pico' if h.pico }}" style="height: {{ [h.alto, 2]|max }}%"></span>
+          <span class="mono small suave">{{ 12 if h.hora % 12 == 0 else h.hora % 12 }}</span>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <p class="suave mb-0">Todavía no hay ventas pagadas este día.</p>
+      {% endif %}
+    </div>
+  </div>
+  <div class="col-lg-4 d-flex flex-column gap-3">
+    <div class="tarjeta">
+      <h2 class="fs-6 fw-bold">Más vendidos</h2>
+      {% for nombre, valor in r.mas_vendidos %}
+      <div class="nombre-prod d-flex align-items-baseline gap-2 small py-1"><span>{{ nombre }}</span><span class="puntos flex-fill"></span><span class="mono">{{ valor|pesos }}</span></div>
+      {% else %}<p class="small suave mb-0">Sin ventas.</p>{% endfor %}
+    </div>
+    <div class="tarjeta">
+      <h2 class="fs-6 fw-bold">Método de pago</h2>
+      <div class="medidor mb-2"><span style="width: {{ r.pct_app }}%"></span></div>
+      <p class="mono small mb-0">App · {{ r.pct_app }} % &nbsp; Efectivo en caja · {{ 100 - r.pct_app if r.pagados else 0 }} %</p>
+    </div>
+  </div>
+</div>
+{% endblock %}

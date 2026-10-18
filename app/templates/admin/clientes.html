@@ -1,0 +1,37 @@
+{% extends "caja/_base.html" %}
+{% set titulo_barra = "Clientes" %}
+{% block titulo_pagina %}Clientes{% endblock %}
+{% block panel %}
+<div class="d-flex flex-wrap justify-content-between align-items-end gap-3 mb-4">
+  <div>
+    <p class="etiqueta mb-1">{{ filas|length }} clientes · {{ activos }} con pedido en curso</p>
+    <h1 class="titulo display-5 mb-0 d-none d-lg-block">Clientes</h1>
+  </div>
+  <form method="get" class="campo-icono buscador"><i class="bi bi-search"></i>
+    <input class="form-control linea-campo" name="buscar" value="{{ buscar }}" placeholder="Nombre o celular">
+  </form>
+</div>
+
+<div class="tarjeta">
+  <div class="table-responsive">
+  <table class="table tabla-ubite align-middle mb-0">
+    <thead><tr><th>Cliente</th><th>Celular</th><th>Pedidos</th><th>Último pedido</th><th class="text-end">Comprado</th><th></th></tr></thead>
+    <tbody>
+    {% for f in filas %}
+    <tr>
+      <td class="fw-bold">{{ f.cliente.nombre }}</td>
+      <td class="mono">{{ f.cliente.telefono or "—" }}</td>
+      <td class="mono">{{ f.pedidos }}</td>
+      <td class="small">{{ f.ultimo.strftime('%d/%m %I:%M %p').lower() if f.ultimo else "—" }}</td>
+      <td class="mono text-end">$ {{ f.gastado|pesos }}</td>
+      <td class="text-end">{% if f.activo %}<span class="chip chip-oscuro">Pedido en curso</span>{% endif %}</td>
+    </tr>
+    {% else %}
+    <tr><td colspan="6" class="suave">No hay clientes{{ " con esa búsqueda" if buscar }}.</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  </div>
+</div>
+<p class="small suave mt-3">Solo se guarda el nombre y el celular que cada cliente dio al hacer su pedido.</p>
+{% endblock %}
