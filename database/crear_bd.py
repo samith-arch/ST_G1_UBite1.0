@@ -21,14 +21,15 @@ def ejecutar(con, archivo):
         con.executescript(f.read())
 
 
-def crear():
-    if os.path.exists(DB):
-        os.remove(DB)
-    con = sqlite3.connect(DB)
+def crear(ruta=DB, datos=True):
+    if os.path.exists(ruta):
+        os.remove(ruta)
+    con = sqlite3.connect(ruta)
     ejecutar(con, "schema.sql")
-    ejecutar(con, "datos_prueba.sql")
+    if datos:
+        ejecutar(con, "datos_prueba.sql")
     con.close()
-    print(f"Base de datos creada: {DB}")
+    print(f"Base de datos creada: {ruta}")
 
 
 def literal(v):
@@ -41,11 +42,15 @@ def literal(v):
 
 def exportar():
     con = sqlite3.connect(DB)
+    # si la app uso modo WAL, se pasa todo al archivo .db antes de exportar
+    con.execute("PRAGMA wal_checkpoint(TRUNCATE)")
     cur = con.cursor()
     tablas = dict(cur.execute(
         "SELECT name, sql FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'"))
     indices = [r[0] for r in cur.execute(
         "SELECT sql FROM sqlite_master WHERE type='index' AND sql IS NOT NULL ORDER BY name")]
+    disparadores = [r[0] for r in cur.execute(
+        "SELECT sql FROM sqlite_master WHERE type='trigger' ORDER BY name")]
     nombres = [t for t in ORDEN if t in tablas] + sorted(t for t in tablas if t not in ORDEN)
 
     lineas = [f"-- UBite - exportación de ubite.db ({datetime.now():%Y-%m-%d %H:%M:%S})",
@@ -56,7 +61,10 @@ def exportar():
         for fila in cur.execute(f'SELECT * FROM "{t}"'):
             lineas.append(f'INSERT INTO "{t}" VALUES (' + ",".join(literal(v) for v in fila) + ");")
     for sql in indices:
-        lineas.append(sql.replace("CREATE INDEX ", "CREATE INDEX IF NOT EXISTS ", 1)
+        lineas.append(sql.replace("INDEX ", "INDEX IF NOT EXISTS ", 1)
+                      .replace("IF NOT EXISTS IF NOT EXISTS", "IF NOT EXISTS") + ";")
+    for sql in disparadores:
+        lineas.append(sql.replace("CREATE TRIGGER ", "CREATE TRIGGER IF NOT EXISTS ", 1)
                       .replace("IF NOT EXISTS IF NOT EXISTS", "IF NOT EXISTS") + ";")
     lineas.append("COMMIT;")
     con.close()

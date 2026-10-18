@@ -1,9 +1,11 @@
 import re
 
-from flask import Blueprint, flash, redirect, render_template, request, url_for
+from flask import (Blueprint, current_app, flash, redirect, render_template, request,
+                   url_for)
 from flask_login import current_user
 
-from .. import servicios
+from .. import avisos, servicios
+from ..database import BaseOcupada
 from ..servicios import ErrorNegocio
 from . import rol_requerido
 
@@ -29,21 +31,33 @@ def cambiar_estado(id_pedido):
     accion = request.form.get("accion")
     try:
         if accion == "preparar":
-            codigo = servicios.cambiar_estado(id_pedido, "en_preparacion", current_user)
+            codigo, _ = servicios.cambiar_estado(id_pedido, "en_preparacion", current_user)
             flash(f"{codigo} pasó a preparación.")
         elif accion == "listo":
-            codigo = servicios.cambiar_estado(id_pedido, "listo", current_user)
-            flash(f"{codigo} está listo, ya se le avisó al cliente.")
+            codigo, aviso = servicios.cambiar_estado(id_pedido, "listo", current_user)
+            if aviso:
+                url = url_for("cliente.seguimiento", codigo=codigo, _external=True)
+                avisos.enviar_en_segundo_plano(current_app._get_current_object(), aviso, url)
+                flash(f"{codigo} está listo, se envió el aviso al celular del cliente.")
+            else:
+                flash(f"{codigo} está listo. El cliente no activó los avisos, lo verá en su página.")
         elif accion == "entregar":
-            codigo = servicios.entregar_pedido(id_pedido, current_user)
-            flash(f"{codigo} entregado.")
+            cobrar = request.form.get("cobrar") == "1"
+            codigo = servicios.entregar_o_rechazar(id_pedido, current_user, cobrar)
+            flash(f"{codigo} {'cobrado y ' if cobrar else ''}entregado.")
         elif accion == "cancelar":
             codigo = request.form.get("codigo", "")
             servicios.cancelar_pedido(codigo, usuario=current_user)
             flash(f"{codigo} cancelado y el stock devuelto.")
     except ErrorNegocio as e:
+        if e.filas:
+            # pantalla E5: se muestra completa porque hay que entender que paso
+            return render_template("caja/rechazo.html", e=e), 409
         flash(f"{e.titulo}: {e.mensaje}", "error")
+    except BaseOcupada:
+        flash("La base de datos está ocupada con otros pedidos. No se guardó nada, intenta otra vez.", "error")
     except Exception:
+        current_app.logger.exception("fallo en la cola del cajero")
         flash("No se pudo hacer la operación, no se guardó ningún cambio.", "error")
     return redirect(url_for("caja.cola"))
 
@@ -74,9 +88,14 @@ def presencial():
         codigo = servicios.registrar_pedido(nombre, telefono, items, origen="presencial",
                                             usuario=current_user)
     except ErrorNegocio as e:
-        flash(f"{e.titulo}: {' · '.join(e.detalle) or e.mensaje}", "error")
+        detalle = " · ".join(f"{a}: {b}" for a, b in e.filas[:-3]) if e.faltantes else e.mensaje
+        flash(f"{e.titulo}. {detalle}. No se guardó nada.", "error")
+        return render_template("caja/presencial.html", menu=menu, form=request.form, codigo=codigo)
+    except BaseOcupada:
+        flash("La base de datos está ocupada con otros pedidos. No se guardó nada, intenta otra vez.", "error")
         return render_template("caja/presencial.html", menu=menu, form=request.form, codigo=codigo)
     except Exception:
+        current_app.logger.exception("fallo registrando un pedido presencial")
         flash("No se pudo registrar el pedido, no se guardó ningún cambio.", "error")
         return render_template("caja/presencial.html", menu=menu, form=request.form, codigo=codigo)
     flash(f"Pedido {codigo} cobrado y enviado a preparación.")

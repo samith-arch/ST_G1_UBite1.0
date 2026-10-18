@@ -1,14 +1,19 @@
-# Entorno virtual y caché de Python
+# entorno virtual y cache de python
 venv/
 .venv/
 __pycache__/
 *.pyc
+.pytest_cache/
 
-# Archivos temporales de SQLite
+# temporales de sqlite
 database/*.db-journal
 database/*.db-wal
 database/*.db-shm
 
-# Configuración local
+# claves de las notificaciones y registros (no se suben)
+instance/
+logs/
+
+# configuracion local
 .env
 .vscode/

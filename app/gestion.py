@@ -4,7 +4,7 @@ from datetime import timedelta
 from sqlalchemy import func
 from werkzeug.security import generate_password_hash
 
-from .database import db, transaccion
+from .database import db, reintentar, transaccion
 from .models import Categoria, Cliente, Pedido, Producto, Usuario, ahora
 from .servicios import ACTIVOS, ErrorNegocio
 
@@ -82,10 +82,11 @@ def inventario():
             .order_by(Categoria.nombre, Producto.nombre).all())
 
 
+@reintentar
 def entrada_stock(id_producto, cantidad):
     if cantidad <= 0:
         raise ErrorNegocio("Cantidad no válida", "La entrada debe ser mayor que cero.")
-    with transaccion():
+    with transaccion("entrada_stock"):
         p = db.session.get(Producto, id_producto)
         if p is None:
             raise ErrorNegocio("Producto no encontrado", "El producto ya no existe.")
@@ -93,6 +94,7 @@ def entrada_stock(id_producto, cantidad):
         return p.nombre, p.stock_actual
 
 
+@reintentar
 def guardar_producto(datos, id_producto=None):
     nombre = datos.get("nombre", "").strip()
     categoria = datos.get("categoria", "").strip()
@@ -107,7 +109,7 @@ def guardar_producto(datos, id_producto=None):
     if precio <= 0 or stock < 0 or minimo < 0:
         raise ErrorNegocio("Datos no válidos", "El precio debe ser mayor que cero y el stock no puede ser negativo.")
 
-    with transaccion():
+    with transaccion("guardar_producto"):
         cat = Categoria.query.filter(func.lower(Categoria.nombre) == categoria.lower()).first()
         if cat is None:
             cat = Categoria(nombre=categoria)
@@ -148,7 +150,7 @@ def crear_usuario(nombre, username, rol, clave):
         raise ErrorNegocio("Faltan datos", "Escribe nombre, usuario y rol.")
     if len(clave) < 8:
         raise ErrorNegocio("Contraseña corta", "La contraseña debe tener al menos 8 caracteres.")
-    with transaccion():
+    with transaccion("crear_usuario"):
         if Usuario.query.filter_by(username=username).first():
             raise ErrorNegocio("Usuario repetido", f"Ya existe el usuario {username}.")
         db.session.add(Usuario(nombre=nombre, username=username, rol=rol,
@@ -156,7 +158,7 @@ def crear_usuario(nombre, username, rol, clave):
 
 
 def cambiar_activo(id_usuario, quien):
-    with transaccion():
+    with transaccion("cambiar_activo"):
         u = db.session.get(Usuario, id_usuario)
         if u is None:
             raise ErrorNegocio("Usuario no encontrado", "El usuario ya no existe.")
@@ -169,7 +171,7 @@ def cambiar_activo(id_usuario, quien):
 def cambiar_clave(id_usuario, clave):
     if len(clave) < 8:
         raise ErrorNegocio("Contraseña corta", "La contraseña debe tener al menos 8 caracteres.")
-    with transaccion():
+    with transaccion("cambiar_clave"):
         u = db.session.get(Usuario, id_usuario)
         u.password_hash = generate_password_hash(clave)
         return u.username

@@ -1,9 +1,13 @@
+import json
 import re
+import secrets
 
-from flask import Blueprint, jsonify, redirect, render_template, request, session, url_for
+from flask import (Blueprint, current_app, jsonify, make_response, redirect, render_template,
+                   request, send_from_directory, session, url_for)
 from flask_login import current_user, logout_user
 
-from .. import servicios
+from .. import avisos, servicios
+from ..database import BaseOcupada
 from ..database import db
 from ..models import Producto
 from ..servicios import ErrorNegocio
@@ -17,6 +21,8 @@ CELULAR = re.compile(r"^3\d{9}$")
 @bp.before_request
 def cerrar_sesion_personal():
     # si alguien del personal pasa a la parte del cliente se cierra su sesion
+    if request.endpoint in ("cliente.manifest", "cliente.service_worker", "cliente.clave_avisos"):
+        return
     if current_user.is_authenticated:
         en_linea.pop(current_user.id_usuario, None)
         logout_user()
@@ -51,9 +57,22 @@ def _mio(pedido):
     return pedido is not None and pedido.codigo in session.get("mis_pedidos", [])
 
 
-def _error(e, volver, texto):
-    return render_template("error.html", titulo=e.titulo, mensaje=e.mensaje,
-                           detalle=e.detalle, volver=volver, texto_volver=texto), 409
+def _error(e, volver, texto, accion=None, texto_accion=None, codigo=409):
+    return render_template("error.html", e=e, volver=volver, texto_volver=texto,
+                           accion=accion, texto_accion=texto_accion), codigo
+
+
+OCUPADA = ErrorNegocio("La cafetería está muy ocupada",
+                       "Hay muchos pedidos guardándose al mismo tiempo y el tuyo no alcanzó a "
+                       "entrar. No se guardó nada; intenta de nuevo en unos segundos.",
+                       etiqueta="Transacción revertida",
+                       filas=[("Pedido", "no se guardó"), ("Stock", "sin cambios"), ("Pago", "no se inició")],
+                       nota="Rollback: el pedido, sus productos y el descuento de stock se guardan "
+                            "juntos o no se guarda nada.")
+FALLA = ErrorNegocio("No pudimos guardar tu pedido",
+                     "Algo falló mientras registrábamos el pedido. Como no se completaron todos "
+                     "los pasos, el sistema deshizo todo y nada quedó a medias.",
+                     etiqueta="Transacción revertida", filas=OCUPADA.filas, nota=OCUPADA.nota)
 
 
 def _ruta_interna(url, defecto):
@@ -124,7 +143,8 @@ def carrito():
     if "cliente" not in session:
         return redirect(url_for("cliente.inicio"))
     lineas, total = _lineas_carrito()
-    return render_template("cliente/carrito.html", lineas=lineas, total=total)
+    return render_template("cliente/carrito.html", lineas=lineas, total=total,
+                           envio=secrets.token_urlsafe(12))
 
 
 @bp.route("/pedido/confirmar", methods=["POST"])
@@ -132,19 +152,46 @@ def confirmar():
     cliente = session.get("cliente")
     if not cliente:
         return redirect(url_for("cliente.inicio"))
+    # si el boton se toca dos veces llega el mismo envio y no se repite el pedido
+    envio = request.form.get("envio", "")
+    hechos = session.get("envios", {})
+    if envio in hechos:
+        return redirect(url_for("cliente.seguimiento", codigo=hechos[envio]))
+
     items = {int(k): v for k, v in _carrito().items()}
     try:
         codigo = servicios.registrar_pedido(cliente["nombre"], cliente["telefono"], items)
     except ErrorNegocio as e:
+        if e.faltantes:
+            session["ajuste"] = {str(k): v for k, v in e.faltantes.items()}
+            texto = (f"Quitar {e.agotados[0].lower()} y continuar" if len(e.agotados) == 1
+                     else "Ajustar mi pedido y continuar")
+            return _error(e, url_for("cliente.menu"), "Volver al menú", url_for("cliente.ajustar"), texto)
         return _error(e, url_for("cliente.carrito"), "Revisar mi pedido")
+    except BaseOcupada:
+        return _error(OCUPADA, url_for("cliente.menu"), "Volver al menú",
+                      url_for("cliente.confirmar"), "Reintentar", 503)
     except Exception:
-        e = ErrorNegocio("No se pudo hacer el pedido",
-                         "Hubo un error y se deshizo todo: no se guardó el pedido ni se "
-                         "descontó nada del inventario. Intenta de nuevo.")
-        return _error(e, url_for("cliente.carrito"), "Intentar de nuevo")
+        current_app.logger.exception("fallo registrando un pedido")
+        return _error(FALLA, url_for("cliente.menu"), "Volver al menú",
+                      url_for("cliente.confirmar"), "Reintentar", 500)
     session["carrito"] = {}
     session["mis_pedidos"] = session.get("mis_pedidos", []) + [codigo]
+    session["envios"] = dict(list(hechos.items())[-5:], **{envio: codigo}) if envio else hechos
     return redirect(url_for("cliente.seguimiento", codigo=codigo))
+
+
+@bp.route("/carrito/ajustar", methods=["POST"])
+def ajustar():
+    # deja en el carrito solo lo que alcanza y vuelve al resumen
+    carrito = _carrito()
+    for id_producto, disponible in session.pop("ajuste", {}).items():
+        if disponible > 0:
+            carrito[id_producto] = min(carrito.get(id_producto, 0), disponible)
+        else:
+            carrito.pop(id_producto, None)
+    session.modified = True
+    return redirect(url_for("cliente.carrito"))
 
 
 @bp.route("/mis-pedidos")
@@ -187,7 +234,10 @@ def modificar(codigo):
         try:
             servicios.modificar_pedido(pedido.codigo, items)
         except ErrorNegocio as e:
-            return _error(e, url_for("cliente.modificar", codigo=pedido.codigo), "Volver")
+            return _error(e, url_for("cliente.seguimiento", codigo=pedido.codigo), "Ver mi pedido",
+                          None, None)
+        except BaseOcupada:
+            return _error(OCUPADA, url_for("cliente.modificar", codigo=pedido.codigo), "Intentar de nuevo")
         return redirect(url_for("cliente.seguimiento", codigo=pedido.codigo))
     if pedido.estado != "en_cola":
         return redirect(url_for("cliente.seguimiento", codigo=pedido.codigo))
@@ -206,3 +256,35 @@ def cancelar(codigo):
     except ErrorNegocio as e:
         return _error(e, url_for("cliente.seguimiento", codigo=pedido.codigo), "Ver mi pedido")
     return redirect(url_for("cliente.seguimiento", codigo=pedido.codigo))
+
+
+@bp.route("/sw.js")
+def service_worker():
+    # el service worker se sirve desde la raiz para que controle todo el sitio
+    r = make_response(send_from_directory(current_app.static_folder, "js/sw.js"))
+    r.headers["Content-Type"] = "application/javascript"
+    r.headers["Cache-Control"] = "no-cache"
+    return r
+
+
+@bp.route("/manifest.webmanifest")
+def manifest():
+    return send_from_directory(current_app.static_folder, "manifest.webmanifest",
+                               mimetype="application/manifest+json")
+
+
+@bp.route("/avisos/clave")
+def clave_avisos():
+    return jsonify(clave=avisos.clave_publica())
+
+
+@bp.route("/pedido/<codigo>/suscripcion", methods=["POST"])
+def suscripcion(codigo):
+    pedido = servicios.buscar_pedido(codigo)
+    if not _mio(pedido):
+        return jsonify(error="no encontrado"), 404
+    datos = request.get_json(silent=True) or {}
+    if not str(datos.get("endpoint", "")).startswith("https://") or "keys" not in datos:
+        return jsonify(error="suscripcion no valida"), 400
+    servicios.guardar_suscripcion(pedido.codigo, json.dumps(datos))
+    return jsonify(ok=True)

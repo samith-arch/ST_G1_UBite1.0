@@ -37,7 +37,8 @@
 
 <form method="post" action="{{ url_for('cliente.confirmar') }}" class="mb-3">
   <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
-  <button class="btn btn-ubite w-100" type="submit">Hacer pedido · pago al recoger</button>
+  <input type="hidden" name="envio" value="{{ envio }}">
+  <button class="btn btn-ubite w-100" type="submit" onclick="this.disabled=true;this.form.submit()">Hacer pedido · pago al recoger</button>
 </form>
 <a class="btn btn-suave w-100" href="{{ url_for('cliente.menu') }}">Seguir agregando</a>
 {% endif %}

@@ -1,0 +1,30 @@
+{# cuerpo comun de las pantallas de error E1 a E5 de figma #}
+<div class="columna-movil">
+  <div class="icono-error mb-3"><i class="bi {{ icono or 'bi-exclamation-triangle' }}"></i></div>
+  {% if e.etiqueta %}<p class="etiqueta mb-2">{{ e.etiqueta }}</p>{% endif %}
+  <h1 class="titulo display-6 mb-3">{{ e.titulo }}</h1>
+  <p class="suave mb-3">{{ e.mensaje }}</p>
+
+  {% if e.filas %}
+  <div class="tarjeta mb-3">
+    <p class="etiqueta mb-2">Qué pasó</p>
+    {% for a, b in e.filas %}
+    <div class="d-flex justify-content-between gap-3 py-1"><span class="suave">{{ a }}</span><span class="mono text-end">{{ b }}</span></div>
+    {% endfor %}
+  </div>
+  {% elif e.detalle %}
+  <div class="tarjeta mb-3">{% for d in e.detalle %}<div class="py-1">{{ d }}</div>{% endfor %}</div>
+  {% endif %}
+
+  {% if e.nota %}<p class="small suave d-flex gap-2 mb-4"><i class="bi bi-shield-check"></i><span>{{ e.nota }}</span></p>{% endif %}
+
+  {% if accion %}
+  <form method="post" action="{{ accion }}" class="mb-3">
+    <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+    <button class="btn btn-ubite w-100">{{ texto_accion }}</button>
+  </form>
+  <a class="btn btn-contorno w-100" href="{{ volver }}">{{ texto_volver }}</a>
+  {% else %}
+  <a class="btn btn-ubite w-100" href="{{ volver }}">{{ texto_volver }}</a>
+  {% endif %}
+</div>

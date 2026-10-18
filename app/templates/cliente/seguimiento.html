@@ -14,7 +14,8 @@
 
 {% block contenido %}
 <div class="columna-movil" id="seguimiento" data-url="{{ url_for('cliente.estado', codigo=pedido.codigo) }}"
-     data-estado="{{ pedido.estado }}" data-posicion="{{ posicion }}" data-listo="{{ url_for('cliente.seguimiento', codigo=pedido.codigo) }}">
+     data-estado="{{ pedido.estado }}" data-posicion="{{ posicion }}" data-listo="{{ url_for('cliente.seguimiento', codigo=pedido.codigo) }}"
+     data-suscripcion="{{ url_for('cliente.suscripcion', codigo=pedido.codigo) }}">
   <p class="etiqueta mb-1">Tu código de pedido</p>
   <div class="codigo-grande mb-3">{{ pedido.codigo }}</div>
   <div class="mb-3 d-flex gap-2 flex-wrap">
@@ -52,6 +53,10 @@
     <div class="fila total"><span class="etiqueta">{{ "Total pagado" if pedido.pagado else "Total" }}</span><span class="mono fs-4">$ {{ pedido.total|pesos }}</span></div>
   </div>
 
+  {% if pedido.estado in ("en_cola", "en_preparacion") %}
+  <p class="small suave d-flex gap-2 oculto" id="estado-avisos"></p>
+  {% endif %}
+
   {% if pedido.estado == "en_cola" and not pedido.pagado %}
   <a class="btn btn-contorno w-100 mb-3" href="{{ url_for('cliente.modificar', codigo=pedido.codigo) }}">Modificar pedido</a>
   <form method="post" action="{{ url_for('cliente.cancelar', codigo=pedido.codigo) }}"
@@ -64,5 +69,21 @@
   <a class="btn btn-ubite w-100" href="{{ url_for('cliente.menu') }}">Hacer otro pedido</a>
   {% endif %}
 </div>
+{% if pedido.estado in ("en_cola", "en_preparacion") %}
+<div class="hoja oculto" id="hoja-avisos" role="dialog" aria-labelledby="hoja-titulo">
+  <div class="hoja-caja">
+    <p class="mono small suave mb-2"><i class="bi bi-bell"></i> {{ request.host }}</p>
+    <h2 class="fs-5 fw-bold" id="hoja-titulo">¿Permitir que UBite te envíe notificaciones?</h2>
+    <p class="suave small">Te avisaremos en el celular cuando el pedido {{ pedido.codigo }} esté listo, aunque cierres la página o bloquees la pantalla. No usamos SMS.</p>
+    <div class="d-flex gap-2">
+      <button class="btn btn-suave flex-fill" id="avisos-no">Ahora no</button>
+      <button class="btn btn-ubite flex-fill" id="avisos-si">Permitir</button>
+    </div>
+  </div>
+</div>
+{% endif %}
 {% endblock %}
-{% block scripts %}<script src="{{ url_for('static', filename='js/seguimiento.js') }}"></script>{% endblock %}
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/seguimiento.js') }}"></script>
+<script src="{{ url_for('static', filename='js/avisos.js') }}"></script>
+{% endblock %}

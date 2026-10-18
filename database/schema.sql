@@ -76,7 +76,7 @@ CREATE TABLE IF NOT EXISTS "detalle_pedido" (
 	"id_producto"	INTEGER NOT NULL,
 	"cantidad"	INTEGER NOT NULL CHECK("cantidad" > 0),
 	"precio_unitario"	REAL NOT NULL CHECK("precio_unitario" > 0),
-	"subtotal"	REAL NOT NULL CHECK("subtotal" >= 0),
+	"subtotal"	REAL NOT NULL CHECK("subtotal" = "cantidad" * "precio_unitario"),
 	PRIMARY KEY("id_detalle" AUTOINCREMENT),
 	FOREIGN KEY("id_pedido") REFERENCES "pedido"("id_pedido"),
 	FOREIGN KEY("id_producto") REFERENCES "producto"("id_producto")
@@ -128,5 +128,21 @@ CREATE INDEX IF NOT EXISTS "idx_detalle_pedido" ON "detalle_pedido" ("id_pedido"
 CREATE INDEX IF NOT EXISTS "idx_pago_pedido" ON "pago" ("id_pedido");
 CREATE INDEX IF NOT EXISTS "idx_transaccion_pedido" ON "transaccion" ("id_pedido");
 CREATE INDEX IF NOT EXISTS "idx_notificacion_pedido" ON "notificacion" ("id_pedido");
+
+-- un pedido no puede tener dos pagos aprobados
+CREATE UNIQUE INDEX IF NOT EXISTS "ux_pago_aprobado" ON "pago" ("id_pedido") WHERE "estado" = 'aprobado';
+
+-- la base tambien revisa que el pedido siga el orden de estados,
+-- asi un error en el codigo no puede dejar un estado imposible
+CREATE TRIGGER IF NOT EXISTS "trg_pedido_estado"
+BEFORE UPDATE OF "estado" ON "pedido"
+WHEN NEW."estado" <> OLD."estado" AND NOT (
+	(OLD."estado" = 'en_cola' AND NEW."estado" IN ('en_preparacion', 'listo', 'cancelado')) OR
+	(OLD."estado" = 'en_preparacion' AND NEW."estado" IN ('listo', 'cancelado')) OR
+	(OLD."estado" = 'listo' AND NEW."estado" IN ('entregado', 'cancelado'))
+)
+BEGIN
+	SELECT RAISE(ABORT, 'cambio de estado no permitido');
+END;
 
 COMMIT;

@@ -138,7 +138,7 @@ class DetallePedido(db.Model):
     __table_args__ = (
         db.CheckConstraint("cantidad > 0", name="ck_detalle_cantidad"),
         db.CheckConstraint("precio_unitario > 0", name="ck_detalle_precio"),
-        db.CheckConstraint("subtotal >= 0", name="ck_detalle_subtotal"),
+        db.CheckConstraint("subtotal = cantidad * precio_unitario", name="ck_detalle_subtotal"),
     )
 
     id_detalle = db.Column(db.Integer, primary_key=True, autoincrement=True)

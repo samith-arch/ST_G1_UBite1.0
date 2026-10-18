@@ -1,19 +1,13 @@
 {% extends "cliente/_base.html" %}
-{% block titulo_pagina %}{{ titulo }}{% endblock %}
+{% set titulo_barra = "Tu pedido" %}
+{% set atras = volver or url_for('cliente.inicio') %}
+{% block titulo_pagina %}{{ e.titulo if e else titulo }}{% endblock %}
 {% block contenido %}
-<div class="columna-movil">
-<div class="text-center pt-4">
-  <div class="mx-auto mb-3 d-flex align-items-center justify-content-center" style="width:64px;height:64px;border:1.5px solid var(--tinta);border-radius:50%;color:var(--tinta);font-size:1.6rem">
-    <i class="bi bi-arrow-counterclockwise"></i>
-  </div>
-  <h1 class="titulo display-6 mb-3">{{ titulo }}</h1>
-  <p class="suave mb-3">{{ mensaje }}</p>
-</div>
-{% if detalle %}
-<div class="tarjeta mb-4">
-  {% for d in detalle %}<div class="py-1"><i class="bi bi-dot"></i>{{ d }}</div>{% endfor %}
-</div>
+{% if not e %}
+  {% set e = {"titulo": titulo, "mensaje": mensaje, "etiqueta": None, "filas": [], "detalle": [], "nota": None} %}
+  {% set volver = volver or url_for('cliente.inicio') %}
+  {% set texto_volver = texto_volver or "Volver al inicio" %}
 {% endif %}
-<a class="btn btn-ubite w-100" href="{{ volver or url_for('cliente.inicio') }}">{{ texto_volver or "Volver al inicio" }}</a>
-</div>
+{% set icono = "bi-x-lg" if e.etiqueta == "Transacción revertida" else "bi-exclamation-triangle" %}
+{% include "_rechazo.html" %}
 {% endblock %}

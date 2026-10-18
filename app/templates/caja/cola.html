@@ -34,6 +34,7 @@
     {% elif pago %}
       <button class="btn btn-contorno flex-fill" name="accion" value="entregar">Marcar entregado</button>
     {% else %}
+      <input type="hidden" name="cobrar" value="1">
       <button class="btn btn-ubite flex-fill" name="accion" value="entregar"
               onclick="return confirm('¿Cobrar $ {{ p.total|pesos }} en efectivo y entregar {{ p.codigo }}?')">Cobrar y entregar</button>
     {% endif %}

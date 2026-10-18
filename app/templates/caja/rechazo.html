@@ -1,0 +1,8 @@
+{% extends "caja/_base.html" %}
+{% set titulo_barra = "Pedidos" %}
+{% block titulo_pagina %}{{ e.titulo }}{% endblock %}
+{% block panel %}
+{% set volver = url_for('caja.cola') %}
+{% set texto_volver = "Volver a pedidos" %}
+{% include "_rechazo.html" %}
+{% endblock %}

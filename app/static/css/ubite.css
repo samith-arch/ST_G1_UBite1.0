@@ -192,3 +192,8 @@ body { min-height: 100vh; background: var(--papel); color: var(--tinta-oscura); 
   .con-lateral { margin: 0; max-width: 100%; }
   .cartel-qr { border: 0; }
 }
+
+/* pantallas de error y hoja de permiso de avisos */
+.icono-error { width: 72px; height: 72px; border: 1.5px dashed var(--tinta-suave); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--tinta); font-size: 1.6rem; }
+.hoja { position: fixed; inset: 0; z-index: 50; background: rgba(51, 55, 79, .55); display: flex; align-items: flex-end; justify-content: center; padding: 16px; }
+.hoja-caja { width: 100%; max-width: 420px; background: var(--papel-claro); border-radius: 12px; padding: 20px; }

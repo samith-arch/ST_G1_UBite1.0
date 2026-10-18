@@ -1,3 +1,4 @@
+import logging
 import os
 import secrets
 from datetime import datetime, timedelta
@@ -5,7 +6,7 @@ from datetime import datetime, timedelta
 from flask import Flask, abort, render_template, request, session
 from flask_login import LoginManager, current_user
 
-from .database import db, get_database_uri, revisar_base
+from .database import BASE_DIR, db, get_database_uri, revisar_base
 
 login_manager = LoginManager()
 login_manager.login_view = "auth.login"
@@ -24,8 +25,20 @@ def pesos(valor):
     return f"{valor:,.0f}".replace(",", ".")
 
 
+def _configurar_log():
+    # cada commit y rollback queda en logs/ubite.log
+    os.makedirs(os.path.join(BASE_DIR, "logs"), exist_ok=True)
+    archivo = logging.FileHandler(os.path.join(BASE_DIR, "logs", "ubite.log"), encoding="utf-8")
+    archivo.setFormatter(logging.Formatter("%(asctime)s %(levelname)-7s %(name)s  %(message)s"))
+    raiz = logging.getLogger("ubite")
+    if not raiz.handlers:
+        raiz.addHandler(archivo)
+        raiz.setLevel(logging.INFO)
+
+
 def create_app():
     revisar_base()
+    _configurar_log()
     app = Flask(__name__)
     app.config["SQLALCHEMY_DATABASE_URI"] = get_database_uri()
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
@@ -86,6 +99,14 @@ def create_app():
     def error_404(_e):
         return render_template("error.html", titulo="Página no encontrada",
                                mensaje="La dirección que abriste no existe."), 404
+
+    @app.errorhandler(500)
+    def error_500(_e):
+        db.session.rollback()
+        logging.getLogger("ubite").exception("error no controlado en %s", request.path)
+        return render_template("error.html", titulo="Algo salió mal",
+                               mensaje="Ocurrió un error inesperado. Si estabas guardando algo, "
+                                       "la operación se deshizo completa."), 500
 
     return app
 

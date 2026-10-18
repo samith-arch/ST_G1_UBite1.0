@@ -139,7 +139,9 @@ producción en esta fase.
   stock (cajero y administrador); para el administrador, creación y edición de productos,
   reporte del día con exportación a CSV, clientes, usuarios (crear, activar o desactivar,
   cambiar contraseña, ver quién está en línea) y código QR para imprimir.
-- Pendiente: pago en la aplicación con pasarela en modo de pruebas y notificaciones Web Push.
+- Implementado: aviso al celular con notificaciones web (Web Push) cuando el pedido está
+  listo, con la página de seguimiento como respaldo.
+- El pago en la aplicación queda simulado (pagos de prueba en los datos iniciales).
 - El aviso al celular se hará con notificaciones web (Web Push); depende de que el cliente
   dé permiso en el navegador, por eso se mantiene la página de seguimiento como respaldo.
 
@@ -197,7 +199,20 @@ Usuarios de prueba (solo entorno local):
 | Cajero | `acajero` | `Cajero2026*` |
 | Administrador | `admin` | `Admin2026*` |
 
-### 4. Ejecutar el proyecto
+### 4. Pruebas de las propiedades ACID
+
+```bash
+python -m pytest pruebas -v
+```
+
+Las pruebas usan una base temporal aparte y revisan atomicidad (una falla a mitad del
+registro no deja nada guardado), consistencia (la base rechaza stock negativo, estados
+fuera de orden, subtotales mal calculados y pagos dobles), aislamiento (cinco personas
+pidiendo la última unidad al mismo tiempo: solo una la obtiene) y durabilidad (lo
+confirmado se lee desde otra conexión). Cada commit y rollback de la aplicación queda en
+`logs/ubite.log`.
+
+### 5. Ejecutar el proyecto
 
 ```bash
 python run.py
@@ -210,6 +225,21 @@ La aplicación quedará disponible en:
 
 Para probarla desde un celular conectado a la misma red Wi-Fi, ejecutar
 `flask --app run run --host 0.0.0.0` y abrir `http://<IP-del-computador>:5000/`.
+
+### 6. Notificaciones al celular
+
+Los navegadores solo permiten notificaciones en páginas seguras (`https` o `localhost`).
+Para probarlas desde un celular hay que abrir la aplicación por `https`, por ejemplo con
+un túnel de Cloudflare:
+
+```bash
+cloudflared tunnel --url http://localhost:5000
+```
+
+El comando muestra una dirección `https://...trycloudflare.com` que se abre en el celular.
+En iPhone, además, hay que agregar la página a la pantalla de inicio (Compartir → Agregar
+a inicio) y abrirla desde ese ícono. Las claves de las notificaciones se crean solas la
+primera vez en `instance/` y no se suben al repositorio.
 
 ---
 
