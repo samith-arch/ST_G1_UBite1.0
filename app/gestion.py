@@ -6,7 +6,23 @@ from werkzeug.security import generate_password_hash
 
 from .database import db, reintentar, transaccion
 from .models import Categoria, Cliente, Pedido, Producto, Usuario, ahora
-from .servicios import ACTIVOS, ErrorNegocio
+import re
+
+from .servicios import ACTIVOS, ErrorNegocio, limpiar_nombre
+
+MAX_STOCK = 9999
+MAX_ENTRADA = 1000
+USUARIO = re.compile(r"^[a-z0-9.]{3,20}$")
+
+
+def _entero(valor, campo, minimo, maximo):
+    texto = str(valor or "").strip()
+    if not texto.isdigit():
+        raise ErrorNegocio("Datos no válidos", f"{campo} debe ser un número entero, sin puntos ni letras.")
+    n = int(texto)
+    if not minimo <= n <= maximo:
+        raise ErrorNegocio("Datos no válidos", f"{campo} debe estar entre {minimo} y {maximo}.")
+    return n
 
 
 # reporte del dia
@@ -84,32 +100,40 @@ def inventario():
 
 @reintentar
 def entrada_stock(id_producto, cantidad):
-    if cantidad <= 0:
-        raise ErrorNegocio("Cantidad no válida", "La entrada debe ser mayor que cero.")
+    cantidad = _entero(cantidad, "La cantidad", 1, MAX_ENTRADA)
     with transaccion("entrada_stock"):
         p = db.session.get(Producto, id_producto)
         if p is None:
             raise ErrorNegocio("Producto no encontrado", "El producto ya no existe.")
+        if p.stock_actual + cantidad > MAX_STOCK:
+            raise ErrorNegocio("Cantidad no válida",
+                               f"{p.nombre} quedaría con más de {MAX_STOCK} unidades. Revisa la cantidad.")
         p.stock_actual += cantidad
         return p.nombre, p.stock_actual
 
 
 @reintentar
 def guardar_producto(datos, id_producto=None):
-    nombre = datos.get("nombre", "").strip()
-    categoria = datos.get("categoria", "").strip()
-    try:
-        precio = float(datos.get("precio", 0))
-        stock = int(datos.get("stock_actual", 0))
-        minimo = int(datos.get("stock_minimo", 0))
-    except ValueError:
-        raise ErrorNegocio("Datos no válidos", "Precio y cantidades deben ser números.")
-    if not nombre or not categoria:
-        raise ErrorNegocio("Faltan datos", "El producto necesita nombre y categoría.")
-    if precio <= 0 or stock < 0 or minimo < 0:
-        raise ErrorNegocio("Datos no válidos", "El precio debe ser mayor que cero y el stock no puede ser negativo.")
+    nombre = " ".join(datos.get("nombre", "").split())
+    categoria = " ".join(datos.get("categoria", "").split())
+    descripcion = " ".join(datos.get("descripcion", "").split())
+    if not 2 <= len(nombre) <= 60:
+        raise ErrorNegocio("Datos no válidos", "El nombre del producto debe tener entre 2 y 60 caracteres.")
+    if limpiar_nombre(categoria) is None or len(categoria) > 30:
+        raise ErrorNegocio("Datos no válidos", "La categoría debe tener solo letras (2 a 30 caracteres).")
+    if len(descripcion) > 80:
+        raise ErrorNegocio("Datos no válidos", "La descripción puede tener máximo 80 caracteres.")
+    precio = _entero(datos.get("precio"), "El precio", 50, 500000)
+    if precio % 50:
+        raise ErrorNegocio("Datos no válidos", "El precio debe ir de 50 en 50 pesos (por ejemplo 2.500 o 2.550).")
+    stock = _entero(datos.get("stock_actual"), "El stock actual", 0, MAX_STOCK)
+    minimo = _entero(datos.get("stock_minimo"), "El stock mínimo", 0, MAX_STOCK)
 
     with transaccion("guardar_producto"):
+        repetido = Producto.query.filter(func.lower(Producto.nombre) == nombre.lower(),
+                                         Producto.id_producto != (id_producto or 0)).first()
+        if repetido:
+            raise ErrorNegocio("Producto repetido", f"Ya existe un producto llamado {repetido.nombre}.")
         cat = Categoria.query.filter(func.lower(Categoria.nombre) == categoria.lower()).first()
         if cat is None:
             cat = Categoria(nombre=categoria)
@@ -117,7 +141,7 @@ def guardar_producto(datos, id_producto=None):
         p = db.session.get(Producto, id_producto) if id_producto else Producto()
         if p is None:
             raise ErrorNegocio("Producto no encontrado", "El producto ya no existe.")
-        p.nombre, p.descripcion, p.precio = nombre, datos.get("descripcion", "").strip() or None, precio
+        p.nombre, p.descripcion, p.precio = nombre, descripcion or None, precio
         p.stock_actual, p.stock_minimo, p.categoria = stock, minimo, cat
         p.activo = datos.get("activo") == "si"
         db.session.add(p)
@@ -144,12 +168,20 @@ def clientes(buscar=""):
     return filas
 
 
+def _validar_clave(clave):
+    if not 8 <= len(clave) <= 64:
+        raise ErrorNegocio("Contraseña no válida", "La contraseña debe tener entre 8 y 64 caracteres.")
+
+
 def crear_usuario(nombre, username, rol, clave):
-    nombre, username = nombre.strip(), username.strip().lower()
-    if not nombre or not username or rol not in ("cajero", "administrador"):
-        raise ErrorNegocio("Faltan datos", "Escribe nombre, usuario y rol.")
-    if len(clave) < 8:
-        raise ErrorNegocio("Contraseña corta", "La contraseña debe tener al menos 8 caracteres.")
+    nombre, username = limpiar_nombre(nombre), username.strip().lower()
+    if nombre is None:
+        raise ErrorNegocio("Nombre no válido", "El nombre solo puede tener letras y espacios (2 a 60 caracteres).")
+    if not USUARIO.match(username):
+        raise ErrorNegocio("Usuario no válido", "El usuario debe tener de 3 a 20 letras, números o puntos, sin espacios.")
+    if rol not in ("cajero", "administrador"):
+        raise ErrorNegocio("Faltan datos", "Elige el rol del usuario.")
+    _validar_clave(clave)
     with transaccion("crear_usuario"):
         if Usuario.query.filter_by(username=username).first():
             raise ErrorNegocio("Usuario repetido", f"Ya existe el usuario {username}.")
@@ -169,10 +201,11 @@ def cambiar_activo(id_usuario, quien):
 
 
 def cambiar_clave(id_usuario, clave):
-    if len(clave) < 8:
-        raise ErrorNegocio("Contraseña corta", "La contraseña debe tener al menos 8 caracteres.")
+    _validar_clave(clave)
     with transaccion("cambiar_clave"):
         u = db.session.get(Usuario, id_usuario)
+        if u is None:
+            raise ErrorNegocio("Usuario no encontrado", "El usuario ya no existe.")
         u.password_hash = generate_password_hash(clave)
         return u.username
 

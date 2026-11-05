@@ -58,6 +58,13 @@ def clientes():
                            activos=sum(1 for f in filas if f["activo"]))
 
 
+def _id_usuario():
+    valor = request.form.get("id_usuario", "")
+    if not valor.isdigit():
+        raise ErrorNegocio("Usuario no encontrado", "No se reconoció el usuario elegido.")
+    return int(valor)
+
+
 @bp.route("/usuarios", methods=["GET", "POST"])
 @rol_requerido("administrador")
 def usuarios():
@@ -69,12 +76,13 @@ def usuarios():
                                       request.form.get("rol", ""), request.form.get("clave", ""))
                 flash("Usuario creado.")
             elif accion == "activo":
-                nombre, activo = gestion.cambiar_activo(int(request.form["id_usuario"]), current_user)
+                id_usuario = _id_usuario()
+                nombre, activo = gestion.cambiar_activo(id_usuario, current_user)
                 if not activo:
-                    en_linea.pop(int(request.form["id_usuario"]), None)
+                    en_linea.pop(id_usuario, None)
                 flash(f"{nombre} quedó {'activo' if activo else 'inactivo'}.")
             elif accion == "clave":
-                nombre = gestion.cambiar_clave(int(request.form["id_usuario"]), request.form.get("clave", ""))
+                nombre = gestion.cambiar_clave(_id_usuario(), request.form.get("clave", ""))
                 flash(f"Se cambió la contraseña de {nombre}.")
         except ErrorNegocio as e:
             flash(f"{e.titulo}: {e.mensaje}", "error")

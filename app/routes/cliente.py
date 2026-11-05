@@ -15,7 +15,6 @@ from . import en_linea
 
 bp = Blueprint("cliente", __name__)
 
-CELULAR = re.compile(r"^3\d{9}$")
 
 
 @bp.before_request
@@ -83,11 +82,11 @@ def _ruta_interna(url, defecto):
 def inicio():
     errores, form = {}, request.form
     if request.method == "POST":
-        nombre = form.get("nombre", "").strip()
+        nombre = servicios.limpiar_nombre(form.get("nombre", ""))
         telefono = re.sub(r"\D", "", form.get("telefono", ""))
-        if not nombre or len(nombre) > 60:
-            errores["nombre"] = "Escribe tu nombre."
-        if not CELULAR.match(telefono):
+        if nombre is None:
+            errores["nombre"] = "Escribe tu nombre solo con letras (2 a 60 caracteres)."
+        if not servicios.CELULAR.match(telefono):
             errores["telefono"] = "Debe tener 10 dígitos y empezar por 3."
         if not errores:
             session["cliente"] = {"nombre": nombre, "telefono": telefono}

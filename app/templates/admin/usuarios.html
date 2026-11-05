@@ -47,14 +47,14 @@
       <label class="etiqueta" for="nombre">Nombre</label>
       <input class="form-control linea-campo mb-3" id="nombre" name="nombre" maxlength="60" required>
       <label class="etiqueta" for="username">Usuario</label>
-      <input class="form-control linea-campo mb-3" id="username" name="username" maxlength="30" autocomplete="off" required>
+      <input class="form-control linea-campo mb-3" id="username" name="username" maxlength="20" autocomplete="off" required>
       <label class="etiqueta" for="rol">Rol</label>
       <select class="form-select selector-categoria w-100 mb-3" id="rol" name="rol">
         <option value="cajero">Cajero</option>
         <option value="administrador">Administrador</option>
       </select>
       <label class="etiqueta" for="clave">Contraseña</label>
-      <input class="form-control linea-campo mb-4" id="clave" name="clave" type="password" minlength="8" autocomplete="new-password" required>
+      <input class="form-control linea-campo mb-4" id="clave" name="clave" type="password" minlength="8" maxlength="64" autocomplete="new-password" required>
       <button class="btn btn-ubite w-100" name="accion" value="crear">Crear usuario</button>
     </form>
   </div>

@@ -70,15 +70,15 @@ def presencial():
     if request.method == "GET":
         return render_template("caja/presencial.html", menu=menu, form={}, codigo=codigo)
 
-    nombre = request.form.get("nombre", "").strip()
+    nombre = servicios.limpiar_nombre(request.form.get("nombre", ""))
     telefono = re.sub(r"\D", "", request.form.get("telefono", ""))
     items = {int(k[5:]): int(v) for k, v in request.form.items()
-             if k.startswith("cant_") and v.isdigit() and int(v) > 0}
+             if k[5:].isdigit() and k.startswith("cant_") and v.isdigit() and int(v) > 0}
 
     error = None
-    if not nombre:
-        error = "Escribe el nombre del cliente."
-    elif telefono and not re.match(r"^3\d{9}$", telefono):
+    if nombre is None:
+        error = "Escribe el nombre del cliente solo con letras (2 a 60 caracteres)."
+    elif telefono and not servicios.CELULAR.match(telefono):
         error = "El celular debe tener 10 dígitos y empezar por 3."
     if error:
         flash(error, "error")
@@ -89,7 +89,7 @@ def presencial():
                                             usuario=current_user)
     except ErrorNegocio as e:
         detalle = " · ".join(f"{a}: {b}" for a, b in e.filas[:-3]) if e.faltantes else e.mensaje
-        flash(f"{e.titulo}. {detalle}. No se guardó nada.", "error")
+        flash(f"{e.titulo}. {detalle.rstrip('.')}. No se guardó nada.", "error")
         return render_template("caja/presencial.html", menu=menu, form=request.form, codigo=codigo)
     except BaseOcupada:
         flash("La base de datos está ocupada con otros pedidos. No se guardó nada, intenta otra vez.", "error")

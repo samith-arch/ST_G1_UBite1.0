@@ -26,8 +26,9 @@ def lista():
 def entrada():
     if request.method == "POST":
         try:
-            nombre, stock = gestion.entrada_stock(int(request.form.get("id_producto", 0)),
-                                                  int(request.form.get("cantidad") or 0))
+            id_producto = request.form.get("id_producto", "")
+            nombre, stock = gestion.entrada_stock(int(id_producto) if id_producto.isdigit() else 0,
+                                                  request.form.get("cantidad"))
             flash(f"Entrada registrada: {nombre} queda con {stock} unidades.")
             return redirect(url_for("inventario.lista"))
         except ErrorNegocio as e:
