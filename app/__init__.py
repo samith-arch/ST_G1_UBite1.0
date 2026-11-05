@@ -114,4 +114,5 @@ def create_app():
 @login_manager.user_loader
 def cargar_usuario(id_usuario):
     from .models import Usuario
-    return db.session.get(Usuario, int(id_usuario))
+    u = db.session.get(Usuario, int(id_usuario))
+    return u if u is not None and u.activo else None

@@ -2,62 +2,58 @@
 {% set titulo_barra = "Usuarios" %}
 {% block titulo_pagina %}Usuarios{% endblock %}
 {% block panel %}
-<div class="mb-4">
-  <p class="etiqueta mb-1">{{ usuarios|selectattr("activo")|list|length }} activos · {{ conectados|length }} en línea ahora</p>
-  <h1 class="titulo display-5 mb-0 d-none d-lg-block">Usuarios</h1>
+<div class="d-flex flex-wrap justify-content-between align-items-end gap-3 mb-3">
+  <div>
+    <p class="etiqueta mb-1">{{ todos|selectattr("activo")|list|length }} activos · {{ conectados|length }} en línea ahora</p>
+    <h1 class="titulo display-5 mb-0 d-none d-lg-block">Usuarios</h1>
+  </div>
+  <div class="d-flex flex-wrap gap-2 acciones-modulo">
+    <a class="btn btn-contorno" href="{{ url_for('admin.editar_usuario') }}"><i class="bi bi-pencil"></i> Editar usuario</a>
+    <a class="btn btn-peligro" href="{{ url_for('admin.eliminar_usuario') }}"><i class="bi bi-trash3"></i> Eliminar usuario</a>
+    <a class="btn btn-ubite" href="{{ url_for('admin.nuevo_usuario') }}"><i class="bi bi-plus-lg"></i> Nuevo usuario</a>
+  </div>
 </div>
 
-<div class="row g-4">
-  <div class="col-lg-8">
+<form method="get" class="d-flex flex-wrap gap-3 align-items-end mb-3" role="search">
+  <div class="campo-icono flex-fill buscador"><i class="bi bi-search"></i>
+    <input class="form-control linea-campo" name="buscar" value="{{ filtros.buscar }}" maxlength="40"
+           placeholder="Buscar por nombre o usuario…" aria-label="Buscar usuario">
+  </div>
+  <select class="form-select selector-categoria" name="rol" aria-label="Rol">
+    <option value="">Todos los roles</option>
+    <option value="cajero" {{ 'selected' if filtros.rol == 'cajero' }}>Cajero</option>
+    <option value="administrador" {{ 'selected' if filtros.rol == 'administrador' }}>Administrador</option>
+  </select>
+  <select class="form-select selector-categoria" name="estado" aria-label="Estado">
+    <option value="">Todos</option>
+    <option value="activo" {{ 'selected' if filtros.estado == 'activo' }}>Activos</option>
+    <option value="inactivo" {{ 'selected' if filtros.estado == 'inactivo' }}>Inactivos</option>
+  </select>
+  <button class="btn btn-contorno">Filtrar</button>
+  {% if filtros.buscar or filtros.rol or filtros.estado %}<a class="small" href="{{ url_for('admin.usuarios') }}">Quitar filtros</a>{% endif %}
+</form>
+
+{% if not usuarios %}
+<div class="aviso">No hay usuarios que coincidan con la búsqueda.</div>
+{% else %}
+<div class="tarjeta">
+  <table class="table tabla-ubite align-middle mb-0">
+    <thead><tr><th>Nombre</th><th>Usuario</th><th>Rol</th><th>Estado</th></tr></thead>
+    <tbody>
     {% for u in usuarios %}
-    <div class="tarjeta-pedido">
-      <div class="d-flex flex-wrap justify-content-between align-items-start gap-2">
-        <div>
-          <div class="fw-bold">{{ u.nombre }} {% if u.id_usuario == current_user.id_usuario %}<span class="small suave">(tú)</span>{% endif %}</div>
-          <div class="small suave"><span class="mono">{{ u.username }}</span> · {{ u.rol }}</div>
-        </div>
-        <div class="d-flex gap-2">
-          {% if u.id_usuario in conectados %}<span class="chip chip-oscuro"><i class="bi bi-circle-fill" style="font-size:.5rem"></i> En línea</span>{% endif %}
-          <span class="chip {{ 'chip-punteado' if not u.activo }}">{{ "Activo" if u.activo else "Inactivo" }}</span>
-        </div>
-      </div>
-      {% if u.id_usuario != current_user.id_usuario %}
-      <div class="d-flex flex-wrap gap-2 mt-3">
-        <form method="post" class="d-flex gap-2 flex-fill">
-          <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
-          <input type="hidden" name="id_usuario" value="{{ u.id_usuario }}">
-          <input class="form-control linea-campo" type="password" name="clave" minlength="8" placeholder="Nueva contraseña" autocomplete="new-password" aria-label="Nueva contraseña de {{ u.username }}">
-          <button class="btn btn-suave text-nowrap" name="accion" value="clave">Cambiar</button>
-        </form>
-        <form method="post">
-          <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
-          <input type="hidden" name="id_usuario" value="{{ u.id_usuario }}">
-          <button class="btn {{ 'btn-contorno' if u.activo else 'btn-ubite' }}" name="accion" value="activo">{{ "Desactivar" if u.activo else "Activar" }}</button>
-        </form>
-      </div>
-      {% endif %}
-    </div>
+    <tr class="{{ 'text-body-secondary' if not u.activo }}">
+      <td class="fw-bold">{{ u.nombre }} {% if u.id_usuario == current_user.id_usuario %}<span class="small suave fw-normal">(tú)</span>{% endif %}</td>
+      <td class="mono">{{ u.username }}</td>
+      <td class="suave">{{ u.rol }}</td>
+      <td class="text-nowrap">
+        <span class="chip {{ 'chip-punteado' if not u.activo }}">{{ "Activo" if u.activo else "Inactivo" }}</span>
+        {% if u.id_usuario in conectados %}<span class="chip chip-oscuro ms-1"><i class="bi bi-circle-fill" style="font-size:.5rem"></i> En línea</span>{% endif %}
+      </td>
+    </tr>
     {% endfor %}
-  </div>
-
-  <div class="col-lg-4">
-    <form method="post" class="tarjeta">
-      <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
-      <h2 class="titulo fs-3">Nuevo usuario</h2>
-      <label class="etiqueta" for="nombre">Nombre</label>
-      <input class="form-control linea-campo mb-3" id="nombre" name="nombre" maxlength="60" required>
-      <label class="etiqueta" for="username">Usuario</label>
-      <input class="form-control linea-campo mb-3" id="username" name="username" maxlength="20" autocomplete="off" required>
-      <label class="etiqueta" for="rol">Rol</label>
-      <select class="form-select selector-categoria w-100 mb-3" id="rol" name="rol">
-        <option value="cajero">Cajero</option>
-        <option value="administrador">Administrador</option>
-      </select>
-      <label class="etiqueta" for="clave">Contraseña</label>
-      <input class="form-control linea-campo mb-4" id="clave" name="clave" type="password" minlength="8" maxlength="64" autocomplete="new-password" required>
-      <button class="btn btn-ubite w-100" name="accion" value="crear">Crear usuario</button>
-    </form>
-  </div>
+    </tbody>
+  </table>
 </div>
+{% endif %}
 <p class="small suave mt-3">"En línea" es el personal que usó el panel en los últimos 15 minutos.</p>
 {% endblock %}

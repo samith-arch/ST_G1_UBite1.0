@@ -1,3 +1,4 @@
+import re
 from collections import Counter, defaultdict
 from datetime import timedelta
 
@@ -5,8 +6,8 @@ from sqlalchemy import func
 from werkzeug.security import generate_password_hash
 
 from .database import db, reintentar, transaccion
-from .models import Categoria, Cliente, DetallePedido, Pedido, Producto, Usuario, ahora
-import re
+from .models import (Categoria, Cliente, DetallePedido, Pago, Pedido, Producto, Transaccion,
+                     Usuario, ahora)
 
 from .servicios import ACTIVOS, ErrorNegocio, limpiar_nombre
 
@@ -106,13 +107,18 @@ def inventario(buscar="", categoria="", estado=""):
     return productos
 
 
+def ventas_producto(id_producto):
+    return DetallePedido.query.filter_by(id_producto=id_producto).count()
+
+
 @reintentar
 def eliminar_producto(id_producto):
+    # si ya se vendio no se borra: los pedidos y reportes lo necesitan
     with transaccion("eliminar_producto"):
         p = db.session.get(Producto, id_producto)
         if p is None:
             raise ErrorNegocio("Producto no encontrado", "El producto ya no existe.")
-        ventas = DetallePedido.query.filter_by(id_producto=p.id_producto).count()
+        ventas = ventas_producto(p.id_producto)
         if ventas:
             raise ErrorNegocio("No se puede eliminar",
                                f"{p.nombre} aparece en {ventas} pedido(s) y se necesita para el historial "
@@ -120,16 +126,6 @@ def eliminar_producto(id_producto):
         nombre = p.nombre
         db.session.delete(p)
         return nombre
-
-
-@reintentar
-def cambiar_activo_producto(id_producto):
-    with transaccion("cambiar_activo_producto"):
-        p = db.session.get(Producto, id_producto)
-        if p is None:
-            raise ErrorNegocio("Producto no encontrado", "El producto ya no existe.")
-        p.activo = not p.activo
-        return p.nombre, p.activo
 
 
 @reintentar
@@ -207,31 +203,79 @@ def _validar_clave(clave):
         raise ErrorNegocio("Contraseña no válida", "La contraseña debe tener entre 8 y 64 caracteres.")
 
 
-def crear_usuario(nombre, username, rol, clave):
-    nombre, username = limpiar_nombre(nombre), username.strip().lower()
+def _datos_usuario(nombre, username, rol):
+    nombre, username = limpiar_nombre(nombre), (username or "").strip().lower()
     if nombre is None:
         raise ErrorNegocio("Nombre no válido", "El nombre solo puede tener letras y espacios (2 a 60 caracteres).")
     if not USUARIO.match(username):
         raise ErrorNegocio("Usuario no válido", "El usuario debe tener de 3 a 20 letras, números o puntos, sin espacios.")
     if rol not in ("cajero", "administrador"):
         raise ErrorNegocio("Faltan datos", "Elige el rol del usuario.")
+    return nombre, username
+
+
+def usuarios(buscar="", rol="", estado=""):
+    lista = Usuario.query.order_by(Usuario.activo.desc(), Usuario.nombre).all()
+    buscar = buscar.strip().lower()
+    if buscar:
+        lista = [u for u in lista if buscar in u.nombre.lower() or buscar in u.username]
+    if rol:
+        lista = [u for u in lista if u.rol == rol]
+    if estado:
+        lista = [u for u in lista if u.activo == (estado == "activo")]
+    return lista
+
+
+@reintentar
+def editar_usuario(id_usuario, nombre, username, rol, activo, quien):
+    nombre, username = _datos_usuario(nombre, username, rol)
+    with transaccion("editar_usuario"):
+        u = db.session.get(Usuario, id_usuario)
+        if u is None:
+            raise ErrorNegocio("Usuario no encontrado", "El usuario ya no existe.")
+        if u.id_usuario == quien.id_usuario and (rol != u.rol or not activo):
+            raise ErrorNegocio("No permitido", "No puedes cambiar tu propio rol ni desactivar tu usuario.")
+        otro = Usuario.query.filter(Usuario.username == username, Usuario.id_usuario != u.id_usuario).first()
+        if otro:
+            raise ErrorNegocio("Usuario repetido", f"Ya existe el usuario {username}.")
+        u.nombre, u.username, u.rol, u.activo = nombre, username, rol, activo
+        return u.username
+
+
+def registros_usuario(id_usuario):
+    return (Pedido.query.filter_by(id_usuario=id_usuario).count()
+            + Pago.query.filter_by(id_usuario=id_usuario).count()
+            + Transaccion.query.filter_by(id_usuario=id_usuario).count())
+
+
+@reintentar
+def eliminar_usuario(id_usuario, quien):
+    # quien ya atendio pedidos o cobro queda en el historial, por eso solo se desactiva
+    with transaccion("eliminar_usuario"):
+        u = db.session.get(Usuario, id_usuario)
+        if u is None:
+            raise ErrorNegocio("Usuario no encontrado", "El usuario ya no existe.")
+        if u.id_usuario == quien.id_usuario:
+            raise ErrorNegocio("No permitido", "No puedes eliminar tu propio usuario.")
+        registros = registros_usuario(u.id_usuario)
+        if registros:
+            raise ErrorNegocio("No se puede eliminar",
+                               f"{u.username} tiene {registros} registro(s) de pedidos, pagos o transacciones "
+                               "a su nombre. Desactívalo para quitarle el acceso sin perder el historial.")
+        nombre = u.username
+        db.session.delete(u)
+        return nombre
+
+
+@reintentar
+def crear_usuario(nombre, username, rol, clave):
+    nombre, username = _datos_usuario(nombre, username, rol)
     _validar_clave(clave)
     with transaccion("crear_usuario"):
         if Usuario.query.filter_by(username=username).first():
             raise ErrorNegocio("Usuario repetido", f"Ya existe el usuario {username}.")
         db.session.add(Usuario(nombre=nombre, username=username, rol=rol,
                                password_hash=generate_password_hash(clave)))
-
-
-def cambiar_activo(id_usuario, quien):
-    with transaccion("cambiar_activo"):
-        u = db.session.get(Usuario, id_usuario)
-        if u is None:
-            raise ErrorNegocio("Usuario no encontrado", "El usuario ya no existe.")
-        if u.id_usuario == quien.id_usuario:
-            raise ErrorNegocio("No permitido", "No puedes desactivar tu propio usuario.")
-        u.activo = not u.activo
-        return u.username, u.activo
 
 
 def cambiar_clave(id_usuario, clave):

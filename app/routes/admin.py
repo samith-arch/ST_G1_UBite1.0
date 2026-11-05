@@ -10,6 +10,7 @@ from flask_login import current_user
 from markupsafe import Markup
 
 from .. import gestion
+from ..database import db
 from ..models import Usuario
 from ..servicios import ErrorNegocio
 from . import en_linea, rol_requerido
@@ -58,40 +59,87 @@ def clientes():
                            activos=sum(1 for f in filas if f["activo"]))
 
 
-def _id_usuario():
-    valor = request.form.get("id_usuario", "")
-    if not valor.isdigit():
-        raise ErrorNegocio("Usuario no encontrado", "No se reconoció el usuario elegido.")
-    return int(valor)
-
-
-@bp.route("/usuarios", methods=["GET", "POST"])
+@bp.route("/usuarios")
 @rol_requerido("administrador")
 def usuarios():
-    if request.method == "POST":
-        accion = request.form.get("accion")
-        try:
-            if accion == "crear":
-                gestion.crear_usuario(request.form.get("nombre", ""), request.form.get("username", ""),
-                                      request.form.get("rol", ""), request.form.get("clave", ""))
-                flash("Usuario creado.")
-            elif accion == "activo":
-                id_usuario = _id_usuario()
-                nombre, activo = gestion.cambiar_activo(id_usuario, current_user)
-                if not activo:
-                    en_linea.pop(id_usuario, None)
-                flash(f"{nombre} quedó {'activo' if activo else 'inactivo'}.")
-            elif accion == "clave":
-                nombre = gestion.cambiar_clave(_id_usuario(), request.form.get("clave", ""))
-                flash(f"Se cambió la contraseña de {nombre}.")
-        except ErrorNegocio as e:
-            flash(f"{e.titulo}: {e.mensaje}", "error")
-        return redirect(url_for("admin.usuarios"))
-
+    filtros = {"buscar": request.args.get("buscar", "")[:40], "rol": request.args.get("rol", ""),
+               "estado": request.args.get("estado", "")}
+    todos = gestion.usuarios()
+    lista = gestion.usuarios(**filtros) if any(filtros.values()) else todos
     limite = datetime.now() - timedelta(minutes=15)
     conectados = {i for i, t in en_linea.items() if t >= limite}
-    lista = Usuario.query.order_by(Usuario.activo.desc(), Usuario.nombre).all()
-    return render_template("admin/usuarios.html", usuarios=lista, conectados=conectados)
+    return render_template("admin/usuarios.html", usuarios=lista, todos=todos,
+                           conectados=conectados, filtros=filtros)
+
+
+@bp.route("/usuarios/nuevo", methods=["GET", "POST"])
+@rol_requerido("administrador")
+def nuevo_usuario():
+    datos = None
+    if request.method == "POST":
+        datos = request.form
+        try:
+            gestion.crear_usuario(datos.get("nombre", ""), datos.get("username", ""),
+                                  datos.get("rol", ""), datos.get("clave", ""))
+            flash(f"Usuario {datos.get('username', '').strip().lower()} creado.")
+            return redirect(url_for("admin.usuarios"))
+        except ErrorNegocio as e:
+            flash(f"{e.titulo}: {e.mensaje}", "error")
+    return render_template("admin/usuario.html", u=None, datos=datos)
+
+
+@bp.route("/usuarios/editar")
+@rol_requerido("administrador")
+def editar_usuario():
+    elegido = request.args.get("id", type=int)
+    if elegido and db.session.get(Usuario, elegido):
+        return redirect(url_for("admin.usuario", id_usuario=elegido))
+    return render_template("admin/elegir_usuario.html", usuarios=gestion.usuarios())
+
+
+@bp.route("/usuarios/<int:id_usuario>", methods=["GET", "POST"])
+@rol_requerido("administrador")
+def usuario(id_usuario):
+    u = db.session.get(Usuario, id_usuario)
+    if u is None:
+        flash("Usuario no encontrado: el usuario ya no existe.", "error")
+        return redirect(url_for("admin.usuarios"))
+    datos = None
+    if request.method == "POST":
+        try:
+            if request.form.get("accion") == "clave":
+                flash(f"Se cambió la contraseña de {gestion.cambiar_clave(id_usuario, request.form.get('clave', ''))}.")
+            else:
+                datos = request.form
+                activo = datos.get("activo") == "si"
+                nombre = gestion.editar_usuario(id_usuario, datos.get("nombre", ""), datos.get("username", ""),
+                                                datos.get("rol", ""), activo, current_user)
+                if not activo:
+                    en_linea.pop(id_usuario, None)
+                flash(f"Se guardaron los cambios de {nombre}.")
+            return redirect(url_for("admin.usuarios"))
+        except ErrorNegocio as e:
+            flash(f"{e.titulo}: {e.mensaje}", "error")
+    return render_template("admin/usuario.html", u=u, datos=datos)
+
+
+@bp.route("/usuarios/eliminar", methods=["GET", "POST"])
+@rol_requerido("administrador")
+def eliminar_usuario():
+    if request.method == "POST":
+        id_usuario = request.form.get("id_usuario", "")
+        try:
+            nombre = gestion.eliminar_usuario(int(id_usuario) if id_usuario.isdigit() else 0, current_user)
+            en_linea.pop(int(id_usuario), None)
+            flash(f"Se eliminó el usuario {nombre}.")
+            return redirect(url_for("admin.usuarios"))
+        except ErrorNegocio as e:
+            flash(f"{e.titulo}: {e.mensaje}", "error")
+            return redirect(url_for("admin.eliminar_usuario", id=id_usuario))
+    elegido = request.args.get("id", type=int)
+    u = db.session.get(Usuario, elegido) if elegido else None
+    return render_template("admin/eliminar_usuario.html", usuarios=gestion.usuarios(), u=u,
+                           registros=gestion.registros_usuario(u.id_usuario) if u else 0)
 
 
 @bp.route("/qr")

@@ -1,0 +1,39 @@
+{% extends "caja/_base.html" %}
+{% from "_elegir.html" import selector %}
+{% set titulo_barra = "Eliminar usuario" %}
+{% set atras = url_for('admin.usuarios') %}
+{% block titulo_pagina %}Eliminar usuario{% endblock %}
+{% block panel %}
+<div class="columna-movil mx-lg-0">
+  <p class="etiqueta mb-1">Usuarios</p>
+  <h1 class="titulo display-5 mb-4 d-none d-lg-block">Eliminar usuario</h1>
+  {% set opciones = [] %}
+  {% for x in usuarios if x.id_usuario != current_user.id_usuario %}{% set _ = opciones.append((x.id_usuario, x.nombre ~ " · " ~ x.username)) %}{% endfor %}
+  {{ selector(url_for('admin.eliminar_usuario'), "¿Qué usuario quieres eliminar?", opciones, u.id_usuario if u else None) }}
+
+  {% if u %}
+  <div class="tarjeta">
+    <div class="d-flex justify-content-between align-items-start gap-2">
+      <div><div class="fw-bold">{{ u.nombre }}</div><div class="small suave"><span class="mono">{{ u.username }}</span> · {{ u.rol }}</div></div>
+      <span class="chip {{ 'chip-punteado' if not u.activo }}">{{ "Activo" if u.activo else "Inactivo" }}</span>
+    </div>
+    {% if u.id_usuario == current_user.id_usuario %}
+    <div class="aviso mt-3">No puedes eliminar tu propio usuario.</div>
+    {% elif registros %}
+    <div class="aviso mt-3"><i class="bi bi-exclamation-triangle me-1"></i>
+      No se puede eliminar: tiene {{ registros }} registro(s) de pedidos, pagos o transacciones a su nombre.</div>
+    <p class="small suave mt-2 mb-3">Para quitarle el acceso sin perder el historial, desmarca «Puede entrar al sistema» al editarlo.</p>
+    <a class="btn btn-contorno w-100" href="{{ url_for('admin.usuario', id_usuario=u.id_usuario) }}">Editar {{ u.username }}</a>
+    {% else %}
+    <p class="small suave mt-3">Este usuario no tiene pedidos ni cobros registrados, así que se puede eliminar. Esta acción no se puede deshacer.</p>
+    <form method="post" onsubmit="return confirm('¿Eliminar el usuario {{ u.username }}? Esta acción no se puede deshacer.')">
+      <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+      <input type="hidden" name="id_usuario" value="{{ u.id_usuario }}">
+      <button class="btn btn-peligro w-100"><i class="bi bi-trash3"></i> Eliminar {{ u.username }}</button>
+    </form>
+    {% endif %}
+  </div>
+  {% endif %}
+  <a class="small d-inline-block mt-3" href="{{ url_for('admin.usuarios') }}">Volver a usuarios</a>
+</div>
+{% endblock %}

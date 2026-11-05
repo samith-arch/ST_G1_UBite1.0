@@ -70,6 +70,9 @@ body { min-height: 100vh; background: var(--papel); color: var(--tinta-oscura); 
 .btn-peligro:hover { background: var(--alerta); color: var(--papel-claro); }
 .btn-icono { background: none; border: 0; padding: 0; }
 .icono-btn.peligro { color: var(--alerta); }
+/* acciones de inventario y usuarios: pequenas para no competir con la tabla */
+.acciones-modulo .btn { display: inline-flex; align-items: center; gap: .35rem; font-size: .74rem; letter-spacing: .05em; line-height: 1.2; padding: .38rem .7rem; }
+.acciones-modulo .btn i { font-size: .9em; }
 .btn-mas { width: 2.15rem; height: 2.15rem; padding: 0; display: inline-flex; align-items: center; justify-content: center; border: 1px solid var(--tinta); color: var(--tinta); background: transparent; border-radius: 4px; font-size: 1.1rem; }
 .btn-mas.chico { width: 1.65rem; height: 1.65rem; font-size: .95rem; }
 .btn-mas:hover:not(:disabled) { background: var(--tinta); color: var(--papel-claro); }

@@ -49,8 +49,10 @@ def datos_menu():
     from flask import request
     admin = current_user.rol == "administrador"
     seccion = request.endpoint
-    if seccion in ("inventario.entrada", "inventario.producto"):
+    if seccion and seccion.startswith("inventario."):
         seccion = "inventario.lista"
+    elif seccion in ("admin.usuario", "admin.nuevo_usuario", "admin.editar_usuario", "admin.eliminar_usuario"):
+        seccion = "admin.usuarios"
     return {"es_admin": admin, "seccion": seccion,
             "menu_personal": MENU_ADMIN if admin else MENU_CAJERO,
             "menu_inferior": INFERIOR_ADMIN if admin else INFERIOR_CAJERO}

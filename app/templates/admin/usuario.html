@@ -1,0 +1,59 @@
+{% extends "caja/_base.html" %}
+{% set titulo_barra = "Editar usuario" if u else "Nuevo usuario" %}
+{% set atras = url_for('admin.usuarios') %}
+{% set d = datos or {} %}
+{% block titulo_pagina %}{{ titulo_barra }}{% endblock %}
+{% block panel %}
+{% set propio = u and u.id_usuario == current_user.id_usuario %}
+<div class="columna-movil mx-lg-0">
+  <p class="etiqueta mb-1">Usuarios</p>
+  <h1 class="titulo display-5 mb-4 d-none d-lg-block">{{ titulo_barra }}</h1>
+
+  <form method="post" class="tarjeta">
+    <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+    <label class="etiqueta" for="nombre">Nombre</label>
+    <input class="form-control linea-campo mb-3" id="nombre" name="nombre" maxlength="60" required
+           value="{{ d.get('nombre') if datos else (u.nombre if u else '') }}">
+    <label class="etiqueta" for="username">Usuario</label>
+    <input class="form-control linea-campo mb-1 mono" id="username" name="username" maxlength="20" autocomplete="off" required
+           value="{{ d.get('username') if datos else (u.username if u else '') }}">
+    <p class="small suave mb-3">De 3 a 20 letras, números o puntos, sin espacios. Es con lo que entra al sistema.</p>
+    <label class="etiqueta" for="rol">Rol</label>
+    {% set rol = d.get('rol') if datos else (u.rol if u else 'cajero') %}
+    <select class="form-select selector-categoria w-100 mb-3" id="rol" name="rol" {{ 'disabled' if propio }}>
+      <option value="cajero" {{ 'selected' if rol == 'cajero' }}>Cajero</option>
+      <option value="administrador" {{ 'selected' if rol == 'administrador' }}>Administrador</option>
+    </select>
+    {% if u %}
+      {% set activo = (d.get('activo') == 'si') if datos else u.activo %}
+      <div class="form-check">
+        <input class="form-check-input" type="checkbox" id="activo" name="activo" value="si" {{ 'checked' if activo }} {{ 'disabled' if propio }}>
+        <label class="form-check-label" for="activo">Puede entrar al sistema (activo)</label>
+      </div>
+      {% if propio %}
+      <input type="hidden" name="rol" value="{{ u.rol }}"><input type="hidden" name="activo" value="si">
+      <p class="small suave mt-2 mb-0">Es tu usuario: no puedes cambiar tu rol ni desactivarte.</p>
+      {% endif %}
+      <button class="btn btn-ubite w-100 mt-4" name="accion" value="editar">Guardar cambios</button>
+    {% else %}
+      <label class="etiqueta" for="clave">Contraseña</label>
+      <input class="form-control linea-campo mb-4" id="clave" name="clave" type="password" minlength="8" maxlength="64"
+             autocomplete="new-password" required>
+      <button class="btn btn-ubite w-100">Crear usuario</button>
+    {% endif %}
+  </form>
+
+  {% if u %}
+  <form method="post" class="tarjeta mt-3">
+    <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+    <label class="etiqueta" for="clave">Nueva contraseña</label>
+    <div class="d-flex gap-2">
+      <input class="form-control linea-campo" id="clave" type="password" name="clave" minlength="8" maxlength="64"
+             autocomplete="new-password" required>
+      <button class="btn btn-suave text-nowrap" name="accion" value="clave">Cambiar</button>
+    </div>
+  </form>
+  {% endif %}
+  <a class="small d-inline-block mt-3" href="{{ url_for('admin.usuarios') }}">Volver a usuarios</a>
+</div>
+{% endblock %}

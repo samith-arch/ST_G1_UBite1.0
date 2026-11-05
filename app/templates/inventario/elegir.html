@@ -1,0 +1,16 @@
+{% extends "caja/_base.html" %}
+{% from "_elegir.html" import selector %}
+{% set titulo_barra = "Editar producto" %}
+{% set atras = url_for('inventario.lista') %}
+{% block titulo_pagina %}Editar producto{% endblock %}
+{% block panel %}
+<div class="columna-movil mx-lg-0">
+  <p class="etiqueta mb-1">Inventario</p>
+  <h1 class="titulo display-5 mb-4 d-none d-lg-block">Editar producto</h1>
+  {% set opciones = [] %}
+  {% for p in productos %}{% set _ = opciones.append((p.id_producto, p.nombre ~ " · " ~ p.categoria.nombre)) %}{% endfor %}
+  {{ selector(url_for('inventario.editar'), "¿Qué producto quieres editar?", opciones) }}
+  <p class="small suave">Al elegirlo se abre el formulario con sus datos: nombre, precio, stock y si se muestra en el menú.</p>
+  <a class="small d-inline-block mt-2" href="{{ url_for('inventario.lista') }}">Volver al inventario</a>
+</div>
+{% endblock %}

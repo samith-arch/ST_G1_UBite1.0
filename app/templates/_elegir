@@ -1,0 +1,15 @@
+{# selector para escoger el registro que se va a editar o eliminar #}
+{% macro selector(accion, etiqueta, opciones, elegido=None, boton="Continuar") %}
+<form method="get" action="{{ accion }}" class="tarjeta mb-3">
+  <label class="etiqueta" for="elegido">{{ etiqueta }}</label>
+  <div class="d-flex gap-2 align-items-end">
+    <select class="form-select selector-categoria flex-fill" id="elegido" name="id" required onchange="this.form.submit()">
+      <option value="" {{ 'selected' if not elegido }} disabled>Elige uno…</option>
+      {% for valor, texto in opciones %}
+      <option value="{{ valor }}" {{ 'selected' if elegido == valor }}>{{ texto }}</option>
+      {% endfor %}
+    </select>
+    <noscript><button class="btn btn-contorno">{{ boton }}</button></noscript>
+  </div>
+</form>
+{% endmacro %}

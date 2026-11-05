@@ -25,26 +25,31 @@ def lista():
                            tope=max([p.stock_actual for p in todos] + [1]))
 
 
-@bp.route("/producto/<int:id_producto>/eliminar", methods=["POST"])
+@bp.route("/editar")
 @rol_requerido("administrador")
-def eliminar(id_producto):
-    try:
-        flash(f"{gestion.eliminar_producto(id_producto)} se eliminó del inventario.")
-    except ErrorNegocio as e:
-        flash(f"{e.titulo}: {e.mensaje}", "error")
-    return redirect(url_for("inventario.lista"))
+def editar():
+    elegido = request.args.get("id", type=int)
+    if elegido and db.session.get(Producto, elegido):
+        return redirect(url_for("inventario.producto", id_producto=elegido))
+    return render_template("inventario/elegir.html", productos=gestion.inventario())
 
 
-@bp.route("/producto/<int:id_producto>/activo", methods=["POST"])
+@bp.route("/eliminar", methods=["GET", "POST"])
 @rol_requerido("administrador")
-def activo(id_producto):
-    try:
-        nombre, activo = gestion.cambiar_activo_producto(id_producto)
-        flash(f"{nombre} {'vuelve a mostrarse' if activo else 'ya no se muestra'} en el menú.")
-    except ErrorNegocio as e:
-        flash(f"{e.titulo}: {e.mensaje}", "error")
-    return redirect(request.referrer if request.referrer and request.host in request.referrer
-                    else url_for("inventario.lista"))
+def eliminar():
+    if request.method == "POST":
+        id_producto = request.form.get("id_producto", "")
+        try:
+            nombre = gestion.eliminar_producto(int(id_producto) if id_producto.isdigit() else 0)
+            flash(f"{nombre} se eliminó del inventario.")
+            return redirect(url_for("inventario.lista"))
+        except ErrorNegocio as e:
+            flash(f"{e.titulo}: {e.mensaje}", "error")
+            return redirect(url_for("inventario.eliminar", id=id_producto))
+    elegido = request.args.get("id", type=int)
+    p = db.session.get(Producto, elegido) if elegido else None
+    return render_template("inventario/eliminar.html", productos=gestion.inventario(), p=p,
+                           ventas=gestion.ventas_producto(p.id_producto) if p else 0)
 
 
 @bp.route("/entrada", methods=["GET", "POST"])
