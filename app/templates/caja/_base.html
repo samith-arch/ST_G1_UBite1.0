@@ -42,7 +42,11 @@
 
 {% block contenido %}
 {% with mensajes = get_flashed_messages(with_categories=true) %}
-  {% for categoria, m in mensajes %}<div class="mensaje-flash {{ 'error' if categoria == 'error' }}" role="status">{{ m }}</div>{% endfor %}
+  {% for categoria, m in mensajes %}
+  <div class="mensaje-flash {{ 'error' if categoria == 'error' }}" role="{{ 'alert' if categoria == 'error' else 'status' }}">
+    <i class="bi {{ 'bi-exclamation-circle' if categoria == 'error' else 'bi-check-circle' }}"></i><span>{{ m }}</span>
+  </div>
+  {% endfor %}
 {% endwith %}
 {% block panel %}{% endblock %}
 

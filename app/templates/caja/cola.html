@@ -68,7 +68,7 @@
 </div>
 
 {% if buscar %}
-<div class="mb-4" style="max-width:420px">
+<div class="mb-4" style="max-width:26rem">
   {% if encontrado %}{{ tarjeta(encontrado) }}{% else %}<p class="suave">No hay un pedido con el código {{ buscar }}.</p>{% endif %}
   <a class="small" href="{{ url_for('caja.cola') }}">Quitar búsqueda</a>
 </div>

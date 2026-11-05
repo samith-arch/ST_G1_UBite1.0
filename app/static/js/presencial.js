@@ -2,7 +2,15 @@
   const pesos = (v) => Math.round(v).toLocaleString("es-CO");
   const lineas = document.getElementById("lineas");
   const recibido = document.getElementById("recibido");
+  const formulario = document.getElementById("presencial");
+  const barra = document.getElementById("barra-cobro");
+  const error = document.getElementById("error-cobro");
   let total = 0;
+
+  function avisar(texto) {
+    error.textContent = texto;
+    error.classList.toggle("oculto", !texto);
+  }
 
   function resumen() {
     const filas = [];
@@ -16,22 +24,44 @@
       }
     });
     lineas.innerHTML = filas.join("") || '<p class="small suave mb-0">Todavía no hay productos.</p>';
-    document.getElementById("total-boton").textContent = pesos(total);
+    for (const id of ["total", "total-boton", "total-barra"]) document.getElementById(id).textContent = pesos(total);
+    barra.classList.toggle("oculto", total === 0 || resumenVisible);
+    formulario.classList.toggle("con-productos", total > 0);
+    if (total > 0) avisar("");
     vuelto();
   }
 
   function vuelto() {
     const r = Number(recibido.value.replace(/\D/g, "")) || 0;
-    document.getElementById("cambio").textContent = r >= total ? pesos(r - total) : "falta " + pesos(total - r);
+    document.getElementById("cambio").textContent = !r ? "—" : r >= total ? pesos(r - total) : "falta " + pesos(total - r);
   }
 
   document.addEventListener("cantidades", resumen);
   recibido.addEventListener("input", vuelto);
 
-  document.getElementById("presencial").addEventListener("submit", (e) => {
+  // en el celular la barra de cobro se esconde cuando el resumen ya se ve en pantalla
+  let resumenVisible = false;
+  if ("IntersectionObserver" in window) {
+    new IntersectionObserver(([e]) => {
+      resumenVisible = e.isIntersecting;
+      barra.classList.toggle("oculto", total === 0 || resumenVisible);
+    }).observe(document.getElementById("resumen"));
+  }
+
+  barra.querySelector("button").addEventListener("click", () => {
+    document.getElementById("resumen").scrollIntoView({ behavior: "smooth", block: "start" });
+  });
+
+  formulario.addEventListener("submit", (e) => {
     const r = Number(recibido.value.replace(/\D/g, "")) || 0;
-    if (total === 0) { e.preventDefault(); alert("Agrega al menos un producto."); }
-    else if (r && r < total) { e.preventDefault(); alert("El efectivo recibido no alcanza para el total."); }
+    let texto = "";
+    if (total === 0) texto = "Agrega al menos un producto antes de cobrar.";
+    else if (r && r < total) texto = "El efectivo recibido no alcanza: faltan $ " + pesos(total - r) + ".";
+    if (texto) {
+      e.preventDefault();
+      avisar(texto);
+      error.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
   });
 
   // busqueda y filtro por categoria

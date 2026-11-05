@@ -11,19 +11,6 @@
     <h1 class="titulo display-5 mb-0 d-none d-lg-block">Pedido presencial</h1>
   </div>
 
-  <div class="zona-datos tarjeta">
-    <h2 class="titulo fs-3 d-none d-lg-block">Pedido en caja</h2>
-    <p class="mono small suave">Código asignado: {{ codigo }}</p>
-    <label class="etiqueta" for="nombre">Nombre del cliente</label>
-    <div class="campo-icono mb-3"><i class="bi bi-person"></i>
-      <input class="form-control linea-campo" id="nombre" name="nombre" maxlength="60" value="{{ form.get('nombre', '') }}" required>
-    </div>
-    <label class="etiqueta" for="telefono">Celular (opcional)</label>
-    <div class="campo-icono"><i class="bi bi-telephone"></i>
-      <input class="form-control linea-campo" id="telefono" name="telefono" inputmode="numeric" maxlength="13" value="{{ form.get('telefono', '') }}">
-    </div>
-  </div>
-
   <div class="zona-productos">
     <label class="etiqueta" for="buscar">Agregar producto</label>
     <div class="d-flex gap-3 align-items-end mb-2">
@@ -57,7 +44,21 @@
     {% endfor %}
   </div>
 
-  <div class="zona-resumen tarjeta lineas-total">
+  <aside class="zona-pedido">
+  <div class="zona-datos tarjeta">
+    <h2 class="titulo fs-3 d-none d-lg-block">Pedido en caja</h2>
+    <p class="mono small suave">Código asignado: {{ codigo }}</p>
+    <label class="etiqueta" for="nombre">Nombre del cliente</label>
+    <div class="campo-icono mb-3"><i class="bi bi-person"></i>
+      <input class="form-control linea-campo" id="nombre" name="nombre" maxlength="60" value="{{ form.get('nombre', '') }}" required>
+    </div>
+    <label class="etiqueta" for="telefono">Celular (opcional)</label>
+    <div class="campo-icono"><i class="bi bi-telephone"></i>
+      <input class="form-control linea-campo" id="telefono" name="telefono" inputmode="numeric" maxlength="13" value="{{ form.get('telefono', '') }}">
+    </div>
+  </div>
+
+  <div class="zona-resumen tarjeta lineas-total" id="resumen">
     <div id="lineas"><p class="small suave mb-0">Todavía no hay productos.</p></div>
     <div class="fila total"><span class="etiqueta">Total</span><span class="mono fs-4">$ <span id="total">0</span></span></div>
     <div class="fila align-items-center">
@@ -65,8 +66,14 @@
       <input class="form-control linea-campo mono text-end recibido" id="recibido" inputmode="numeric" placeholder="0">
     </div>
     <div class="fila suave"><span>Cambio</span><span class="mono" id="cambio">0</span></div>
+    <div class="aviso-error small mt-3 oculto" id="error-cobro" role="alert"></div>
     <button class="btn btn-ubite w-100 mt-3" type="submit" id="cobrar">Cobrar y registrar · $ <span id="total-boton">0</span></button>
     <p class="small suave mt-2 mb-0">Se registra en una sola transacción: pedido, productos, descuento de stock y pago en efectivo. El pedido entra directo a «En preparación».</p>
+  </div>
+  </aside>
+
+  <div class="barra-cobro d-lg-none oculto" id="barra-cobro">
+    <button type="button"><span class="accion">Ver pedido y cobrar</span><span>$ <span id="total-barra">0</span></span></button>
   </div>
 </form>
 {% endblock %}
