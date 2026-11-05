@@ -13,12 +13,38 @@ bp = Blueprint("inventario", __name__, url_prefix="/inventario")
 @bp.route("/")
 @rol_requerido("cajero", "administrador")
 def lista():
-    productos = gestion.inventario()
-    bajos = [p for p in productos if p.activo and p.stock_actual <= p.stock_minimo]
-    return render_template("inventario/lista.html", productos=productos, bajos=bajos,
-                           estado=gestion.estado_producto,
-                           categorias=len({p.id_categoria for p in productos}),
-                           tope=max([p.stock_actual for p in productos] + [1]))
+    filtros = {"buscar": request.args.get("buscar", "")[:60],
+               "categoria": request.args.get("categoria", ""),
+               "estado": request.args.get("estado", "")}
+    todos = gestion.inventario()
+    productos = gestion.inventario(**filtros) if any(filtros.values()) else todos
+    bajos = [p for p in todos if p.activo and p.stock_actual <= p.stock_minimo]
+    return render_template("inventario/lista.html", productos=productos, bajos=bajos, total=len(todos),
+                           filtros=filtros, estado=gestion.estado_producto,
+                           categorias=Categoria.query.order_by(Categoria.nombre).all(),
+                           tope=max([p.stock_actual for p in todos] + [1]))
+
+
+@bp.route("/producto/<int:id_producto>/eliminar", methods=["POST"])
+@rol_requerido("administrador")
+def eliminar(id_producto):
+    try:
+        flash(f"{gestion.eliminar_producto(id_producto)} se eliminó del inventario.")
+    except ErrorNegocio as e:
+        flash(f"{e.titulo}: {e.mensaje}", "error")
+    return redirect(url_for("inventario.lista"))
+
+
+@bp.route("/producto/<int:id_producto>/activo", methods=["POST"])
+@rol_requerido("administrador")
+def activo(id_producto):
+    try:
+        nombre, activo = gestion.cambiar_activo_producto(id_producto)
+        flash(f"{nombre} {'vuelve a mostrarse' if activo else 'ya no se muestra'} en el menú.")
+    except ErrorNegocio as e:
+        flash(f"{e.titulo}: {e.mensaje}", "error")
+    return redirect(request.referrer if request.referrer and request.host in request.referrer
+                    else url_for("inventario.lista"))
 
 
 @bp.route("/entrada", methods=["GET", "POST"])

@@ -5,7 +5,7 @@ from sqlalchemy import func
 from werkzeug.security import generate_password_hash
 
 from .database import db, reintentar, transaccion
-from .models import Categoria, Cliente, Pedido, Producto, Usuario, ahora
+from .models import Categoria, Cliente, DetallePedido, Pedido, Producto, Usuario, ahora
 import re
 
 from .servicios import ACTIVOS, ErrorNegocio, limpiar_nombre
@@ -93,9 +93,43 @@ def estado_producto(p):
     return "activo"
 
 
-def inventario():
-    return (Producto.query.join(Categoria)
-            .order_by(Categoria.nombre, Producto.nombre).all())
+def inventario(buscar="", categoria="", estado=""):
+    productos = (Producto.query.join(Categoria)
+                 .order_by(Categoria.nombre, Producto.nombre).all())
+    buscar = buscar.strip().lower()
+    if buscar:
+        productos = [p for p in productos if buscar in p.nombre.lower()]
+    if categoria:
+        productos = [p for p in productos if p.categoria.nombre == categoria]
+    if estado:
+        productos = [p for p in productos if estado_producto(p) == estado]
+    return productos
+
+
+@reintentar
+def eliminar_producto(id_producto):
+    with transaccion("eliminar_producto"):
+        p = db.session.get(Producto, id_producto)
+        if p is None:
+            raise ErrorNegocio("Producto no encontrado", "El producto ya no existe.")
+        ventas = DetallePedido.query.filter_by(id_producto=p.id_producto).count()
+        if ventas:
+            raise ErrorNegocio("No se puede eliminar",
+                               f"{p.nombre} aparece en {ventas} pedido(s) y se necesita para el historial "
+                               "y los reportes. Desactívalo para sacarlo del menú.")
+        nombre = p.nombre
+        db.session.delete(p)
+        return nombre
+
+
+@reintentar
+def cambiar_activo_producto(id_producto):
+    with transaccion("cambiar_activo_producto"):
+        p = db.session.get(Producto, id_producto)
+        if p is None:
+            raise ErrorNegocio("Producto no encontrado", "El producto ya no existe.")
+        p.activo = not p.activo
+        return p.nombre, p.activo
 
 
 @reintentar

@@ -66,6 +66,10 @@ body { min-height: 100vh; background: var(--papel); color: var(--tinta-oscura); 
 .btn-contorno:hover { background: var(--papel-claro); color: var(--tinta-oscura); }
 .btn-suave { background: var(--lavado); border: 1px solid var(--lavado); color: var(--tinta-oscura); }
 .btn-suave:hover { background: var(--linea); }
+.btn-peligro { background: transparent; border: 1px solid var(--alerta); color: var(--alerta); }
+.btn-peligro:hover { background: var(--alerta); color: var(--papel-claro); }
+.btn-icono { background: none; border: 0; padding: 0; }
+.icono-btn.peligro { color: var(--alerta); }
 .btn-mas { width: 2.15rem; height: 2.15rem; padding: 0; display: inline-flex; align-items: center; justify-content: center; border: 1px solid var(--tinta); color: var(--tinta); background: transparent; border-radius: 4px; font-size: 1.1rem; }
 .btn-mas.chico { width: 1.65rem; height: 1.65rem; font-size: .95rem; }
 .btn-mas:hover:not(:disabled) { background: var(--tinta); color: var(--papel-claro); }
