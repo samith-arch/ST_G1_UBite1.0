@@ -70,6 +70,8 @@ ubite/
 │   ├── models.py            # modelos SQLAlchemy (1:1 con el modelo relacional)
 │   ├── servicios.py         # lógica de negocio y coordinación de transacciones
 │   ├── gestion.py           # reporte, inventario, clientes y usuarios
+│   ├── etl.py               # comando flask etl: almacén de datos y datasets
+│   ├── calendario.py        # festivos y periodos académicos de 2026
 │   ├── routes/
 │   │   ├── __init__.py      # control de acceso por rol
 │   │   ├── cliente.py       # QR, menú, carrito, pedido, seguimiento, modificar y cancelar
@@ -85,6 +87,7 @@ ubite/
 │   ├── crear_bd.py          # crea ubite.db y la exporta a ubite.db.sql
 │   ├── ubite.db.sql         # exportación de la base con los datos de prueba
 │   └── ubite.db             # se genera con crear_bd.py (no se sube al repositorio)
+├── ia/                      # servicio de IA: red neuronal (TensorFlow) y API (FastAPI)
 ├── pruebas/                 # pruebas de las propiedades ACID (pytest)
 ├── docs/fase1/              # prototipo HTML de la Fase 1
 ├── .env.example             # variables de configuración, sin valores reales
@@ -265,6 +268,42 @@ a inicio) y abrirla desde ese ícono. Las claves de las notificaciones se crean 
 primera vez en `instance/` y no se suben al repositorio.
 
 ---
+
+### 8. Historial simulado, ETL y servicio de inteligencia artificial
+
+UBite todavía no tiene meses de ventas reales, así que para entrenar la red neuronal se genera
+un historial simulado de 2026 (unos 17.000 pedidos con código `S-#####`, clientes ficticios con
+celular `3009…`). Se puede borrar en cualquier momento sin tocar los pedidos reales.
+
+```bash
+python database/historial_simulado.py          # genera el historial (o --borrar para quitarlo)
+flask --app run etl --completo                  # llena database/ubite_dw.db y exporta ia/datos/*.csv
+```
+
+El ETL lee `ubite.db` en solo lectura, carga el almacén en estrella en una sola transacción y
+exporta dos datasets sin datos personales: `dataset_ventas.csv` (una fila por producto vendido)
+y `dataset_demanda.csv` (día × franja × producto, el que usa la red). El celular de cada
+cliente se reemplaza por un código HMAC-SHA256 con la clave `UBITE_CLAVE_ANONIMA` del `.env`.
+
+El servicio de IA vive en `ia/` y usa **Python 3.12** (TensorFlow no se instala en el entorno de
+la aplicación), con su propio entorno virtual:
+
+```bash
+cd ia
+py -3.12 -m venv .venv                          # en Linux: python3.12 -m venv .venv
+.venv\Scripts\activate                          # en Linux: source .venv/bin/activate
+pip install -r requirements.txt
+python entrenar_modelo.py                       # entrena la red y la compara con el promedio
+uvicorn api:app --port 8000                     # API en http://127.0.0.1:8000/docs
+```
+
+| Archivo | Qué hace |
+|---|---|
+| `ia/demanda.py` | Prepara las 62 entradas de la red (producto, día, franja, periodo académico y ventas de la semana anterior) |
+| `ia/entrenar_modelo.py` | Entrena la red (Keras: 62 → 8 ReLU → 1), la prueba con las dos últimas semanas y guarda `modelo/modelo_demanda.keras` |
+| `ia/api.py` | FastAPI: `POST /predecir` (unidades por franja de un producto) y `POST /alertas` (productos que se agotarían con el stock actual) |
+
+Con la API encendida, el administrador ve en **Alertas de reposición** (`/admin/alertas`) qué productos se agotarían antes del cierre. Flask envía el stock real desde la media hora actual (o desde las 7:00 del siguiente día de apertura si ya cerró) y muestra cuántas unidades faltan. Si la API está apagada, la pantalla lo avisa y el resto de la aplicación sigue igual. La dirección se cambia con `UBITE_IA_URL` en el `.env`.
 
 ## Integrantes
 

@@ -25,6 +25,7 @@ MENU_ADMIN = [
     ("caja.cola", "Pedidos en curso", "bi-grid"),
     ("caja.presencial", "Pedido presencial", "bi-bag"),
     ("inventario.lista", "Inventario", "bi-box-seam"),
+    ("admin.alertas", "Alertas de reposición", "bi-exclamation-triangle"),
     ("caja.historial", "Historial", "bi-clock-history"),
     ("admin.clientes", "Clientes", "bi-person-lines-fill"),
     ("admin.usuarios", "Usuarios", "bi-people"),
@@ -37,7 +38,7 @@ MENU_CAJERO = [
     ("caja.historial", "Historial", "bi-clock-history"),
 ]
 # en el celular solo caben cuatro, los demas del admin van en "Mas"
-INFERIOR_ADMIN = [MENU_ADMIN[0], MENU_ADMIN[3], MENU_ADMIN[6], MENU_ADMIN[7]]
+INFERIOR_ADMIN = [MENU_ADMIN[0], MENU_ADMIN[3], MENU_ADMIN[7], MENU_ADMIN[8]]
 INFERIOR_CAJERO = [("caja.cola", "Pedidos", "bi-grid"), ("caja.presencial", "Presencial", "bi-bag"),
                    ("inventario.lista", "Inventario", "bi-box-seam"),
                    ("caja.historial", "Historial", "bi-clock-history")]

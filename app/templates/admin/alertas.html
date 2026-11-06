@@ -1,0 +1,67 @@
+{% extends "caja/_base.html" %}
+{% set titulo_barra = "Alertas" %}
+{% set dias = ["lunes","martes","miércoles","jueves","viernes","sábado","domingo"] %}
+{% set meses = ["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"] %}
+{% block titulo_pagina %}Alertas de reposición{% endblock %}
+{% block panel %}
+<div class="d-flex flex-wrap justify-content-between align-items-end gap-3 mb-4">
+  <div>
+    <p class="etiqueta mb-1">
+      {% if a %}{{ dias[a.fecha.weekday()] }} {{ a.fecha.day }} de {{ meses[a.fecha.month - 1] }} · desde las {{ a.desde }} hasta el cierre
+      {% else %}Estimación de la red neuronal{% endif %}
+    </p>
+    <h1 class="titulo display-5 mb-0 d-none d-lg-block">Alertas de reposición</h1>
+  </div>
+  <div class="acciones-modulo">
+    <a class="btn btn-contorno" href="{{ url_for('admin.alertas') }}"><i class="bi bi-arrow-clockwise"></i> Actualizar</a>
+  </div>
+</div>
+
+{% if caido %}
+<div class="tarjeta">
+  <p class="fw-bold mb-1"><i class="bi bi-plug"></i> El servicio de IA no está disponible</p>
+  <p class="mb-2">{{ error or "No se pudo conectar con " ~ url_ia ~ ". La venta y el inventario siguen funcionando normal; solo esta pantalla depende del servicio." }}</p>
+  <p class="small suave mb-0">Para encenderlo, en la carpeta <span class="mono">ia</span>: <span class="mono">.venv\Scripts\activate</span> y luego <span class="mono">uvicorn api:app --port 8000</span>.</p>
+</div>
+{% else %}
+<div class="row g-3 mb-4">
+  <div class="col-6 col-xl-3"><div class="tarjeta h-100">
+    <p class="etiqueta mb-1">Se agotarían</p><div class="mono fs-3">{{ a.agotan }}</div>
+    <p class="small suave mb-0">de {{ a.filas|length }} productos activos</p>
+  </div></div>
+  <div class="col-6 col-xl-3"><div class="tarjeta h-100">
+    <p class="etiqueta mb-1">Unidades a reponer</p><div class="mono fs-3">{{ a.filas|sum(attribute="faltan") }}</div>
+    <p class="small suave mb-0">para llegar al cierre</p>
+  </div></div>
+</div>
+
+{% if a.sin_modelo %}
+<div class="aviso mb-3 small">El modelo todavía no conoce {{ a.sin_modelo|join(", ") }}. Corre el ETL y vuelve a entrenar para incluirlos.</div>
+{% endif %}
+
+<div class="tarjeta">
+  <div class="table-responsive">
+  <table class="table tabla-ubite align-middle mb-0">
+    <thead><tr><th>Producto</th><th class="d-none d-md-table-cell">Categoría</th><th class="text-end">Stock</th><th class="text-end">Venta<span class="d-none d-md-inline"> estimada</span></th><th class="text-end">Faltan</th><th class="d-none d-md-table-cell"></th></tr></thead>
+    <tbody>
+    {% for f in a.filas %}
+    <tr>
+      <td class="fw-bold">{{ f.producto }}</td>
+      <td class="small d-none d-md-table-cell">{{ f.categoria }}</td>
+      <td class="mono text-end">{{ f.stock_actual }}</td>
+      <td class="mono text-end">{{ "%.1f"|format(f.estimado_resto_del_dia) }}</td>
+      <td class="mono text-end {{ 'fw-bold' if f.se_agota }}">{{ f.faltan or "—" }}</td>
+      <td class="text-end d-none d-md-table-cell">
+        {% if f.se_agota %}<span class="chip chip-oscuro">Se agota</span>
+        {% elif f.bajo_minimo %}<span class="chip">Bajo el mínimo</span>
+        {% else %}<span class="chip chip-punteado">Alcanza</span>{% endif %}
+      </td>
+    </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  </div>
+</div>
+<p class="small suave mt-3">La venta estimada sale de una red neuronal entrenada con el historial simulado. Es una guía para planear la reposición; la entrada de mercancía se sigue registrando en Inventario.</p>
+{% endif %}
+{% endblock %}

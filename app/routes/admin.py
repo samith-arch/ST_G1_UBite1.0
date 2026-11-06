@@ -9,7 +9,7 @@ from flask import (Blueprint, Response, flash, redirect, render_template, reques
 from flask_login import current_user
 from markupsafe import Markup
 
-from .. import gestion
+from .. import alertas_ia, gestion
 from ..database import db
 from ..models import Usuario
 from ..servicios import ErrorNegocio
@@ -59,6 +59,17 @@ def exportar():
     # el BOM es para que Excel abra bien las tildes
     return Response("﻿" + salida.getvalue(), mimetype="text/csv",
                     headers={"Content-Disposition": f"attachment; filename={nombre}.csv"})
+
+
+@bp.route("/alertas")
+@rol_requerido("administrador")
+def alertas():
+    try:
+        datos, error = alertas_ia.alertas(), None
+    except alertas_ia.ServicioNoDisponible as e:
+        datos, error = None, str(e) if e.args and e.args[0] else None
+    return render_template("admin/alertas.html", a=datos, error=error, caido=datos is None,
+                           url_ia=alertas_ia.URL_IA)
 
 
 @bp.route("/clientes")
