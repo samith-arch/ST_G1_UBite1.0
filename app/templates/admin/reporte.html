@@ -1,27 +1,50 @@
 {% extends "caja/_base.html" %}
-{% block titulo_pagina %}Reporte del día{% endblock %}
+{% set nombres = {"dia": "del día", "semana": "de la semana", "mes": "del mes", "anio": "del año"} %}
+{% set pestanas = [("dia", "Día"), ("semana", "Semana"), ("mes", "Mes"), ("anio", "Año")] %}
+{% set anteriores = {"dia": "al día anterior", "semana": "a la semana anterior", "mes": "al mes anterior", "anio": "al año anterior"} %}
+{% block titulo_pagina %}Reporte {{ nombres[periodo] }}{% endblock %}
 {% set meses = ["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"] %}
 {% set dias = ["lunes","martes","miércoles","jueves","viernes","sábado","domingo"] %}
+{% macro fecha_larga(d) %}{{ d.day }} de {{ meses[d.month - 1] }}{% endmacro %}
 {% block panel %}
-<div class="d-flex flex-wrap justify-content-between align-items-end gap-3 mb-4">
+<div class="d-flex flex-wrap justify-content-between align-items-end gap-3 mb-3">
   <div>
     <p class="etiqueta mb-1">
-      {{ dias[fecha.weekday()] }} {{ fecha.day }} de {{ meses[fecha.month - 1] }} de {{ fecha.year }} ·
-      {% if r.cancelados %}{{ r.cancelados }} pedido(s) cancelado(s){% else %}sin pedidos cancelados{% endif %}
+      {% if periodo == "dia" %}{{ dias[r.desde.weekday()] }} {{ fecha_larga(r.desde) }} de {{ r.desde.year }}
+      {% elif periodo == "semana" %}del {{ fecha_larga(r.desde) }} al {{ fecha_larga(r.hasta) }} de {{ r.hasta.year }}
+      {% elif periodo == "mes" %}{{ meses[r.desde.month - 1] }} de {{ r.desde.year }}
+      {% else %}año {{ r.desde.year }}{% endif %}
+      · {% if r.cancelados %}{{ r.cancelados }} pedido(s) cancelado(s){% else %}sin pedidos cancelados{% endif %}
     </p>
-    <h1 class="titulo display-5 mb-0">Reporte del día</h1>
+    <h1 class="titulo display-5 mb-0">Reporte {{ nombres[periodo] }}</h1>
   </div>
-  <div class="d-flex gap-2 align-items-center">
-    <a class="btn btn-suave" href="{{ url_for('admin.reporte', fecha=ayer.isoformat()) }}" aria-label="Día anterior"><i class="bi bi-chevron-left"></i></a>
-    {% if fecha < hoy %}<a class="btn btn-suave" href="{{ url_for('admin.reporte', fecha=manana.isoformat()) }}" aria-label="Día siguiente"><i class="bi bi-chevron-right"></i></a>{% endif %}
-    <a class="btn btn-contorno" href="{{ url_for('admin.exportar', fecha=fecha.isoformat()) }}">Exportar</a>
+  <div class="d-flex flex-wrap gap-2 align-items-center acciones-modulo">
+    <a class="btn btn-contorno" href="{{ url_for('admin.reporte', fecha=anterior.isoformat(), periodo=periodo) }}" aria-label="Periodo anterior"><i class="bi bi-chevron-left"></i></a>
+    {% if siguiente %}<a class="btn btn-contorno" href="{{ url_for('admin.reporte', fecha=siguiente.isoformat(), periodo=periodo) }}" aria-label="Periodo siguiente"><i class="bi bi-chevron-right"></i></a>{% endif %}
+    {% if fecha != hoy %}<a class="btn btn-contorno" href="{{ url_for('admin.reporte', periodo=periodo) }}">Hoy</a>{% endif %}
+    <a class="btn btn-ubite" href="{{ url_for('admin.exportar', fecha=fecha.isoformat(), periodo=periodo) }}"><i class="bi bi-download"></i> Exportar</a>
   </div>
 </div>
+
+<form method="get" class="filtro-reporte mb-4" role="search">
+  <nav class="periodos" aria-label="Periodo del reporte">
+    {% for valor, texto in pestanas %}
+    <a href="{{ url_for('admin.reporte', fecha=fecha.isoformat(), periodo=valor) }}" class="{{ 'activo' if periodo == valor }}">{{ texto }}</a>
+    {% endfor %}
+  </nav>
+  <input type="hidden" name="periodo" value="{{ periodo }}">
+  <label class="d-flex align-items-center gap-2 mb-0">
+    <i class="bi bi-calendar3"></i><span class="visually-hidden">Fecha</span>
+    <input class="form-control linea-campo mono fecha-reporte" type="date" name="fecha" value="{{ fecha.isoformat() }}"
+           max="{{ hoy.isoformat() }}" onchange="this.form.submit()" required>
+  </label>
+  <noscript><button class="btn btn-contorno">Ver</button></noscript>
+</form>
 
 <div class="row g-3 mb-4">
   <div class="col-6 col-xl-3"><div class="tarjeta h-100">
     <p class="etiqueta mb-1">Total vendido</p><div class="mono fs-3">$ {{ r.total|pesos }}</div>
-    <p class="small suave mb-0">{% if r.variacion is not none %}{{ "%+d"|format(r.variacion) }} % frente al día anterior{% else %}sin ventas el día anterior{% endif %}</p>
+    <p class="small suave mb-0">{% if r.variacion is not none %}{{ "%+d"|format(r.variacion) }} % frente {{ anteriores[periodo] }}{% else %}sin ventas en el periodo anterior{% endif %}</p>
   </div></div>
   <div class="col-6 col-xl-3"><div class="tarjeta h-100">
     <p class="etiqueta mb-1">Pedidos</p><div class="mono fs-3">{{ r.pedidos }}</div>
@@ -40,20 +63,21 @@
 <div class="row g-3">
   <div class="col-lg-8">
     <div class="tarjeta h-100">
-      <h2 class="fs-6 fw-bold mb-1">Ventas por hora</h2>
-      {% if r.horas %}
-      {% set pico = r.horas|selectattr("pico")|map(attribute="hora")|list|sort %}
-      <p class="small suave">Horas con más ventas: {% for h in pico %}{{ h }}:00{{ " y " if not loop.last }}{% endfor %}</p>
-      <div class="grafica-horas">
-        {% for h in r.horas %}
-        <div class="barra-hora" title="{{ h.hora }}:00 · $ {{ h.valor|pesos }}">
-          <span class="valor {{ 'pico' if h.pico }}" style="height: {{ [h.alto, 2]|max }}%"></span>
-          <span class="mono small suave">{{ 12 if h.hora % 12 == 0 else h.hora % 12 }}</span>
+      {% set unidad = {"dia": "hora", "semana": "día", "mes": "día", "anio": "mes"}[periodo] %}
+      <h2 class="fs-6 fw-bold mb-1">Ventas por {{ unidad }}</h2>
+      {% if r.barras %}
+      <p class="small suave">{{ {"hora": "Horas", "día": "Días", "mes": "Meses"}[unidad] }} con más ventas:
+        {% for b in r.barras|selectattr("pico") %}{{ b.titulo }}{{ " y " if not loop.last }}{% endfor %}</p>
+      <div class="grafica-horas {{ 'muchas' if r.barras|length > 20 }}">
+        {% for b in r.barras %}
+        <div class="barra-hora" title="{{ b.titulo }} · $ {{ b.valor|pesos }}">
+          <span class="valor {{ 'pico' if b.pico }}" style="height: {{ [b.alto, 2]|max }}%"></span>
+          <span class="mono small suave">{{ b.texto }}</span>
         </div>
         {% endfor %}
       </div>
       {% else %}
-      <p class="suave mb-0">Todavía no hay ventas pagadas este día.</p>
+      <p class="suave mb-0">No hay ventas pagadas en este periodo.</p>
       {% endif %}
     </div>
   </div>

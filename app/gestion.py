@@ -8,7 +8,6 @@ from werkzeug.security import generate_password_hash
 from .database import db, reintentar, transaccion
 from .models import (Categoria, Cliente, DetallePedido, Pago, Pedido, Producto, Transaccion,
                      Usuario, ahora)
-
 from .servicios import ACTIVOS, ErrorNegocio, limpiar_nombre
 
 MAX_STOCK = 9999
@@ -26,37 +25,86 @@ def _entero(valor, campo, minimo, maximo):
     return n
 
 
-# reporte del dia
+# reporte por dia, semana, mes o año
 
-def _pedidos_de(fecha):
-    return Pedido.query.filter(func.date(Pedido.fecha_hora) == fecha.isoformat()).all()
+PERIODOS = ("dia", "semana", "mes", "anio")
+MESES = ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"]
+DIAS = ["lun", "mar", "mié", "jue", "vie", "sáb", "dom"]
+
+
+def rango(fecha, periodo):
+    # devuelve el primer y el ultimo dia del periodo que contiene a la fecha
+    if periodo == "semana":
+        desde = fecha - timedelta(days=fecha.weekday())
+        return desde, desde + timedelta(days=6)
+    if periodo == "mes":
+        desde = fecha.replace(day=1)
+        siguiente = (desde + timedelta(days=32)).replace(day=1)
+        return desde, siguiente - timedelta(days=1)
+    if periodo == "anio":
+        return fecha.replace(month=1, day=1), fecha.replace(month=12, day=31)
+    return fecha, fecha
+
+
+def _pedidos_entre(desde, hasta):
+    return Pedido.query.filter(func.date(Pedido.fecha_hora) >= desde.isoformat(),
+                               func.date(Pedido.fecha_hora) <= hasta.isoformat()).all()
 
 
 def _pago(pedido):
     return next((p for p in pedido.pagos if p.estado == "aprobado"), None)
 
 
-def reporte(fecha):
-    pedidos = _pedidos_de(fecha)
+def _barras(pagados, periodo, desde, hasta):
+    # agrupa las ventas segun el periodo: por hora, por dia o por mes
+    if periodo == "dia":
+        clave = lambda p: p.fecha_hora.hour
+    elif periodo == "anio":
+        clave = lambda p: p.fecha_hora.month
+    else:
+        clave = lambda p: p.fecha_hora.date()
+    suma = defaultdict(float)
+    for p, pago in pagados:
+        suma[clave(p)] += pago.monto
+    if not suma:
+        return []
+
+    if periodo == "dia":
+        # al menos la jornada normal de la cafeteria (6 a. m. a 8 p. m.)
+        claves = range(min(6, min(suma)), max(20, max(suma)) + 1)
+        texto = lambda h: str(12 if h % 12 == 0 else h % 12)
+        titulo = lambda h: f"{h}:00"
+    elif periodo == "anio":
+        claves = range(1, 13)
+        texto = lambda m: MESES[m - 1]
+        titulo = lambda m: MESES[m - 1]
+    else:
+        claves = [desde + timedelta(days=i) for i in range((hasta - desde).days + 1)]
+        texto = (lambda d: DIAS[d.weekday()]) if periodo == "semana" else (lambda d: str(d.day))
+        titulo = lambda d: f"{DIAS[d.weekday()]} {d.day}/{d.month}"
+
+    tope = max(suma.values())
+    picos = sorted(suma, key=suma.get, reverse=True)[:2]
+    return [{"texto": texto(k), "titulo": titulo(k), "valor": suma.get(k, 0),
+             "alto": suma.get(k, 0) / tope * 100, "pico": k in picos} for k in claves]
+
+
+def _total(pedidos):
+    return sum(_pago(p).monto for p in pedidos if p.estado != "cancelado" and _pago(p))
+
+
+def reporte(fecha, periodo="dia"):
+    periodo = periodo if periodo in PERIODOS else "dia"
+    desde, hasta = rango(fecha, periodo)
+    pedidos = _pedidos_entre(desde, hasta)
     validos = [p for p in pedidos if p.estado != "cancelado"]
     pagados = [(p, _pago(p)) for p in validos if _pago(p)]
     total = sum(pago.monto for _, pago in pagados)
     en_app = sum(1 for _, pago in pagados if pago.metodo == "app")
 
-    ayer = sum(_pago(p).monto for p in _pedidos_de(fecha - timedelta(days=1))
-               if p.estado != "cancelado" and _pago(p))
-
-    por_hora = defaultdict(float)
-    for p, pago in pagados:
-        por_hora[p.fecha_hora.hour] += pago.monto
-    horas = []
-    if por_hora:
-        tope = max(por_hora.values())
-        picos = sorted(por_hora, key=por_hora.get, reverse=True)[:2]
-        # se muestra al menos la jornada normal de la cafeteria (6 a. m. a 8 p. m.)
-        for h in range(min(6, min(por_hora)), max(20, max(por_hora)) + 1):
-            horas.append({"hora": h, "valor": por_hora.get(h, 0),
-                          "alto": por_hora.get(h, 0) / tope * 100, "pico": h in picos})
+    # mismo periodo inmediatamente anterior, para comparar
+    antes = rango(desde - timedelta(days=1), periodo)
+    anterior = _total(_pedidos_entre(*antes))
 
     vendidos = Counter()
     for p, _ in pagados:
@@ -64,9 +112,12 @@ def reporte(fecha):
             vendidos[d.producto.nombre] += d.subtotal
 
     return {
+        "periodo": periodo,
+        "desde": desde,
+        "hasta": hasta,
         "total": total,
-        "ayer": ayer,
-        "variacion": round((total - ayer) / ayer * 100) if ayer else None,
+        "anterior": anterior,
+        "variacion": round((total - anterior) / anterior * 100) if anterior else None,
         "pedidos": len(validos),
         "qr": sum(1 for p in validos if p.origen == "qr"),
         "presenciales": sum(1 for p in validos if p.origen == "presencial"),
@@ -76,7 +127,7 @@ def reporte(fecha):
         "en_efectivo": len(pagados) - en_app,
         "pct_app": round(en_app / len(pagados) * 100) if pagados else 0,
         "ticket": total / len(pagados) if pagados else 0,
-        "horas": horas,
+        "barras": _barras(pagados, periodo, desde, hasta),
         "mas_vendidos": vendidos.most_common(5),
         "lista": sorted(pedidos, key=lambda p: p.fecha_hora),
     }

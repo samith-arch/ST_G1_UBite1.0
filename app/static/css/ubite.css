@@ -199,6 +199,17 @@ body { min-height: 100vh; background: var(--papel); color: var(--tinta-oscura); 
 .barra-hora { flex: 1; height: 100%; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; gap: 6px; }
 .barra-hora .valor { width: 100%; background: var(--lavado); border: 1px solid var(--tinta); border-bottom: 0; }
 .barra-hora .valor.pico { background: var(--tinta); }
+.grafica-horas.muchas { gap: 3px; }
+.grafica-horas.muchas .barra-hora .small { font-size: .62rem; }
+
+/* filtro del reporte: pestañas de periodo y calendario */
+.filtro-reporte { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; }
+.periodos { display: inline-flex; border: 1px solid var(--tinta); border-radius: 4px; overflow: hidden; }
+.periodos a { font-family: var(--f-etiqueta); font-weight: 600; font-size: .74rem; letter-spacing: .05em; padding: .38rem .9rem; color: var(--tinta); text-decoration: none; }
+.periodos a + a { border-left: 1px solid var(--tinta); }
+.periodos a.activo { background: var(--tinta); color: var(--papel-claro); }
+.periodos a:hover:not(.activo) { background: var(--papel-claro); }
+.fecha-reporte { width: auto; padding: 2px 0; }
 .medidor { height: 6px; background: var(--lavado); border-radius: 3px; overflow: hidden; min-width: 4rem; }
 .medidor span { display: block; height: 100%; background: var(--tinta); }
 .fila-inventario { display: block; padding: 14px 0; border-bottom: 1px solid var(--linea); color: var(--tinta-oscura); text-decoration: none; }

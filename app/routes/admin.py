@@ -18,36 +18,47 @@ from . import en_linea, rol_requerido
 bp = Blueprint("admin", __name__, url_prefix="/admin")
 
 
-def _fecha():
+def _filtro_reporte():
+    hoy = gestion.hoy()
     try:
-        return date.fromisoformat(request.args.get("fecha", ""))
+        fecha = date.fromisoformat(request.args.get("fecha", ""))
     except ValueError:
-        return gestion.hoy()
+        fecha = hoy
+    periodo = request.args.get("periodo", "dia")
+    if periodo not in gestion.PERIODOS:
+        periodo = "dia"
+    # no hay reportes del futuro
+    return min(fecha, hoy), periodo
 
 
 @bp.route("/reporte")
 @rol_requerido("administrador")
 def reporte():
-    fecha = _fecha()
-    return render_template("admin/reporte.html", r=gestion.reporte(fecha), fecha=fecha,
-                           hoy=gestion.hoy(), ayer=fecha - timedelta(days=1),
-                           manana=fecha + timedelta(days=1))
+    fecha, periodo = _filtro_reporte()
+    r = gestion.reporte(fecha, periodo)
+    hoy = gestion.hoy()
+    siguiente = r["hasta"] + timedelta(days=1)
+    return render_template("admin/reporte.html", r=r, fecha=fecha, periodo=periodo, hoy=hoy,
+                           anterior=r["desde"] - timedelta(days=1),
+                           siguiente=siguiente if siguiente <= hoy else None)
 
 
 @bp.route("/reporte.csv")
 @rol_requerido("administrador")
 def exportar():
-    fecha = _fecha()
+    fecha, periodo = _filtro_reporte()
+    r = gestion.reporte(fecha, periodo)
     salida = io.StringIO()
     w = csv.writer(salida, delimiter=";")
-    w.writerow(["codigo", "hora", "cliente", "origen", "estado", "pago", "total"])
-    for p in gestion.reporte(fecha)["lista"]:
+    w.writerow(["codigo", "fecha", "hora", "cliente", "origen", "estado", "pago", "total"])
+    for p in r["lista"]:
         pago = next((x for x in p.pagos if x.estado == "aprobado"), None)
-        w.writerow([p.codigo, p.fecha_hora.strftime("%H:%M"), p.cliente.nombre, p.origen,
-                    p.estado, pago.metodo if pago else "pendiente", int(p.total)])
+        w.writerow([p.codigo, p.fecha_hora.strftime("%Y-%m-%d"), p.fecha_hora.strftime("%H:%M"),
+                    p.cliente.nombre, p.origen, p.estado, pago.metodo if pago else "pendiente", int(p.total)])
+    nombre = f"reporte_{r['desde']}" + (f"_a_{r['hasta']}" if r["desde"] != r["hasta"] else "")
     # el BOM es para que Excel abra bien las tildes
     return Response("﻿" + salida.getvalue(), mimetype="text/csv",
-                    headers={"Content-Disposition": f"attachment; filename=reporte_{fecha}.csv"})
+                    headers={"Content-Disposition": f"attachment; filename={nombre}.csv"})
 
 
 @bp.route("/clientes")
