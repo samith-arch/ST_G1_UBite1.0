@@ -1,4 +1,5 @@
 {% extends "caja/_base.html" %}
+{% import "_filtros.html" as f %}
 {% block titulo_pagina %}Inventario{% endblock %}
 {% macro chip(p) %}
 {% set e = estado(p) %}
@@ -26,24 +27,16 @@
 </div>
 {% endif %}
 
-<form method="get" class="d-flex flex-wrap gap-3 align-items-end mb-3" role="search">
-  <div class="campo-icono flex-fill buscador"><i class="bi bi-search"></i>
-    <input class="form-control linea-campo" name="buscar" value="{{ filtros.buscar }}" maxlength="60"
-           placeholder="Buscar producto…" aria-label="Buscar producto">
-  </div>
-  <select class="form-select selector-categoria" name="categoria" aria-label="Categoría">
-    <option value="">Todas las categorías</option>
-    {% for c in categorias %}<option {{ 'selected' if filtros.categoria == c.nombre }}>{{ c.nombre }}</option>{% endfor %}
-  </select>
-  <select class="form-select selector-categoria" name="estado" aria-label="Estado">
-    <option value="">Todos los estados</option>
-    {% for e in ("activo", "stock bajo", "agotado", "inactivo") %}<option {{ 'selected' if filtros.estado == e }}>{{ e }}</option>{% endfor %}
-  </select>
-  <button class="btn btn-contorno">Filtrar</button>
-  {% if filtros.buscar or filtros.categoria or filtros.estado %}
-  <a class="small" href="{{ url_for('inventario.lista') }}">Quitar filtros</a>
-  {% endif %}
-</form>
+{% set activos = [filtros.categoria, filtros.estado]|select|list|length %}
+{% call f.barra(url_for('inventario.lista'), filtros.buscar, "Buscar producto…", activos, url_for('inventario.lista')) %}
+  {% call f.grupo("Categoría") %}
+    {% set pares = [] %}{% for c in categorias %}{% set _ = pares.append((c.nombre, c.nombre)) %}{% endfor %}
+    {{ f.opciones("categoria", pares, filtros.categoria, "Todas") }}
+  {% endcall %}
+  {% call f.grupo("Estado del producto") %}
+    {{ f.opciones("estado", [("activo", "Activo"), ("stock bajo", "Stock bajo"), ("agotado", "Agotado"), ("inactivo", "Oculto del menú")], filtros.estado) }}
+  {% endcall %}
+{% endcall %}
 
 {% if not productos %}
 <div class="aviso mb-4">No hay productos que coincidan con la búsqueda.</div>

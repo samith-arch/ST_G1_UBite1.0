@@ -1,4 +1,5 @@
 {% extends "caja/_base.html" %}
+{% import "_filtros.html" as f %}
 {% set titulo_barra = "Usuarios" %}
 {% block titulo_pagina %}Usuarios{% endblock %}
 {% block panel %}
@@ -14,24 +15,15 @@
   </div>
 </div>
 
-<form method="get" class="d-flex flex-wrap gap-3 align-items-end mb-3" role="search">
-  <div class="campo-icono flex-fill buscador"><i class="bi bi-search"></i>
-    <input class="form-control linea-campo" name="buscar" value="{{ filtros.buscar }}" maxlength="40"
-           placeholder="Buscar por nombre o usuario…" aria-label="Buscar usuario">
-  </div>
-  <select class="form-select selector-categoria" name="rol" aria-label="Rol">
-    <option value="">Todos los roles</option>
-    <option value="cajero" {{ 'selected' if filtros.rol == 'cajero' }}>Cajero</option>
-    <option value="administrador" {{ 'selected' if filtros.rol == 'administrador' }}>Administrador</option>
-  </select>
-  <select class="form-select selector-categoria" name="estado" aria-label="Estado">
-    <option value="">Todos</option>
-    <option value="activo" {{ 'selected' if filtros.estado == 'activo' }}>Activos</option>
-    <option value="inactivo" {{ 'selected' if filtros.estado == 'inactivo' }}>Inactivos</option>
-  </select>
-  <button class="btn btn-contorno">Filtrar</button>
-  {% if filtros.buscar or filtros.rol or filtros.estado %}<a class="small" href="{{ url_for('admin.usuarios') }}">Quitar filtros</a>{% endif %}
-</form>
+{% set activos = [filtros.rol, filtros.estado]|select|list|length %}
+{% call f.barra(url_for('admin.usuarios'), filtros.buscar, "Buscar por nombre o usuario…", activos, url_for('admin.usuarios')) %}
+  {% call f.grupo("Rol") %}
+    {{ f.opciones("rol", [("cajero", "Cajero"), ("administrador", "Administrador")], filtros.rol) }}
+  {% endcall %}
+  {% call f.grupo("Estado") %}
+    {{ f.opciones("estado", [("activo", "Activos"), ("inactivo", "Inactivos")], filtros.estado) }}
+  {% endcall %}
+{% endcall %}
 
 {% if not usuarios %}
 <div class="aviso">No hay usuarios que coincidan con la búsqueda.</div>

@@ -1,10 +1,11 @@
 import re
+from datetime import date, timedelta
 
 from flask import (Blueprint, current_app, flash, redirect, render_template, request,
                    url_for)
 from flask_login import current_user
 
-from .. import avisos, servicios
+from .. import ESTADOS, avisos, gestion, servicios
 from ..database import BaseOcupada
 from ..servicios import ErrorNegocio
 from . import rol_requerido
@@ -102,10 +103,30 @@ def presencial():
     return redirect(url_for("caja.cola"))
 
 
+def _dia(nombre):
+    try:
+        return date.fromisoformat(request.args.get(nombre, ""))
+    except ValueError:
+        return None
+
+
 @bp.route("/historial")
 @rol_requerido(*PERSONAL)
 def historial():
-    pedidos = servicios.pedidos_del_dia()
-    entregados = [p for p in pedidos if p.estado == "entregado"]
-    return render_template("caja/historial.html", pedidos=pedidos,
-                           vendido=sum(p.total for p in entregados), entregados=len(entregados))
+    filtros = {"buscar": request.args.get("buscar", "")[:40], "desde": _dia("desde"), "hasta": _dia("hasta"),
+               "estado": request.args.get("estado", ""), "origen": request.args.get("origen", "")}
+    if filtros["estado"] not in ESTADOS:
+        filtros["estado"] = ""
+    if filtros["origen"] not in ("qr", "presencial"):
+        filtros["origen"] = ""
+    if filtros["desde"] and filtros["hasta"] and filtros["desde"] > filtros["hasta"]:
+        filtros["desde"], filtros["hasta"] = filtros["hasta"], filtros["desde"]
+    pagina = max(request.args.get("pagina", 1, type=int), 1)
+    paginas, resumen = gestion.historial(pagina=pagina, **filtros)
+    # para armar los enlaces de las paginas sin perder los filtros
+    args = {k: (v.isoformat() if isinstance(v, date) else v) for k, v in filtros.items() if v}
+    if paginas.pages and pagina > paginas.pages:
+        return redirect(url_for("caja.historial", pagina=paginas.pages, **args))
+    hoy = gestion.hoy()
+    return render_template("caja/historial.html", paginas=paginas, resumen=resumen, filtros=filtros,
+                           args=args, hoy=hoy, atras=lambda dias: (hoy - timedelta(days=dias)).isoformat())

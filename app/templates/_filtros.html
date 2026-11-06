@@ -1,0 +1,46 @@
+{# barra de busqueda con un desplegable de filtros, se usa en inventario, usuarios e historial #}
+{% macro barra(accion, buscar, placeholder, activos, limpiar) %}
+<form method="get" action="{{ accion }}" class="barra-busqueda mb-3" role="search">
+  <div class="campo-icono flex-fill"><i class="bi bi-search"></i>
+    <input class="form-control linea-campo" name="buscar" value="{{ buscar }}" maxlength="40"
+           placeholder="{{ placeholder }}" aria-label="{{ placeholder }}">
+  </div>
+  <details class="desplegable-filtros" {{ 'data-activos' if activos }}>
+    <summary class="btn btn-contorno btn-chico"><i class="bi bi-sliders"></i> Filtros{% if activos %} <span class="cuenta">{{ activos }}</span>{% endif %}</summary>
+    <div class="panel-filtros">
+      {{ caller() }}
+      <div class="pie-filtros">
+        {% if activos or buscar %}<a class="small" href="{{ limpiar }}">Quitar filtros</a>{% else %}<span></span>{% endif %}
+        <button class="btn btn-ubite btn-chico">Aplicar</button>
+      </div>
+    </div>
+  </details>
+  <button class="btn btn-ubite btn-chico"><i class="bi bi-search"></i> Buscar</button>
+</form>
+<script>
+  // el desplegable se cierra al hacer clic afuera o con Esc
+  document.addEventListener("click", (e) => {
+    document.querySelectorAll(".desplegable-filtros[open]").forEach((d) => { if (!d.contains(e.target)) d.open = false; });
+  });
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") document.querySelectorAll(".desplegable-filtros[open]").forEach((d) => d.open = false);
+  });
+</script>
+{% endmacro %}
+
+{% macro grupo(titulo) %}
+<fieldset class="grupo-filtro">
+  <legend class="etiqueta">{{ titulo }}</legend>
+  {{ caller() }}
+</fieldset>
+{% endmacro %}
+
+{# opciones como fichas: una sola se puede marcar, la primera es "todos" #}
+{% macro opciones(nombre, pares, actual, todos="Todos") %}
+<div class="fichas">
+  <label><input type="radio" name="{{ nombre }}" value="" {{ 'checked' if not actual }}><span>{{ todos }}</span></label>
+  {% for valor, texto in pares %}
+  <label><input type="radio" name="{{ nombre }}" value="{{ valor }}" {{ 'checked' if actual == valor }}><span>{{ texto }}</span></label>
+  {% endfor %}
+</div>
+{% endmacro %}

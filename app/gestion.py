@@ -2,7 +2,7 @@ import re
 from collections import Counter, defaultdict
 from datetime import timedelta
 
-from sqlalchemy import func
+from sqlalchemy import case, func
 from werkzeug.security import generate_password_hash
 
 from .database import db, reintentar, transaccion
@@ -227,6 +227,33 @@ def guardar_producto(datos, id_producto=None):
         p.activo = datos.get("activo") == "si"
         db.session.add(p)
         return p.nombre
+
+POR_PAGINA = 30
+
+
+def historial(buscar="", desde=None, hasta=None, estado="", origen="", pagina=1):
+    q = Pedido.query.join(Cliente)
+    buscar = buscar.strip()
+    if buscar:
+        patron = f"%{buscar}%"
+        q = q.filter(Pedido.codigo.ilike(patron) | Cliente.nombre.ilike(patron) | Cliente.telefono.like(patron))
+    if desde:
+        q = q.filter(func.date(Pedido.fecha_hora) >= desde.isoformat())
+    if hasta:
+        q = q.filter(func.date(Pedido.fecha_hora) <= hasta.isoformat())
+    if estado:
+        q = q.filter(Pedido.estado == estado)
+    if origen:
+        q = q.filter(Pedido.origen == origen)
+
+    pedidos, entregados = q.with_entities(
+        func.count(Pedido.id_pedido),
+        func.coalesce(func.sum(case((Pedido.estado == "entregado", 1), else_=0)), 0)).one()
+    vendido = (q.join(Pago, Pago.id_pedido == Pedido.id_pedido)
+               .filter(Pago.estado == "aprobado", Pedido.estado != "cancelado")
+               .with_entities(func.coalesce(func.sum(Pago.monto), 0)).scalar())
+    paginas = q.order_by(Pedido.fecha_hora.desc()).paginate(page=pagina, per_page=POR_PAGINA, error_out=False)
+    return paginas, {"pedidos": pedidos, "entregados": entregados, "vendido": vendido}
 
 
 # clientes y usuarios

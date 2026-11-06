@@ -1,32 +1,73 @@
 {% extends "caja/_base.html" %}
+{% import "_filtros.html" as f %}
 {% set titulo_barra = "Historial" %}
 {% block titulo_pagina %}Historial{% endblock %}
 {% block panel %}
-<p class="etiqueta mb-1">Hoy</p>
+{% set filtrado = filtros.buscar or filtros.desde or filtros.hasta or filtros.estado or filtros.origen %}
+<p class="etiqueta mb-1">{{ "Resultado de la búsqueda" if filtrado else "Todos los pedidos guardados" }}</p>
 <h1 class="titulo display-5 mb-4 d-none d-lg-block">Historial de pedidos</h1>
+
+{% set activos = [filtros.desde, filtros.hasta, filtros.estado, filtros.origen]|select|list|length %}
+{% call f.barra(url_for('caja.historial'), filtros.buscar, "Código, cliente o celular…", activos, url_for('caja.historial')) %}
+  {% call f.grupo("Fecha") %}
+    <div class="d-flex flex-wrap gap-3">
+      <label class="small suave d-flex align-items-center gap-2 mb-0">Desde
+        <input class="form-control linea-campo mono fecha-reporte" type="date" name="desde" max="{{ hoy.isoformat() }}"
+               value="{{ filtros.desde.isoformat() if filtros.desde }}">
+      </label>
+      <label class="small suave d-flex align-items-center gap-2 mb-0">Hasta
+        <input class="form-control linea-campo mono fecha-reporte" type="date" name="hasta" max="{{ hoy.isoformat() }}"
+               value="{{ filtros.hasta.isoformat() if filtros.hasta }}">
+      </label>
+    </div>
+    <div class="atajos mt-2">
+      {% for texto, dias in (("Hoy", 0), ("Últimos 7 días", 6), ("Últimos 30 días", 29)) %}
+      <a href="{{ url_for('caja.historial', **dict(args, desde=atras(dias), hasta=hoy.isoformat())) }}">{{ texto }}</a>
+      {% endfor %}
+    </div>
+  {% endcall %}
+  {% call f.grupo("Estado del pedido") %}
+    {{ f.opciones("estado", ESTADOS.items()|list, filtros.estado) }}
+  {% endcall %}
+  {% call f.grupo("Origen") %}
+    {{ f.opciones("origen", [("qr", "QR"), ("presencial", "Presencial")], filtros.origen) }}
+  {% endcall %}
+{% endcall %}
+
 <div class="row g-3 mb-4">
-  <div class="col-sm-4"><div class="tarjeta"><p class="etiqueta mb-1">Pedidos</p><div class="mono fs-3">{{ pedidos|length }}</div></div></div>
-  <div class="col-sm-4"><div class="tarjeta"><p class="etiqueta mb-1">Entregados</p><div class="mono fs-3">{{ entregados }}</div></div></div>
-  <div class="col-sm-4"><div class="tarjeta"><p class="etiqueta mb-1">Vendido</p><div class="mono fs-3">$ {{ vendido|pesos }}</div></div></div>
+  <div class="col-sm-4"><div class="tarjeta"><p class="etiqueta mb-1">Pedidos</p><div class="mono fs-3">{{ resumen.pedidos }}</div></div></div>
+  <div class="col-sm-4"><div class="tarjeta"><p class="etiqueta mb-1">Entregados</p><div class="mono fs-3">{{ resumen.entregados }}</div></div></div>
+  <div class="col-sm-4"><div class="tarjeta"><p class="etiqueta mb-1">Vendido</p><div class="mono fs-3">$ {{ resumen.vendido|pesos }}</div></div></div>
 </div>
+
 <div class="table-responsive">
 <table class="table tabla-ubite align-middle">
-  <thead><tr><th>Código</th><th>Hora</th><th>Cliente</th><th>Origen</th><th>Pago</th><th>Estado</th><th class="text-end">Total</th></tr></thead>
+  <thead><tr><th>Código</th><th>Fecha</th><th>Cliente</th><th>Origen</th><th>Pago</th><th>Estado</th><th class="text-end">Total</th></tr></thead>
   <tbody>
-  {% for p in pedidos %}
+  {% for p in paginas.items %}
   <tr>
     <td class="mono">{{ p.codigo }}</td>
-    <td>{{ p.fecha_hora.strftime('%I:%M %p').lower() }}</td>
+    <td class="text-nowrap">{{ p.fecha_hora.strftime('%d/%m/%Y') }} <span class="suave">{{ p.fecha_hora.strftime('%I:%M %p').lower() }}</span></td>
     <td>{{ p.cliente.nombre }}</td>
     <td>{{ "QR" if p.origen == "qr" else "Presencial" }}</td>
     <td>{% set pago = p.pagos|selectattr("estado", "equalto", "aprobado")|first %}{{ ("App" if pago.metodo == "app" else "Efectivo") if pago else "Pendiente" }}</td>
-    <td><span class="chip">{{ ESTADOS[p.estado] }}</span></td>
+    <td><span class="chip {{ 'chip-punteado' if p.estado == 'cancelado' }}">{{ ESTADOS[p.estado] }}</span></td>
     <td class="text-end mono">{{ p.total|pesos }}</td>
   </tr>
   {% else %}
-  <tr><td colspan="7" class="suave">Todavía no hay pedidos hoy.</td></tr>
+  <tr><td colspan="7" class="suave">{{ "No hay pedidos que coincidan con la búsqueda." if filtrado else "Todavía no hay pedidos registrados." }}</td></tr>
   {% endfor %}
   </tbody>
 </table>
 </div>
+
+{% if paginas.pages > 1 %}
+<nav class="d-flex flex-wrap justify-content-between align-items-center gap-2 acciones-modulo" aria-label="Páginas del historial">
+  <span class="small suave">Página {{ paginas.page }} de {{ paginas.pages }} · {{ paginas.total }} pedidos</span>
+  <div class="d-flex gap-2">
+    {% if paginas.has_prev %}<a class="btn btn-contorno" href="{{ url_for('caja.historial', pagina=paginas.prev_num, **args) }}"><i class="bi bi-chevron-left"></i> Anteriores</a>{% endif %}
+    {% if paginas.has_next %}<a class="btn btn-contorno" href="{{ url_for('caja.historial', pagina=paginas.next_num, **args) }}">Más antiguos <i class="bi bi-chevron-right"></i></a>{% endif %}
+  </div>
+</nav>
+{% endif %}
 {% endblock %}

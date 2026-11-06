@@ -34,7 +34,7 @@
   </nav>
   <input type="hidden" name="periodo" value="{{ periodo }}">
   <label class="d-flex align-items-center gap-2 mb-0">
-    <i class="bi bi-calendar3"></i><span class="visually-hidden">Fecha</span>
+    <span class="visually-hidden">Fecha</span>
     <input class="form-control linea-campo mono fecha-reporte" type="date" name="fecha" value="{{ fecha.isoformat() }}"
            max="{{ hoy.isoformat() }}" onchange="this.form.submit()" required>
   </label>
