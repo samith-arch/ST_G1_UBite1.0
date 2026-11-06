@@ -21,3 +21,6 @@ logs/
 # configuracion local
 .env
 .vscode/
+
+# tablas exportadas para Power BI (se generan con bi/exportar_tablas.py)
+bi/tablas/

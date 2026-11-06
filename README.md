@@ -305,6 +305,12 @@ uvicorn api:app --port 8000                     # API en http://127.0.0.1:8000/d
 
 Con la API encendida, el administrador ve en **Alertas de reposición** (`/admin/alertas`) qué productos se agotarían antes del cierre. Flask envía el stock real desde la media hora actual (o desde las 7:00 del siguiente día de apertura si ya cerró) y muestra cuántas unidades faltan. Si la API está apagada, la pantalla lo avisa y el resto de la aplicación sigue igual. La dirección se cambia con `UBITE_IA_URL` en el `.env`.
 
+### 9. Tablero en Power BI
+
+Power BI se conecta en modo importación a `database/ubite_dw.db` con el controlador [SQLite ODBC](http://www.ch-werner.de/sqliteodbc/) (versión de 64 bits). Usa siete tablas: `dim_fecha`, `dim_franja` y `dim_producto`, y los hechos `hecho_venta`, `hecho_pedido`, `hecho_inventario` y `prediccion_demanda`. Además de la estimación del siguiente día, `prediccion_demanda` guarda la de las dos semanas de prueba, así el tablero compara lo estimado contra lo vendido. Para ver datos nuevos se corre el ETL (y el entrenamiento, si se quiere) y luego se actualiza el tablero.
+
+Si el ODBC da problemas, `python bi/exportar_tablas.py` deja las mismas tablas en `bi/tablas/*.csv` para cargarlas como texto.
+
 ## Integrantes
 
 - Pedraza Vanegas, Joseph

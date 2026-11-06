@@ -14,7 +14,7 @@ import numpy as np
 import pandas as pd
 import tensorflow as tf
 
-import ia.demanda as d
+import demanda as d
 
 SEMILLA = 42
 DIAS_PRUEBA = 14
@@ -31,6 +31,7 @@ def cargar():
 
 
 def separar(datos):
+    # sin mezclar: se entrena con el pasado y se prueba con las semanas mas recientes
     dias = sorted(datos["fecha"].unique())
     corte = dias[-DIAS_PRUEBA]
     return datos[datos["fecha"] < corte], datos[datos["fecha"] >= corte], pd.Timestamp(corte).date()
@@ -52,7 +53,15 @@ def construir(n_entradas):
     return modelo
 
 
-def guardar_predicciones(modelo, meta, datos, usar, referencia):
+def _fila_fecha(dia):
+    return (int(dia.strftime("%Y%m%d")), dia.isoformat(), dia.weekday(),
+            ["lunes", "martes", "miércoles", "jueves", "viernes", "sábado", "domingo"][dia.weekday()],
+            d.calendario.semana_semestre(dia), d.calendario.periodo(dia), int(dia in d.calendario.FESTIVOS))
+
+
+def guardar_predicciones(modelo, meta, datos, usar, referencia, prueba):
+    # estimaciones del siguiente dia que abre la cafeteria y de las dos semanas de prueba;
+    # las de prueba ya tienen ventas reales, asi en Power BI se ve estimado contra real
     dia = datos["fecha"].max().date() + timedelta(days=1)
     while not d.abierto(dia):
         dia += timedelta(days=1)
@@ -72,23 +81,22 @@ def guardar_predicciones(modelo, meta, datos, usar, referencia):
 
     if not os.path.exists(d.DW):
         print("No se encontró ubite_dw.db; las predicciones no se guardaron en el almacén.")
-        return dia, 0
-    id_fecha = int(dia.strftime("%Y%m%d"))
+        return dia, 0, 0
     ahora = datetime.now().isoformat(" ", "seconds")
+    filas = [(int(dia.strftime("%Y%m%d")), int(r.id_franja), int(r.id_producto), round(float(r.unidades_estimadas), 2), usar, ahora)
+             for r in tabla.itertuples()]
+    filas += [(int(r.fecha.strftime("%Y%m%d")), int(r.id_franja), int(r.id_producto), round(float(r.estimado), 2), usar, ahora)
+              for r in prueba.itertuples()]
+    dias = [dia] + sorted({r.fecha.date() for r in prueba.itertuples()})
     con = sqlite3.connect(d.DW)
     try:
-        with con:     
-            con.execute("INSERT OR IGNORE INTO dim_fecha VALUES (?, ?, ?, ?, ?, ?, ?)",
-                        (id_fecha, dia.isoformat(), dia.weekday(), ["lunes", "martes", "miércoles", "jueves",
-                         "viernes", "sábado", "domingo"][dia.weekday()], d.calendario.semana_semestre(dia),
-                         d.calendario.periodo(dia), int(dia in d.calendario.FESTIVOS)))
-            con.execute("DELETE FROM prediccion_demanda WHERE id_fecha = ?", (id_fecha,))
-            con.executemany("INSERT INTO prediccion_demanda VALUES (?, ?, ?, ?, ?, ?)",
-                            [(id_fecha, int(r.id_franja), int(r.id_producto), float(r.unidades_estimadas), usar, ahora)
-                             for r in tabla.itertuples()])
+        with con:     # una sola transaccion
+            con.executemany("INSERT OR IGNORE INTO dim_fecha VALUES (?, ?, ?, ?, ?, ?, ?)", [_fila_fecha(x) for x in dias])
+            con.execute("DELETE FROM prediccion_demanda")
+            con.executemany("INSERT INTO prediccion_demanda VALUES (?, ?, ?, ?, ?, ?)", filas)
     finally:
         con.close()
-    return dia, len(tabla)
+    return dia, len(tabla), len(filas) - len(tabla)
 
 
 def main():
@@ -110,6 +118,8 @@ def main():
     historia = modelo.fit(x_entreno, y_entreno, validation_split=0.1, epochs=40, batch_size=256,
                           callbacks=[parar], verbose=2)
 
+    # referencia simple: promedio vendido en la misma franja y el mismo dia de la semana
+    # durante las ultimas semanas antes de la prueba
     recientes = entreno[entreno["fecha"] >= pd.Timestamp(corte - timedelta(weeks=SEMANAS_REFERENCIA))]
     referencia = (recientes.groupby(["id_producto", "dia_semana", "id_franja"])["unidades"].mean()
                   .rename("promedio").reset_index())
@@ -119,6 +129,7 @@ def main():
     mae_red = float(np.mean(np.abs(estimado - y_prueba)))
     usar = "red_neuronal" if mae_red <= mae_ref else "referencia"
 
+    # el error por dia completo es mas facil de explicar: cuantas unidades se equivoca en todo el dia
     prueba = prueba.assign(red=estimado, ref=con_ref["promedio"].fillna(0).to_numpy())
     por_dia = prueba.groupby(["fecha", "id_producto"])[["unidades", "red", "ref"]].sum()
     mae_dia_red = float(np.mean(np.abs(por_dia["red"] - por_dia["unidades"])))
@@ -141,9 +152,11 @@ def main():
     print(f"\nError absoluto medio por franja: red {mae_red:.3f} | referencia {mae_ref:.3f}")
     print(f"Error absoluto medio por producto en el día: red {mae_dia_red:.2f} | referencia {mae_dia_ref:.2f} unidades")
     print(f"Se usará: {usar}. Modelo guardado en {d.MODELO}")
-    dia, filas = guardar_predicciones(modelo, meta, datos, usar, referencia)
+    prueba["estimado"] = prueba["red"] if usar == "red_neuronal" else prueba["ref"]
+    dia, filas, filas_prueba = guardar_predicciones(modelo, meta, datos, usar, referencia, prueba)
     if filas:
-        print(f"Predicciones del {dia} guardadas en prediccion_demanda ({filas} filas).")
+        print(f"Predicciones del {dia} ({filas} filas) y de los días de prueba ({filas_prueba} filas) "
+              "guardadas en prediccion_demanda.")
 
 
 if __name__ == "__main__":
