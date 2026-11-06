@@ -76,12 +76,13 @@ def test_cinco_personas_piden_la_ultima_unidad(app):
     db.session.remove()
 
     resultados, barrera = [], threading.Barrier(5)
+    NOMBRES = ["Ana", "Beto", "Carla", "Daniel", "Eva"]
 
     def pedir(i):
         with app.app_context():
             barrera.wait()
             try:
-                servicios.registrar_pedido(f"Estudiante {i}", "3000000000", {6: 1})
+                servicios.registrar_pedido(NOMBRES[i], "3000000000", {6: 1})
                 resultados.append("ok")
             except ErrorNegocio:
                 resultados.append("sin stock")

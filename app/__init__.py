@@ -3,6 +3,11 @@ import os
 import secrets
 from datetime import datetime, timedelta
 
+from dotenv import load_dotenv
+
+# las claves y la configuracion local salen del archivo .env (ver .env.example)
+load_dotenv(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), ".env"))
+
 from flask import Flask, abort, render_template, request, session
 from flask_login import LoginManager, current_user
 
@@ -42,7 +47,12 @@ def create_app():
     app = Flask(__name__)
     app.config["SQLALCHEMY_DATABASE_URI"] = get_database_uri()
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-    app.config["SECRET_KEY"] = os.environ.get("UBITE_SECRET_KEY", "clave-de-desarrollo")
+    clave = os.environ.get("UBITE_SECRET_KEY")
+    if not clave:
+        # sin .env se usa una clave al azar: funciona, pero las sesiones se cierran al reiniciar
+        clave = secrets.token_hex(32)
+        logging.getLogger("ubite").warning("Falta UBITE_SECRET_KEY en .env, se usa una clave temporal")
+    app.config["SECRET_KEY"] = clave
     # la sesion del personal se cierra sola despues de 15 min sin actividad
     app.config["PERMANENT_SESSION_LIFETIME"] = timedelta(minutes=15)
 

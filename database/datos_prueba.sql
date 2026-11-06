@@ -1,17 +1,16 @@
 -- datos de prueba (correr despues de schema.sql)
 -- las fechas se calculan con la hora en que se corre el script
 --
--- usuarios de prueba, solo para trabajar en local:
---   cajero         acajero / Cajero2026*
---   administrador  admin   / Admin2026*
+-- usuarios de prueba: las contraseñas no se guardan aquí, crear_bd.py las toma del
+-- archivo .env (UBITE_CLAVE_CAJERO y UBITE_CLAVE_ADMIN) y guarda solo el hash
 
 PRAGMA foreign_keys = ON;
 
 BEGIN TRANSACTION;
 
 INSERT INTO "usuario" ("nombre", "rol", "username", "password_hash") VALUES
- ('Ana Torres', 'cajero', 'acajero', 'scrypt:32768:8:1$NBBMK4VB5P2olwLg$f51019ebe3290a83f4d36d0084e9a67e6075185af2f04c580544334c9afaf40c2ea9419741495d39badeee98fbaf19af7340d1fd21fa410cd21d0a62e1f0c059'),
- ('Luis Gómez', 'administrador', 'admin', 'scrypt:32768:8:1$SSkTOC1QYaNWyhIM$5be104d577671fadc6d63d737ae425eb2a902d549f94d877b1b0f64151a37434586c83ccf19389bf819b9a968d95388e1dd2ff18d02d2a53950b3bfa85fdcc12');
+ ('Ana Torres', 'cajero', 'acajero', 'pendiente'),
+ ('Luis Gómez', 'administrador', 'admin', 'pendiente');
 
 INSERT INTO "categoria" ("nombre") VALUES ('Bebidas'), ('Snacks'), ('Comidas');
 

@@ -4,11 +4,19 @@
 #   python database/crear_bd.py             crea la base y la exporta
 #   python database/crear_bd.py --exportar  solo exporta la base actual
 import os
+import secrets
 import sqlite3
 import sys
 from datetime import datetime
 
+from dotenv import load_dotenv
+from werkzeug.security import generate_password_hash
+
 DIR = os.path.dirname(os.path.abspath(__file__))
+load_dotenv(os.path.join(os.path.dirname(DIR), ".env"))
+
+# contraseña de cada usuario de prueba, se toma del .env
+CLAVES = {"acajero": "UBITE_CLAVE_CAJERO", "admin": "UBITE_CLAVE_ADMIN"}
 DB = os.path.join(DIR, "ubite.db")
 EXPORT = os.path.join(DIR, "ubite.db.sql")
 
@@ -28,8 +36,20 @@ def crear(ruta=DB, datos=True):
     ejecutar(con, "schema.sql")
     if datos:
         ejecutar(con, "datos_prueba.sql")
+        _poner_claves(con)
     con.close()
     print(f"Base de datos creada: {ruta}")
+
+
+def _poner_claves(con):
+    for usuario, variable in CLAVES.items():
+        clave = os.environ.get(variable)
+        if not clave:
+            clave = secrets.token_urlsafe(9)
+            print(f"  {variable} no está en .env: la contraseña de {usuario} quedó en {clave}")
+        con.execute("UPDATE usuario SET password_hash = ? WHERE username = ?",
+                    (generate_password_hash(clave), usuario))
+    con.commit()
 
 
 def literal(v):

@@ -5,6 +5,9 @@ __pycache__/
 *.pyc
 .pytest_cache/
 
+# la base se genera con database/crear_bd.py y puede tener datos de quien la prueba
+database/ubite.db
+
 # temporales de sqlite
 database/*.db-journal
 database/*.db-wal
