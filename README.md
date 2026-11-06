@@ -41,7 +41,10 @@ productos y la reducción de los tiempos de espera en el punto físico.
 
 - Proyecto académico desarrollado como prototipo local, sin despliegue en servidor
   institucional ni integración con pasarelas de pago reales.
-- Tecnologías definidas por el equipo: Python 3, Flask, SQLite.
+- Tecnologías definidas por el equipo: Python 3, Flask, SQLite. La guía de la asignatura toma
+  SQL Server como referencia, pero permite otras tecnologías aprobadas; SQLite se aprobó en la
+  Fase 1 porque no necesita instalar ni administrar un servidor, guarda toda la base en un
+  archivo y soporta las transacciones ACID que necesita el prototipo local.
 - Entrega por fases, manteniendo correspondencia con lo definido en fases anteriores
   (prototipo en Fase 1, modelo relacional en Fase 2).
 
@@ -80,8 +83,11 @@ ubite/
 │   ├── schema.sql           # creación de las 9 tablas (PK, FK, CHECK, UNIQUE, índices)
 │   ├── datos_prueba.sql     # datos iniciales de prueba
 │   ├── crear_bd.py          # crea ubite.db y la exporta a ubite.db.sql
-│   ├── ubite.db.sql         # exportación de la base (DB Browser for SQLite)
-│   └── ubite.db             # archivo de base de datos
+│   ├── ubite.db.sql         # exportación de la base con los datos de prueba
+│   └── ubite.db             # se genera con crear_bd.py (no se sube al repositorio)
+├── pruebas/                 # pruebas de las propiedades ACID (pytest)
+├── docs/fase1/              # prototipo HTML de la Fase 1
+├── .env.example             # variables de configuración, sin valores reales
 ├── requirements.txt
 ├── run.py                   # punto de entrada de la aplicación
 └── README.md
@@ -164,7 +170,7 @@ producción en esta fase.
 ### 1. Clonar el repositorio
 
 ```bash
-git clone https://github.com/<usuario>/ST_G1_UBite1.0.git
+git clone https://github.com/samith-arch/ST_G1_UBite1.0.git
 cd ST_G1_UBite1.0
 ```
 
@@ -176,9 +182,29 @@ source venv/bin/activate   # En Windows: venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-### 3. Crear la base de datos
+### 3. Configurar el archivo `.env`
 
-El repositorio ya incluye `database/ubite.db`. Para volver a crearla desde cero:
+Las claves no se guardan en el código ni en el repositorio. Copiar `.env.example` como `.env`
+(este archivo está en `.gitignore`) y llenar los valores:
+
+```bash
+copy .env.example .env      # en Linux o macOS: cp .env.example .env
+```
+
+| Variable | Para qué sirve |
+|---|---|
+| `UBITE_SECRET_KEY` | firma las sesiones; se puede generar con `python -c "import secrets; print(secrets.token_hex(32))"` |
+| `UBITE_CLAVE_ADMIN` | contraseña del usuario `admin` que crea la base de prueba |
+| `UBITE_CLAVE_CAJERO` | contraseña del usuario `acajero` que crea la base de prueba |
+| `UBITE_CONTACTO` | correo que se envía con las notificaciones push |
+
+La aplicación lee el `.env` con `python-dotenv`. Si falta `UBITE_SECRET_KEY` usa una clave
+temporal y lo avisa en `logs/ubite.log`.
+
+### 4. Crear la base de datos
+
+La base `database/ubite.db` no se sube al repositorio, porque al probar la aplicación guarda
+nombres y celulares de quien la usa. Se crea con:
 
 ```bash
 python database/crear_bd.py
@@ -192,14 +218,11 @@ También se puede hacer con **DB Browser for SQLite**: `New Database` → `datab
 pestaña **Execute SQL**, ejecutar `schema.sql` y luego `datos_prueba.sql`, `Write Changes`
 y exportar con `File > Export > Database to SQL file` sobre `database/ubite.db.sql`.
 
-Usuarios de prueba (solo entorno local):
+Usuarios de prueba (solo entorno local): `acajero` (cajero) y `admin` (administrador). Sus
+contraseñas son las que se pongan en el `.env`; en la base solo queda el hash. Si alguna
+falta en el `.env`, el script genera una al azar y la muestra en la consola.
 
-| Rol | Usuario | Contraseña |
-|---|---|---|
-| Cajero | `acajero` | `Cajero2026*` |
-| Administrador | `admin` | `Admin2026*` |
-
-### 4. Pruebas de las propiedades ACID
+### 5. Pruebas de las propiedades ACID
 
 ```bash
 python -m pytest pruebas -v
@@ -212,7 +235,7 @@ pidiendo la última unidad al mismo tiempo: solo una la obtiene) y durabilidad (
 confirmado se lee desde otra conexión). Cada commit y rollback de la aplicación queda en
 `logs/ubite.log`.
 
-### 5. Ejecutar el proyecto
+### 6. Ejecutar el proyecto
 
 ```bash
 python run.py
@@ -226,7 +249,7 @@ La aplicación quedará disponible en:
 Para probarla desde un celular conectado a la misma red Wi-Fi, ejecutar
 `flask --app run run --host 0.0.0.0` y abrir `http://<IP-del-computador>:5000/`.
 
-### 6. Notificaciones al celular
+### 7. Notificaciones al celular
 
 Los navegadores solo permiten notificaciones en páginas seguras (`https` o `localhost`).
 Para probarlas desde un celular hay que abrir la aplicación por `https`, por ejemplo con
