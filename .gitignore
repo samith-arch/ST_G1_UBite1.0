@@ -7,6 +7,7 @@ __pycache__/
 
 # la base se genera con database/crear_bd.py y puede tener datos de quien la prueba
 database/ubite.db
+database/ubite_dw.db
 
 # temporales de sqlite
 database/*.db-journal

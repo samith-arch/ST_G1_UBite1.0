@@ -12,7 +12,7 @@ INSERT INTO "usuario" ("nombre", "rol", "username", "password_hash") VALUES
  ('Ana Torres', 'cajero', 'acajero', 'pendiente'),
  ('Luis Gómez', 'administrador', 'admin', 'pendiente');
 
-INSERT INTO "categoria" ("nombre") VALUES ('Bebidas'), ('Snacks'), ('Comidas');
+INSERT INTO "categoria" ("nombre") VALUES ('Bebidas'), ('Snacks'), ('Comidas'), ('Panadería');
 
 INSERT INTO "producto" ("nombre", "descripcion", "precio", "stock_actual", "stock_minimo", "id_categoria") VALUES
  ('Agua en botella', 'Botella de 600 ml', 2500, 30, 8, 1),
@@ -23,7 +23,25 @@ INSERT INTO "producto" ("nombre", "descripcion", "precio", "stock_actual", "stoc
  ('Chocolatina', 'Unidad', 2000, 15, 5, 2),
  ('Empanada', 'De carne, se calienta al pedir', 3000, 18, 5, 3),
  ('Sándwich de jamón y queso', 'Se calienta al pedir', 7000, 10, 3, 3),
- ('Pastel de pollo', 'Se calienta al pedir', 4000, 12, 4, 3);
+ ('Pastel de pollo', 'Se calienta al pedir', 4000, 12, 4, 3),
+ ('Té frío', 'Botella de 400 ml, sabor limón o durazno', 3500, 20, 6, 1),
+ ('Bebida energizante', 'Lata de 250 ml', 5000, 15, 4, 1),
+ ('Malta', 'Botella de 330 ml', 3000, 18, 5, 1),
+ ('Bebida hidratante', 'Botella de 500 ml', 4500, 15, 4, 1),
+ ('Avena en vaso', 'Vaso de 250 ml, fría', 3500, 15, 4, 1),
+ ('Gaseosa personal', 'Lata de 330 ml', 3000, 20, 6, 1),
+ ('Maní salado', 'Paquete individual', 2000, 20, 5, 2),
+ ('Chicharrón en paquete', 'Paquete individual', 3000, 15, 4, 2),
+ ('Platanitos', 'Paquete individual de plátano verde', 2500, 20, 5, 2),
+ ('Barra de cereal', 'Unidad', 2000, 20, 5, 2),
+ ('Chupeta', 'Unidad', 500, 40, 10, 2),
+ ('Papa rellena', 'De carne y arroz, se calienta al pedir', 4500, 12, 4, 3),
+ ('Arepa de queso', 'Se calienta al pedir', 4000, 12, 4, 3),
+ ('Arepa rellena de pollo', 'Se calienta al pedir', 6000, 10, 3, 3),
+ ('Pandebono', 'Unidad', 2500, 20, 6, 4),
+ ('Almojábana', 'Unidad', 2500, 18, 5, 4),
+ ('Buñuelo', 'Unidad', 2000, 20, 6, 4),
+ ('Pastel de arequipe', 'Unidad', 3500, 12, 4, 4);
 
 INSERT INTO "cliente" ("nombre", "telefono", "fecha_registro") VALUES
  ('Camila Rojas', '3001234567', datetime('now','localtime','-46 minutes')),

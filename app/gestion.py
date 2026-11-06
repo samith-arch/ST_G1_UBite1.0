@@ -3,6 +3,7 @@ from collections import Counter, defaultdict
 from datetime import timedelta
 
 from sqlalchemy import case, func
+from sqlalchemy.orm import selectinload
 from werkzeug.security import generate_password_hash
 
 from .database import db, reintentar, transaccion
@@ -47,8 +48,12 @@ def rango(fecha, periodo):
 
 
 def _pedidos_entre(desde, hasta):
-    return Pedido.query.filter(func.date(Pedido.fecha_hora) >= desde.isoformat(),
-                               func.date(Pedido.fecha_hora) <= hasta.isoformat()).all()
+    # pagos, detalle y producto se traen en bloque; uno por uno el reporte del año tardaba segundos
+    return (Pedido.query
+            .options(selectinload(Pedido.pagos),
+                     selectinload(Pedido.detalles).joinedload(DetallePedido.producto))
+            .filter(Pedido.fecha_hora >= f"{desde.isoformat()} 00:00:00",
+                    Pedido.fecha_hora <= f"{hasta.isoformat()} 23:59:59").all())
 
 
 def _pago(pedido):
@@ -228,6 +233,7 @@ def guardar_producto(datos, id_producto=None):
         db.session.add(p)
         return p.nombre
 
+
 POR_PAGINA = 30
 
 
@@ -259,19 +265,21 @@ def historial(buscar="", desde=None, hasta=None, estado="", origen="", pagina=1)
 # clientes y usuarios
 
 def clientes(buscar=""):
+    resumen = (db.session.query(
+        Pedido.id_cliente,
+        func.count(Pedido.id_pedido),
+        func.coalesce(func.sum(case((Pedido.estado == "entregado", Pedido.total), else_=0)), 0),
+        func.max(Pedido.fecha_hora),
+        func.max(case((Pedido.estado.in_(ACTIVOS), 1), else_=0)))
+        .group_by(Pedido.id_cliente).all())
+    por_cliente = {r[0]: r[1:] for r in resumen}
     q = Cliente.query
     if buscar:
         q = q.filter(Cliente.nombre.ilike(f"%{buscar}%") | Cliente.telefono.like(f"%{buscar}%"))
     filas = []
     for c in q.all():
-        hechos = [p for p in c.pedidos if p.estado != "cancelado"]
-        filas.append({
-            "cliente": c,
-            "pedidos": len(c.pedidos),
-            "gastado": sum(p.total for p in hechos if p.estado == "entregado"),
-            "ultimo": max((p.fecha_hora for p in c.pedidos), default=None),
-            "activo": any(p.estado in ACTIVOS for p in c.pedidos),
-        })
+        pedidos, gastado, ultimo, activo = por_cliente.get(c.id_cliente, (0, 0, None, 0))
+        filas.append({"cliente": c, "pedidos": pedidos, "gastado": gastado, "ultimo": ultimo, "activo": bool(activo)})
     filas.sort(key=lambda f: (not f["activo"], f["ultimo"] is None, -(f["ultimo"].timestamp() if f["ultimo"] else 0)))
     return filas
 

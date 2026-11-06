@@ -1,7 +1,7 @@
 {% extends "cliente/_base.html" %}
 {% set titulo_barra = "Modificar pedido" %}
 {% set atras = url_for('cliente.seguimiento', codigo=pedido.codigo) %}
-{% set iconos = {"Bebidas": "bi-cup-straw", "Snacks": "bi-bag", "Comidas": "bi-egg-fried"} %}
+{% set iconos = {"Bebidas": "bi-cup-straw", "Snacks": "bi-bag", "Comidas": "bi-egg-fried", "Panadería": "bi-cake2"} %}
 {% block titulo_pagina %}Modificar {{ pedido.codigo }}{% endblock %}
 {% block contenido %}
 <form method="post" class="columna-movil" id="modificar">

@@ -74,6 +74,9 @@ def create_app():
     for bp in (cliente_bp, auth_bp, caja_bp, inventario_bp, admin_bp):
         app.register_blueprint(bp)
 
+    from .etl import registrar
+    registrar(app)
+
     app.context_processor(datos_menu)
 
     @app.before_request
