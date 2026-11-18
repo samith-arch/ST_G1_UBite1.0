@@ -10,6 +10,11 @@
   <h1 class="titulo display-5 mb-4 d-none d-lg-block">{{ titulo_barra }}</h1>
   <form method="post" class="tarjeta">
     <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+    {% set foto = foto_producto(p.nombre) if p else None %}
+    <div class="d-flex align-items-center gap-3 mb-4">
+      <span class="miniatura" style="width:5rem;height:5rem;border-radius:16px">{% if foto %}<img src="{{ url_for('static', filename=foto) }}" alt="">{% else %}<i class="bi bi-image fs-4"></i>{% endif %}</span>
+      <p class="small suave mb-0">La foto se toma de <span class="fw-semibold text-body">static/img/productos/</span> con el nombre del producto en minúsculas y guiones{% if p %}: <span class="fw-semibold text-body">{{ p.nombre|slug }}.jpg</span>{% endif %}.</p>
+    </div>
     <label class="etiqueta" for="nombre">Nombre</label>
     <input class="form-control linea-campo mb-3" id="nombre" name="nombre" maxlength="60" value="{{ valor('nombre') }}" required>
 

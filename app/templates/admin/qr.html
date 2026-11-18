@@ -1,3 +1,4 @@
+{% from "_logo.html" import logo %}
 {% extends "caja/_base.html" %}
 {% set titulo_barra = "Código QR" %}
 {% block titulo_pagina %}Código QR{% endblock %}
@@ -19,10 +20,10 @@
   </div>
   <div class="col-lg-5 offset-lg-1">
     <div class="tarjeta text-center cartel-qr">
-      <p class="titulo fs-2 mb-1">UBite Café</p>
-      <p class="etiqueta">Pide sin hacer fila</p>
+      {{ logo("claro") }}
+      <p class="lema-qr mt-2">Pide sin hacer <span>fila.</span></p>
       <div class="qr mx-auto my-3">{{ svg }}</div>
-      <p class="small suave mb-0">Escanea con la cámara de tu celular</p>
+      <p class="small suave mb-0"><i class="bi bi-phone"></i> Escanea con la cámara de tu celular</p>
     </div>
   </div>
 </div>

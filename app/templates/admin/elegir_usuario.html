@@ -1,0 +1,16 @@
+{% extends "caja/_base.html" %}
+{% from "_elegir.html" import selector %}
+{% set titulo_barra = "Editar usuario" %}
+{% set atras = url_for('admin.usuarios') %}
+{% block titulo_pagina %}Editar usuario{% endblock %}
+{% block panel %}
+<div class="columna-movil mx-lg-0">
+  <p class="etiqueta mb-1">Usuarios</p>
+  <h1 class="titulo display-5 mb-4 d-none d-lg-block">Editar usuario</h1>
+  {% set opciones = [] %}
+  {% for x in usuarios %}{% set _ = opciones.append((x.id_usuario, x.nombre ~ " · " ~ x.username ~ " (" ~ x.rol ~ ")")) %}{% endfor %}
+  {{ selector(url_for('admin.editar_usuario'), "¿Qué usuario quieres editar?", opciones) }}
+  <p class="small suave">Al elegirlo se abre el formulario para cambiar su nombre, usuario, rol, estado o contraseña.</p>
+  <a class="small d-inline-block mt-2" href="{{ url_for('admin.usuarios') }}">Volver a usuarios</a>
+</div>
+{% endblock %}

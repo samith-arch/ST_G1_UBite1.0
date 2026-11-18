@@ -8,12 +8,21 @@
 <div class="tarjeta-pedido {{ 'prioridad' if pago }}">
   <div class="d-flex justify-content-between align-items-start">
     <span class="cod">{{ p.codigo }}</span>
-    {% if p.estado == "listo" %}<span class="chip chip-oscuro">Listo</span>
-    {% elif pago %}<span class="chip">Pagado</span>
+    {% if p.estado == "listo" %}<span class="chip chip-ok"><i class="bi bi-circle-fill"></i>Listo</span>
+    {% elif pago %}<span class="chip chip-ok">Pagado</span>
     {% elif p.estado in ("en_cola", "en_preparacion") %}<span class="chip chip-punteado">Pendiente de pago</span>
     {% else %}<span class="chip">{{ ESTADOS[p.estado] }}</span>{% endif %}
   </div>
-  <div class="fw-bold mt-1">{{ p.cliente.nombre }}</div>
+  <div class="d-flex justify-content-between align-items-baseline mt-1">
+    <span class="fw-bold">{{ p.cliente.nombre }}</span>
+    <span class="hora-pedido"><i class="bi bi-clock"></i> {{ p.fecha_hora.strftime('%I:%M %p').lower() }} · {{ "QR" if p.origen == "qr" else "Caja" }}</span>
+  </div>
+  <div class="fotos-pedido">
+    {% for d in p.detalles[:4] %}{% set foto = foto_producto(d.producto.nombre) %}
+    <span class="miniatura" title="{{ d.producto.nombre }}">{% if foto %}<img src="{{ url_for('static', filename=foto) }}" alt="">{% else %}<i class="bi bi-image"></i>{% endif %}</span>
+    {% endfor %}
+    {% if p.detalles|length > 4 %}<span class="mas-fotos">+{{ p.detalles|length - 4 }}</span>{% endif %}
+  </div>
   <div class="small suave">{% for d in p.detalles %}{{ d.cantidad }} {{ d.producto.nombre }}{% if not loop.last %} · {% endif %}{% endfor %}</div>
   <div class="d-flex justify-content-between align-items-center small mt-2 mb-2">
     <span class="suave">
@@ -21,7 +30,7 @@
       {% elif pago %}<i class="bi bi-cash-coin"></i> Pagado en caja
       {% else %}<i class="bi bi-cash-coin"></i> Paga en caja al recoger{% endif %}
     </span>
-    <span class="mono fs-6">{{ p.total|pesos }}</span>
+    <span class="fw-bolder fs-6">$ {{ p.total|pesos }}</span>
   </div>
   {% if p.estado in ("en_cola", "en_preparacion", "listo") %}
   <form method="post" action="{{ url_for('caja.cambiar_estado', id_pedido=p.id_pedido) }}" class="d-flex gap-2">
@@ -57,13 +66,17 @@
     <form method="get" class="campo-icono buscador"><i class="bi bi-search"></i>
       <input class="form-control linea-campo" name="buscar" value="{{ buscar }}" placeholder="Buscar código (ej. A-002)">
     </form>
-    <a class="btn btn-contorno d-none d-lg-inline-block" href="{{ url_for('caja.presencial') }}">+ Pedido presencial</a>
+    <a class="btn btn-ubite d-none d-lg-inline-block" href="{{ url_for('caja.presencial') }}"><i class="bi bi-plus-lg"></i> Pedido presencial</a>
   </div>
 </div>
 
+{% set iconos_estado = {"en_cola": ("bi-hourglass-split", "neutro"), "en_preparacion": ("bi-fire", ""), "listo": ("bi-bag-check", "ok")} %}
 <div class="resumen-estados mb-4">
   {% for estado, pedidos in columnas.items() %}
-  <a href="#col-{{ estado }}" class="tarjeta"><span class="mono fs-3">{{ pedidos|length }}</span><span class="etiqueta">{{ cortos[estado] }}</span></a>
+  <a href="#col-{{ estado }}" class="kpi">
+    <span class="icono-kpi {{ iconos_estado[estado][1] }}"><i class="bi {{ iconos_estado[estado][0] }}"></i></span>
+    <span><span class="numero d-block">{{ pedidos|length }}</span><span class="rotulo">{{ cortos[estado] }}</span></span>
+  </a>
   {% endfor %}
 </div>
 
@@ -77,8 +90,9 @@
 <div class="row g-4">
   {% for estado, pedidos in columnas.items() %}
   <section class="col-lg-4 columna-cola" id="col-{{ estado }}">
-    <h2 class="etiqueta"><span>{{ titulos[estado] }}</span><span class="mono">{{ pedidos|length }}</span></h2>
-    {% for p in pedidos %}{{ tarjeta(p) }}{% else %}<p class="small suave">Sin pedidos.</p>{% endfor %}
+    {% set color = {"en_cola": "#8F847C", "en_preparacion": "#E39B3F", "listo": "#3FAF6B"}[estado] %}
+    <h2 class="etiqueta"><span><span class="punto-estado" style="background: {{ color }}"></span>{{ titulos[estado] }}</span><span class="cuenta-col">{{ pedidos|length }}</span></h2>
+    {% for p in pedidos %}{{ tarjeta(p) }}{% else %}<div class="text-center suave small py-4"><i class="bi bi-inbox fs-3 d-block mb-1"></i>Sin pedidos.</div>{% endfor %}
   </section>
   {% endfor %}
 </div>

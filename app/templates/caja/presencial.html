@@ -24,30 +24,42 @@
     </div>
     {% for categoria, productos in menu.items() %}
     <section class="categoria" data-categoria="{{ categoria }}">
-      <h2 class="etiqueta mt-3 mb-0">{{ categoria }}</h2>
+      <div class="cabeza-seccion mt-4 mb-0"><h2>{{ categoria }}</h2><span class="small suave">{{ productos|length }}</span></div>
+      <div class="rejilla-productos">
       {% for p in productos %}
-      <div class="fila-menu {% if p.stock_actual == 0 %}agotado{% endif %}" data-nombre="{{ p.nombre|lower }}">
-        <span class="icono d-none d-sm-flex"><i class="bi {{ iconos.get(categoria, 'bi-basket') }}"></i></span>
-        <div class="info">
-          <div class="fw-bold">{{ p.nombre }}</div>
-          <div class="detalle mono">{{ p.precio|pesos }} · {% if p.stock_actual %}quedan {{ p.stock_actual }}{% else %}agotado{% endif %}</div>
+      {% set foto = foto_producto(p.nombre) %}
+      <article class="fila-menu tarjeta-producto {% if p.stock_actual == 0 %}agotado{% endif %}" data-nombre="{{ p.nombre|lower }}">
+        <div class="foto-producto">
+          {% if foto %}<img src="{{ url_for('static', filename=foto) }}" alt="{{ p.nombre }}" loading="lazy">
+          {% else %}<div class="sin-foto"><i class="bi {{ iconos.get(categoria, 'bi-basket') }}"></i></div>{% endif %}
+          {% if p.stock_actual == 0 %}<span class="sello">Agotado</span>
+          {% elif p.stock_actual <= p.stock_minimo %}<span class="sello pocos">Quedan {{ p.stock_actual }}</span>{% endif %}
         </div>
-        <div class="contador stepper" data-precio="{{ p.precio }}" data-nombre="{{ p.nombre }}">
-          <button type="button" class="btn-mas menos" aria-label="Quitar {{ p.nombre }}"><i class="bi bi-dash"></i></button>
-          <input class="cant-input mono" type="number" name="cant_{{ p.id_producto }}" min="0" max="{{ p.stock_actual }}"
-                 value="{{ form.get('cant_' ~ p.id_producto, 0) }}" aria-label="Cantidad de {{ p.nombre }}">
-          <button type="button" class="btn-mas mas" aria-label="Agregar {{ p.nombre }}"><i class="bi bi-plus"></i></button>
+        <div class="cuerpo">
+          <h3>{{ p.nombre }}</h3>
+          <p class="detalle suave mb-0">$ {{ p.precio|pesos }}{% if p.stock_actual > p.stock_minimo %} · quedan {{ p.stock_actual }}{% endif %}</p>
+          <div class="pie">
+            <div class="contador stepper" data-precio="{{ p.precio }}" data-nombre="{{ p.nombre }}">
+              <button type="button" class="btn-mas menos" aria-label="Quitar {{ p.nombre }}"><i class="bi bi-dash"></i></button>
+              <input class="cant-input" type="number" name="cant_{{ p.id_producto }}" min="0" max="{{ p.stock_actual }}"
+                     value="{{ form.get('cant_' ~ p.id_producto, 0) }}" aria-label="Cantidad de {{ p.nombre }}">
+              <button type="button" class="btn-mas mas" aria-label="Agregar {{ p.nombre }}"><i class="bi bi-plus"></i></button>
+            </div>
+          </div>
         </div>
-      </div>
+      </article>
       {% endfor %}
+      </div>
     </section>
     {% endfor %}
   </div>
 
   <aside class="zona-pedido">
   <div class="zona-datos tarjeta">
-    <h2 class="titulo fs-3 d-none d-lg-block">Pedido en caja</h2>
-    <p class="mono small suave">Código asignado: {{ codigo }}</p>
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h2 class="fs-5 fw-bolder mb-0">Pedido en caja</h2>
+      <span class="chip chip-medio">{{ codigo }}</span>
+    </div>
     <label class="etiqueta" for="nombre">Nombre del cliente</label>
     <div class="campo-icono mb-3"><i class="bi bi-person"></i>
       <input class="form-control linea-campo" id="nombre" name="nombre" maxlength="60" value="{{ form.get('nombre', '') }}" required>
@@ -60,7 +72,7 @@
 
   <div class="zona-resumen tarjeta lineas-total" id="resumen">
     <div id="lineas"><p class="small suave mb-0">Todavía no hay productos.</p></div>
-    <div class="fila total"><span class="etiqueta">Total</span><span class="mono fs-4">$ <span id="total">0</span></span></div>
+    <div class="fila total"><span class="fw-bold">Total</span><span class="monto">$ <span id="total">0</span></span></div>
     <div class="fila align-items-center">
       <label class="suave" for="recibido"><i class="bi bi-cash-coin"></i> Recibido en efectivo</label>
       <input class="form-control linea-campo mono text-end recibido" id="recibido" inputmode="numeric" placeholder="0">

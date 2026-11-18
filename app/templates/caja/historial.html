@@ -35,31 +35,32 @@
 {% endcall %}
 
 <div class="row g-3 mb-4">
-  <div class="col-sm-4"><div class="tarjeta"><p class="etiqueta mb-1">Pedidos</p><div class="mono fs-3">{{ resumen.pedidos }}</div></div></div>
-  <div class="col-sm-4"><div class="tarjeta"><p class="etiqueta mb-1">Entregados</p><div class="mono fs-3">{{ resumen.entregados }}</div></div></div>
-  <div class="col-sm-4"><div class="tarjeta"><p class="etiqueta mb-1">Vendido</p><div class="mono fs-3">$ {{ resumen.vendido|pesos }}</div></div></div>
+  <div class="col-4"><div class="kpi"><span class="icono-kpi neutro"><i class="bi bi-receipt"></i></span><span class="numero">{{ resumen.pedidos }}</span><span class="rotulo">Pedidos</span></div></div>
+  <div class="col-4"><div class="kpi"><span class="icono-kpi ok"><i class="bi bi-bag-check"></i></span><span class="numero">{{ resumen.entregados }}</span><span class="rotulo">Entregados</span></div></div>
+  <div class="col-4"><div class="kpi oscuro"><span class="icono-kpi"><i class="bi bi-cash-stack"></i></span><span class="numero">$ {{ resumen.vendido|pesos }}</span><span class="rotulo">Vendido</span></div></div>
 </div>
 
-<div class="table-responsive">
+<div class="tarjeta mb-3"><div class="table-responsive">
 <table class="table tabla-ubite align-middle">
   <thead><tr><th>Código</th><th>Fecha</th><th>Cliente</th><th>Origen</th><th>Pago</th><th>Estado</th><th class="text-end">Total</th></tr></thead>
   <tbody>
   {% for p in paginas.items %}
   <tr>
-    <td class="mono">{{ p.codigo }}</td>
+    <td class="mono fw-bolder">{{ p.codigo }}</td>
     <td class="text-nowrap">{{ p.fecha_hora.strftime('%d/%m/%Y') }} <span class="suave">{{ p.fecha_hora.strftime('%I:%M %p').lower() }}</span></td>
     <td>{{ p.cliente.nombre }}</td>
-    <td>{{ "QR" if p.origen == "qr" else "Presencial" }}</td>
+    <td class="text-nowrap"><i class="bi {{ 'bi-qr-code' if p.origen == 'qr' else 'bi-shop' }} suave"></i> {{ "QR" if p.origen == "qr" else "Presencial" }}</td>
     <td>{% set pago = p.pagos|selectattr("estado", "equalto", "aprobado")|first %}{{ ("App" if pago.metodo == "app" else "Efectivo") if pago else "Pendiente" }}</td>
-    <td><span class="chip {{ 'chip-punteado' if p.estado == 'cancelado' }}">{{ ESTADOS[p.estado] }}</span></td>
-    <td class="text-end mono">{{ p.total|pesos }}</td>
+    {% set clase = {"entregado": "chip-ok", "cancelado": "chip-mal", "listo": "chip-ok", "en_preparacion": "chip-medio"}.get(p.estado, "chip-gris") %}
+    <td><span class="chip {{ clase }}"><i class="bi bi-circle-fill"></i>{{ ESTADOS[p.estado] }}</span></td>
+    <td class="text-end mono">$ {{ p.total|pesos }}</td>
   </tr>
   {% else %}
   <tr><td colspan="7" class="suave">{{ "No hay pedidos que coincidan con la búsqueda." if filtrado else "Todavía no hay pedidos registrados." }}</td></tr>
   {% endfor %}
   </tbody>
 </table>
-</div>
+</div></div>
 
 {% if paginas.pages > 1 %}
 <nav class="d-flex flex-wrap justify-content-between align-items-center gap-2 acciones-modulo" aria-label="Páginas del historial">

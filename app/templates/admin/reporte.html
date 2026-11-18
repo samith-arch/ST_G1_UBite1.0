@@ -19,7 +19,7 @@
     <h1 class="titulo display-5 mb-0">Reporte {{ nombres[periodo] }}</h1>
   </div>
   <div class="d-flex flex-wrap gap-2 align-items-center acciones-modulo">
-    <a class="btn btn-contorno" href="{{ url_for('admin.reporte', fecha=anterior.isoformat(), periodo=periodo) }}" aria-label="Periodo anterior"><i class="bi bi-chevron-left"></i></a>
+    <a class="btn btn-contorno" href="{{ url_for('admin.reporte', fecha=anterior.isoformat(), periodo=periodo) }}" aria-label="Periodo anterior" title="Periodo anterior"><i class="bi bi-chevron-left"></i></a>
     {% if siguiente %}<a class="btn btn-contorno" href="{{ url_for('admin.reporte', fecha=siguiente.isoformat(), periodo=periodo) }}" aria-label="Periodo siguiente"><i class="bi bi-chevron-right"></i></a>{% endif %}
     {% if fecha != hoy %}<a class="btn btn-contorno" href="{{ url_for('admin.reporte', periodo=periodo) }}">Hoy</a>{% endif %}
     <a class="btn btn-ubite" href="{{ url_for('admin.exportar', fecha=fecha.isoformat(), periodo=periodo) }}"><i class="bi bi-download"></i> Exportar</a>
@@ -42,21 +42,25 @@
 </form>
 
 <div class="row g-3 mb-4">
-  <div class="col-6 col-xl-3"><div class="tarjeta h-100">
-    <p class="etiqueta mb-1">Total vendido</p><div class="mono fs-3">$ {{ r.total|pesos }}</div>
-    <p class="small suave mb-0">{% if r.variacion is not none %}{{ "%+d"|format(r.variacion) }} % frente {{ anteriores[periodo] }}{% else %}sin ventas en el periodo anterior{% endif %}</p>
+  <div class="col-6 col-xl-3"><div class="kpi oscuro">
+    <span class="icono-kpi"><i class="bi bi-cash-stack"></i></span>
+    <span class="rotulo">Total vendido</span><span class="numero">$ {{ r.total|pesos }}</span>
+    <span class="nota">{% if r.variacion is not none %}<span class="tendencia {{ 'baja' if r.variacion < 0 }}"><i class="bi {{ 'bi-arrow-down-right' if r.variacion < 0 else 'bi-arrow-up-right' }}"></i>{{ "%+d"|format(r.variacion) }} %</span> frente {{ anteriores[periodo] }}{% else %}sin ventas en el periodo anterior{% endif %}</span>
   </div></div>
-  <div class="col-6 col-xl-3"><div class="tarjeta h-100">
-    <p class="etiqueta mb-1">Pedidos</p><div class="mono fs-3">{{ r.pedidos }}</div>
-    <p class="small suave mb-0">{{ r.qr }} por QR · {{ r.presenciales }} presenciales</p>
+  <div class="col-6 col-xl-3"><div class="kpi">
+    <span class="icono-kpi"><i class="bi bi-receipt"></i></span>
+    <span class="rotulo">Pedidos</span><span class="numero">{{ r.pedidos }}</span>
+    <span class="nota"><i class="bi bi-qr-code"></i> {{ r.qr }} por QR · <i class="bi bi-shop"></i> {{ r.presenciales }} en caja</span>
   </div></div>
-  <div class="col-6 col-xl-3"><div class="tarjeta h-100">
-    <p class="etiqueta mb-1">Pagados en la app</p><div class="mono fs-3">{{ r.en_app }} · {{ r.pct_app }} %</div>
-    <p class="small suave mb-0">{{ r.en_efectivo }} pagados en efectivo</p>
+  <div class="col-6 col-xl-3"><div class="kpi">
+    <span class="icono-kpi ok"><i class="bi bi-phone"></i></span>
+    <span class="rotulo">Pagados en la app</span><span class="numero">{{ r.en_app }} <small class="fs-6 suave">· {{ r.pct_app }} %</small></span>
+    <span class="nota">{{ r.en_efectivo }} pagados en efectivo</span>
   </div></div>
-  <div class="col-6 col-xl-3"><div class="tarjeta h-100">
-    <p class="etiqueta mb-1">Ticket promedio</p><div class="mono fs-3">$ {{ r.ticket|pesos }}</div>
-    <p class="small suave mb-0">por pedido pagado</p>
+  <div class="col-6 col-xl-3"><div class="kpi">
+    <span class="icono-kpi neutro"><i class="bi bi-basket"></i></span>
+    <span class="rotulo">Ticket promedio</span><span class="numero">$ {{ r.ticket|pesos }}</span>
+    <span class="nota">por pedido pagado</span>
   </div></div>
 </div>
 
@@ -64,34 +68,53 @@
   <div class="col-lg-8">
     <div class="tarjeta h-100">
       {% set unidad = {"dia": "hora", "semana": "día", "mes": "día", "anio": "mes"}[periodo] %}
-      <h2 class="fs-6 fw-bold mb-1">Ventas por {{ unidad }}</h2>
+      <div class="d-flex justify-content-between align-items-baseline flex-wrap gap-2">
+        <h2 class="fs-5 fw-bolder mb-0">Ventas por {{ unidad }}</h2>
+        {% if r.barras %}<span class="small suave">Pasa el mouse sobre una barra para ver el valor</span>{% endif %}
+      </div>
       {% if r.barras %}
-      <p class="small suave">{{ {"hora": "Horas", "día": "Días", "mes": "Meses"}[unidad] }} con más ventas:
-        {% for b in r.barras|selectattr("pico") %}{{ b.titulo }}{{ " y " if not loop.last }}{% endfor %}</p>
+      <p class="small suave mb-0">{{ {"hora": "Horas", "día": "Días", "mes": "Meses"}[unidad] }} con más ventas:
+        <strong class="text-body">{% for b in r.barras|selectattr("pico") %}{{ b.titulo }}{{ " y " if not loop.last }}{% endfor %}</strong></p>
       <div class="grafica-horas {{ 'muchas' if r.barras|length > 20 }}">
         {% for b in r.barras %}
-        <div class="barra-hora" title="{{ b.titulo }} · $ {{ b.valor|pesos }}">
-          <span class="valor {{ 'pico' if b.pico }}" style="height: {{ [b.alto, 2]|max }}%"></span>
-          <span class="mono small suave">{{ b.texto }}</span>
+        <div class="barra-hora">
+          <span class="globo-valor">{{ b.titulo }} · $ {{ b.valor|pesos }}</span>
+          <span class="valor {{ 'pico' if b.pico }}" style="height: {{ [b.alto, 2]|max }}%; animation-delay: {{ loop.index0 * 25 }}ms"></span>
+          <span class="small suave">{{ b.texto }}</span>
         </div>
         {% endfor %}
       </div>
       {% else %}
-      <p class="suave mb-0">No hay ventas pagadas en este periodo.</p>
+      <div class="text-center suave py-5"><i class="bi bi-bar-chart fs-1 d-block mb-2"></i>No hay ventas pagadas en este periodo.</div>
       {% endif %}
     </div>
   </div>
   <div class="col-lg-4 d-flex flex-column gap-3">
     <div class="tarjeta">
-      <h2 class="fs-6 fw-bold">Más vendidos</h2>
+      <h2 class="fs-5 fw-bolder mb-2">Más vendidos</h2>
+      {% set tope = (r.mas_vendidos|first)[1] if r.mas_vendidos else 1 %}
       {% for nombre, valor in r.mas_vendidos %}
-      <div class="nombre-prod d-flex align-items-baseline gap-2 small py-1"><span>{{ nombre }}</span><span class="puntos flex-fill"></span><span class="mono">{{ valor|pesos }}</span></div>
+      {% set foto = foto_producto(nombre) %}
+      <div class="ranking">
+        <span class="puesto">{{ loop.index }}</span>
+        <span class="miniatura chica">{% if foto %}<img src="{{ url_for('static', filename=foto) }}" alt="">{% else %}<i class="bi bi-image"></i>{% endif %}</span>
+        <div class="datos">
+          <div><span class="text-truncate">{{ nombre }}</span><span>{{ valor|pesos }}</span></div>
+          <div class="barrita"><span style="width: {{ (valor / tope * 100) if tope else 0 }}%"></span></div>
+        </div>
+      </div>
       {% else %}<p class="small suave mb-0">Sin ventas.</p>{% endfor %}
     </div>
     <div class="tarjeta">
-      <h2 class="fs-6 fw-bold">Método de pago</h2>
-      <div class="medidor mb-2"><span style="width: {{ r.pct_app }}%"></span></div>
-      <p class="mono small mb-0">App · {{ r.pct_app }} % &nbsp; Efectivo en caja · {{ 100 - r.pct_app if r.pagados else 0 }} %</p>
+      <h2 class="fs-5 fw-bolder mb-3">Método de pago</h2>
+      {% set pct = r.pct_app if r.pagados else 0 %}
+      <div class="d-flex align-items-center gap-4">
+        <div class="dona" style="--pct: {{ pct }}"><span>{{ pct }} %<small>en la app</small></span></div>
+        <div class="leyenda">
+          <span><i style="background: var(--acento)"></i>App · {{ pct }} %</span>
+          <span><i style="background: var(--tinta-oscura)"></i>Efectivo · {{ 100 - pct if r.pagados else 0 }} %</span>
+        </div>
+      </div>
     </div>
   </div>
 </div>

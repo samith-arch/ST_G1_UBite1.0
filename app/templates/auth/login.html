@@ -1,36 +1,35 @@
 {% from "_logo.html" import logo %}
 {% extends "base.html" %}
 {% block titulo_pagina %}Personal{% endblock %}
-{% block clase_main %}container-xl py-4{% endblock %}
-{% block encabezado %}
-<header class="barra">
-  <div class="container-xl">
-    <a class="marca" href="{{ url_for('cliente.inicio') }}">{{ logo() }}<span class="sub-logo">Cafetería UMB · Personal</span></a>
-  </div>
-</header>
-{% endblock %}
+{% block clase_body %}oscuro{% endblock %}
+{% block clase_main %}{% endblock %}
 {% block contenido %}
-<div class="row align-items-center g-4 g-lg-5 py-lg-5">
-  <div class="col-lg-6 text-center">
-    <img class="foto-login" src="{{ url_for('static', filename='img/marca/hero-cafeteria.jpg') }}" alt="Mostrador de la cafetería">
+<div class="login">
+  <div class="foto">
+    <img src="{{ url_for('static', filename='img/marca/hero-cafeteria.jpg') }}" alt="Mostrador de la cafetería">
   </div>
-  <div class="col-lg-5 offset-lg-1">
-    <p class="etiqueta mb-2">Solo personal de la cafetería</p>
-    <h1 class="titulo display-5 mb-4">Inicia sesión</h1>
-    {% with mensajes = get_flashed_messages() %}{% for m in mensajes %}<div class="mensaje-flash error" role="alert"><i class="bi bi-exclamation-circle"></i><span>{{ m }}</span></div>{% endfor %}{% endwith %}
+  <div class="hoja-login">
     <form method="post" autocomplete="off">
+      <a href="{{ url_for('cliente.inicio') }}">{{ logo("claro") }}</a>
+      <p class="etiqueta mb-2">Solo personal de la cafetería</p>
+      <h1>Inicia sesión</h1>
+      <p class="suave mb-4">El panel se abre como cajero o administrador según tu rol.</p>
+      {% with mensajes = get_flashed_messages() %}{% for m in mensajes %}<div class="mensaje-flash error" role="alert"><i class="bi bi-exclamation-circle"></i><span>{{ m }}</span></div>{% endfor %}{% endwith %}
       <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
-      <label class="etiqueta" for="usuario">Usuario</label>
-      <div class="campo-icono mb-4"><i class="bi bi-person"></i>
-        <input class="form-control linea-campo" id="usuario" name="usuario" autocomplete="off" required>
+      <label for="usuario">Usuario</label>
+      <div class="con-icono mb-3"><i class="bi bi-person"></i>
+        <input class="campo-oscuro" id="usuario" name="usuario" autocomplete="off" placeholder="Tu usuario" required>
       </div>
-      <label class="etiqueta" for="contrasena">Contraseña</label>
-      <div class="campo-icono mb-4"><i class="bi bi-lock"></i>
-        <input class="form-control linea-campo" id="contrasena" name="contrasena" type="password" autocomplete="current-password" required>
+      <label for="contrasena">Contraseña</label>
+      <div class="con-icono mb-4"><i class="bi bi-lock"></i>
+        <input class="campo-oscuro" id="contrasena" name="contrasena" type="password" autocomplete="current-password" placeholder="••••••••" required>
       </div>
-      <button class="btn btn-ubite w-100" type="submit">Ingresar</button>
-      <p class="small suave mt-3">El sistema abre el panel de cajero o de administrador según tu rol.</p>
-      <a class="small" href="{{ url_for('cliente.inicio') }}">Volver a la vista del cliente</a>
+      <button class="btn btn-ubite w-100 py-3" type="submit">Ingresar <i class="bi bi-arrow-right ms-1"></i></button>
+      <p class="small text-center mt-4 mb-0"><a href="{{ url_for('cliente.inicio') }}">Volver a la vista del cliente</a></p>
+      <div class="chips-login justify-content-center">
+        <span><i class="bi bi-shield-lock"></i> Sesión de 15 minutos</span>
+        <span><i class="bi bi-person-badge"></i> Permisos por rol</span>
+      </div>
     </form>
   </div>
 </div>

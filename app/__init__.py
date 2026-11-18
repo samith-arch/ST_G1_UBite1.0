@@ -77,6 +77,7 @@ def create_app():
     app.jinja_env.filters["pesos"] = pesos
     app.jinja_env.globals["ESTADOS"] = ESTADOS
     app.jinja_env.globals["foto_producto"] = foto_producto
+    app.jinja_env.filters["slug"] = slug
 
     with app.app_context():
         from . import models  # noqa: F401

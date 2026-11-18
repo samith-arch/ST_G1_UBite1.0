@@ -1,41 +1,40 @@
 {% from "_logo.html" import logo %}
 {% extends "base.html" %}
-{% block clase_main %}{{ 'con-lateral' if es_admin }} container-xl py-4 con-barra-inferior{% endblock %}
+{% block clase_body %}panel{% endblock %}
+{% block clase_main %}con-lateral container-xl py-4 con-barra-inferior{% endblock %}
+{% macro iniciales(nombre) %}{{ nombre.split()[:2]|map('first')|join|upper }}{% endmacro %}
 
 {% block encabezado %}
-{% if es_admin %}
 <aside class="lateral d-none d-lg-flex">
-  <a class="marca mb-4" href="{{ url_for('admin.reporte') }}">{{ logo() }}<span class="sub-logo">Cafetería UMB · Personal</span></a>
+  <a class="marca mb-4" href="{{ url_for(menu_personal[0][0]) }}">{{ logo("claro") }}<span class="sub-logo">Cafetería UMB · Personal</span></a>
   <nav>
-    {% for ruta, texto, icono in menu_personal %}
-    <a href="{{ url_for(ruta) }}" class="{{ 'activo' if seccion == ruta }}"><i class="bi {{ icono }}"></i>{{ texto }}</a>
-    {% endfor %}
+    {% set operacion = ["caja.cola", "caja.presencial", "inventario.lista", "caja.historial"] %}
+    {% macro enlace(ruta, texto, icono) %}<a href="{{ url_for(ruta) }}" class="{{ 'activo' if seccion == ruta }}"><i class="bi {{ icono }}"></i>{{ texto }}</a>{% endmacro %}
+    {% if es_admin %}
+      {% for ruta, texto, icono in menu_personal if ruta not in operacion and ruta == "admin.reporte" %}{{ enlace(ruta, texto, icono) }}{% endfor %}
+      <p class="grupo-menu">Operación</p>
+      {% for ruta, texto, icono in menu_personal if ruta in operacion %}{{ enlace(ruta, texto, icono) }}{% endfor %}
+      <p class="grupo-menu">Administración</p>
+      {% for ruta, texto, icono in menu_personal if ruta not in operacion and ruta != "admin.reporte" %}{{ enlace(ruta, texto, icono) }}{% endfor %}
+    {% else %}
+      {% for ruta, texto, icono in menu_personal %}{{ enlace(ruta, texto, icono) }}{% endfor %}
+    {% endif %}
   </nav>
-  <div class="mt-auto pt-4 small">
-    <div class="suave mb-2"><i class="bi bi-person"></i> {{ current_user.nombre }} · {{ current_user.rol }}</div>
-    <a href="{{ url_for('auth.salir') }}" class="etiqueta text-decoration-none"><i class="bi bi-box-arrow-right"></i> Salir</a>
+  <div class="mt-auto pt-4">
+    <div class="tarjeta-usuario">
+      <span class="avatar oscuro">{{ iniciales(current_user.nombre) }}</span>
+      <div><div class="nombre">{{ current_user.nombre }}</div><div class="rol">{{ current_user.rol|capitalize }}</div></div>
+      <a href="{{ url_for('auth.salir') }}" aria-label="Salir" title="Salir"><i class="bi bi-box-arrow-right"></i></a>
+    </div>
   </div>
 </aside>
-{% endif %}
-<header class="barra {{ 'd-lg-none' if es_admin }}">
+<header class="barra d-lg-none">
   <div class="container-xl d-flex justify-content-between align-items-center">
     {% if titulo_barra %}
-    <a class="d-lg-none barra-titulo" href="{{ atras or url_for(menu_inferior[0][0]) }}"><i class="bi bi-arrow-left"></i><span class="titulo">{{ titulo_barra }}</span></a>
-    {% endif %}
-    <a class="marca {% if titulo_barra %}d-none d-lg-inline-block{% endif %}" href="{{ url_for(menu_personal[0][0]) }}">
-      {{ logo() }}<span class="sub-logo">Cafetería UMB · Personal</span>
-    </a>
-    {% if not es_admin %}
-    <nav class="nav-personal d-none d-lg-flex gap-4 align-items-center">
-      {% for ruta, texto, _ in menu_personal %}
-      <a href="{{ url_for(ruta) }}" class="{{ 'activo' if seccion == ruta }}">{{ texto }}</a>
-      {% endfor %}
-      <span class="small"><i class="bi bi-person"></i> {{ current_user.nombre.split(' ')[0] }} · {{ current_user.rol }}</span>
-      <a href="{{ url_for('auth.salir') }}" class="etiqueta"><i class="bi bi-box-arrow-right"></i> Salir</a>
-    </nav>
-    {% endif %}
-    {% if not titulo_barra %}
-    <a class="icono-btn d-lg-none" href="{{ url_for('auth.salir') }}" aria-label="Salir"><i class="bi bi-box-arrow-right"></i></a>
+    <a class="barra-titulo" href="{{ atras or url_for(menu_inferior[0][0]) }}"><i class="bi bi-arrow-left"></i><span class="titulo">{{ titulo_barra }}</span></a>
+    {% else %}
+    <a class="marca" href="{{ url_for(menu_personal[0][0]) }}">{{ logo("claro") }}</a>
+    <a class="icono-btn" href="{{ url_for('auth.salir') }}" aria-label="Salir"><i class="bi bi-box-arrow-right"></i></a>
     {% endif %}
   </div>
 </header>
@@ -74,7 +73,7 @@
       <a href="{{ url_for(ruta) }}" class="{{ 'activo' if seccion == ruta }}"><i class="bi {{ icono }}"></i>{{ texto }}</a>
       {% endfor %}
     </nav>
-    <a href="{{ url_for('auth.salir') }}" class="etiqueta mt-auto text-decoration-none"><i class="bi bi-box-arrow-right"></i> Salir</a>
+    <a href="{{ url_for('auth.salir') }}" class="etiqueta mt-auto text-decoration-none"><i class="bi bi-box-arrow-right"></i> Salir · {{ current_user.nombre }}</a>
   </div>
 </div>
 <script src="{{ url_for('static', filename='vendor/bootstrap/bootstrap.bundle.min.js') }}"></script>
