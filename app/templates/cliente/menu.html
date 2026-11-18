@@ -3,8 +3,13 @@
 {% block cabecera_extra %}
 <div class="cabecera-menu">
   <div class="container contenedor-cliente">
+    <div class="adorno-menu d-none d-md-block" aria-hidden="true">
+      <img class="c1" src="{{ url_for('static', filename='img/marca/circulo-empanada.webp') }}" alt="">
+      <img class="c2" src="{{ url_for('static', filename='img/marca/circulo-cafe.webp') }}" alt="">
+      <img class="c3" src="{{ url_for('static', filename='img/marca/circulo-pandebono.webp') }}" alt="">
+    </div>
     <p class="saludo">Hola, {{ session.cliente.nombre.split(' ')[0] }}</p>
-    <h1 class="titulo mb-3">¿Qué se te antoja hoy?</h1>
+    <h1 class="titulo mb-3">¿Qué se te <em>antoja</em> hoy?</h1>
     <label class="solo-lectores" for="buscar">Buscar</label>
     <div class="buscador-menu">
       <i class="bi bi-search"></i>

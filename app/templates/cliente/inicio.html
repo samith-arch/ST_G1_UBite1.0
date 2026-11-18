@@ -35,13 +35,11 @@
       <a class="btn btn-contorno-claro px-4" href="#favoritos">Ver lo más pedido</a>
     </div>
   </div>
-  <div class="cifras revelar">
-    <div><strong data-contar="{{ productos }}">{{ productos }}</strong><span>productos en el menú</span></div>
-    <div><strong data-contar="{{ entregados }}">{{ entregados }}</strong><span>pedidos entregados</span></div>
-    <div><strong><i class="bi bi-broadcast"></i></strong><span>tu turno en vivo</span></div>
-  </div>
+  <p class="frase-hero revelar">Entre clase y clase, <em>tu antojo ya está listo.</em></p>
   <svg class="onda" viewBox="0 0 1440 90" preserveAspectRatio="none" aria-hidden="true"><path d="M0 90V40Q360 0 720 40T1440 40V90Z" fill="#2E1D15"/></svg>
 </header>
+
+<div class="cinta" aria-hidden="true"><div class="cinta-pista"><span>Café recién hecho</span><i class="bi bi-asterisk"></i><span>Empanadas</span><i class="bi bi-asterisk"></i><span>Pandebono</span><i class="bi bi-asterisk"></i><span>Jugos</span><i class="bi bi-asterisk"></i><span>Sin filas</span><i class="bi bi-asterisk"></i><span>Pagas al recoger</span><i class="bi bi-asterisk"></i><span>Arepas</span><i class="bi bi-asterisk"></i><span>Buñuelos</span><i class="bi bi-asterisk"></i><span>Café recién hecho</span><i class="bi bi-asterisk"></i><span>Empanadas</span><i class="bi bi-asterisk"></i><span>Pandebono</span><i class="bi bi-asterisk"></i><span>Jugos</span><i class="bi bi-asterisk"></i><span>Sin filas</span><i class="bi bi-asterisk"></i><span>Pagas al recoger</span><i class="bi bi-asterisk"></i><span>Arepas</span><i class="bi bi-asterisk"></i><span>Buñuelos</span><i class="bi bi-asterisk"></i></div></div>
 
 {# 2. por que UBite #}
 <section class="seccion seccion-cafe" id="por-que">
@@ -114,7 +112,6 @@
 <section class="seccion seccion-oscura" id="pedir">
   <div class="caja-pedir revelar">
     <div class="foto-pedir"><img src="{{ img('img/marca/hero-cafeteria.jpg') }}" alt="Mostrador de la cafetería" loading="lazy">
-      <img class="sello-taza" src="{{ img('img/marca/circulo-cafe.webp') }}" alt="">
     </div>
     <div class="form-pedir">
       <p class="sobre-titulo">Empieza aquí</p>
