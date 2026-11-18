@@ -9,7 +9,7 @@ from flask_login import current_user, logout_user
 from .. import avisos, servicios
 from ..database import BaseOcupada
 from ..database import db
-from ..models import Pedido, Producto
+from ..models import DetallePedido, Pedido, Producto
 from ..servicios import ErrorNegocio
 from . import en_linea
 
@@ -92,7 +92,22 @@ def inicio():
             session["cliente"] = {"nombre": nombre, "telefono": telefono}
             return redirect(url_for("cliente.menu"))
     return render_template("cliente/inicio.html", errores=errores, form=form,
-                           cliente=session.get("cliente"))
+                           cliente=session.get("cliente"), **_vitrina())
+
+
+def _vitrina():
+    # datos reales para la portada: lo mas pedido y cuantos pedidos se han entregado
+    vendidos = (db.session.query(Producto, db.func.sum(DetallePedido.cantidad).label("n"))
+                .join(DetallePedido, DetallePedido.id_producto == Producto.id_producto)
+                .filter(Producto.activo.is_(True))
+                .group_by(Producto.id_producto)
+                .order_by(db.desc("n")).limit(8).all())
+    destacados = [p for p, _ in vendidos]
+    if len(destacados) < 4:
+        destacados = Producto.query.filter_by(activo=True).limit(8).all()
+    return {"destacados": destacados,
+            "entregados": Pedido.query.filter_by(estado="entregado").count(),
+            "productos": Producto.query.filter_by(activo=True).count()}
 
 
 @bp.route("/salir")

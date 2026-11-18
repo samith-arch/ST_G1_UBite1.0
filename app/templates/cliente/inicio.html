@@ -1,35 +1,145 @@
 {% extends "base.html" %}
 {% from "_logo.html" import logo %}
-{% block titulo_pagina %}Bienvenida{% endblock %}
-{% block clase_body %}oscuro{% endblock %}
+{% block titulo_pagina %}Pide sin hacer fila{% endblock %}
+{% block clase_body %}oscuro portada{% endblock %}
 {% block clase_main %}{% endblock %}
+{% macro img(ruta) %}{{ url_for('static', filename=ruta) }}{% endmacro %}
 {% block contenido %}
-<div class="bienvenida">
-  <div class="foto">
-    <img src="{{ url_for('static', filename='img/marca/hero-cafeteria.jpg') }}" alt="Mostrador de la cafetería">
-    {{ logo("claro") }}
+
+<nav class="nav-portada" id="nav-portada">
+  <a href="#inicio">{{ logo("claro") }}</a>
+  <div class="enlaces d-none d-md-flex">
+    <a href="#por-que">Por qué UBite</a>
+    <a href="#favoritos">Lo más pedido</a>
+    <a href="#como">Cómo funciona</a>
   </div>
+  <a class="btn btn-ubite btn-sm px-3" href="#pedir">Pedir ahora</a>
+</nav>
 
-  <div class="hoja-bienvenida">
-    <h1>Pide sin hacer <span class="acento-claro">fila.</span></h1>
-    <p class="lema-sub">Arma tu pedido desde el celular o el computador y te avisamos cuando esté listo para recoger.</p>
-
-    <form method="post" novalidate>
-      <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
-      <label class="solo-lectores" for="nombre">Nombre</label>
-      <input class="campo-oscuro" id="nombre" name="nombre" maxlength="60" autocomplete="given-name" placeholder="Tu nombre"
-             value="{{ form.get('nombre') or (cliente.nombre if cliente else '') }}" required>
-      {% if errores.nombre %}<div class="error-campo">{{ errores.nombre }}</div>{% endif %}
-
-      <label class="solo-lectores" for="telefono">Celular</label>
-      <input class="campo-oscuro mt-2" id="telefono" name="telefono" inputmode="numeric" maxlength="13" autocomplete="tel" placeholder="Celular (10 dígitos)"
-             value="{{ form.get('telefono') or (cliente.telefono if cliente else '') }}" required>
-      {% if errores.telefono %}<div class="error-campo">{{ errores.telefono }}</div>{% endif %}
-
-      <p class="legal">Tu celular solo se usa para avisarte o llamarte si no recoges. Al continuar aceptas ese uso de tus datos (Ley 1581 de 2012).</p>
-      <button class="btn btn-ubite w-100 py-3" type="submit">Ver el menú <i class="bi bi-arrow-right ms-1"></i></button>
-    </form>
-    <p class="small suave text-center mt-4 mb-0">¿Trabajas en la cafetería? <a class="fw-bold" href="{{ url_for('auth.login') }}">Inicia sesión</a></p>
+{# 1. portada con collage de fotos #}
+<header class="hero-portada" id="inicio">
+  <div class="collage" aria-hidden="true">
+    <img class="pieza p1" data-parallax="0.12" src="{{ img('img/productos/cafe.jpg') }}" alt="">
+    <img class="pieza p2" data-parallax="-0.08" src="{{ img('img/productos/empanada.jpg') }}" alt="">
+    <img class="pieza p3" data-parallax="0.18" src="{{ img('img/productos/pandebono.jpg') }}" alt="">
+    <img class="pieza p4" data-parallax="-0.14" src="{{ img('img/productos/arepa-de-queso.jpg') }}" alt="">
+    <img class="pieza p5" data-parallax="0.1" src="{{ img('img/productos/avena-en-vaso.jpg') }}" alt="">
+    <img class="pieza p6" data-parallax="-0.06" src="{{ img('img/productos/jugo-en-caja.jpg') }}" alt="">
   </div>
-</div>
+  <div class="tarjeta-hero revelar">
+    <p class="sobre-titulo">Cafetería UMB</p>
+    <h1>Pide sin hacer <em>fila.</em></h1>
+    <p>Arma tu pedido desde el celular, sigue tu turno en vivo y recógelo cuando te avisemos.</p>
+    <div class="d-flex flex-wrap gap-2 justify-content-center">
+      <a class="btn btn-ubite px-4" href="#pedir">Pedir ahora <i class="bi bi-arrow-down ms-1"></i></a>
+      <a class="btn btn-contorno-claro px-4" href="#favoritos">Ver lo más pedido</a>
+    </div>
+  </div>
+  <div class="cifras revelar">
+    <div><strong data-contar="{{ productos }}">{{ productos }}</strong><span>productos en el menú</span></div>
+    <div><strong data-contar="{{ entregados }}">{{ entregados }}</strong><span>pedidos entregados</span></div>
+    <div><strong><i class="bi bi-broadcast"></i></strong><span>tu turno en vivo</span></div>
+  </div>
+  <svg class="onda" viewBox="0 0 1440 90" preserveAspectRatio="none" aria-hidden="true"><path d="M0 90V40Q360 0 720 40T1440 40V90Z" fill="#2E1D15"/></svg>
+</header>
+
+{# 2. por que UBite #}
+<section class="seccion seccion-cafe" id="por-que">
+  <h2 class="titulo-seccion revelar">Lo que nos hace <span>diferentes</span></h2>
+  <div class="ventajas">
+    <div class="ventaja revelar"><span class="circulo"><i class="bi bi-hourglass-split"></i></span><h3>Sin filas</h3><p>Pides desde la mesa, el salón o el pasillo.</p></div>
+    <div class="ventaja revelar"><span class="circulo"><i class="bi bi-bell"></i></span><h3>Te avisamos</h3><p>Una notificación al celular cuando esté listo.</p></div>
+    <div class="ventaja revelar"><span class="circulo"><i class="bi bi-cash-coin"></i></span><h3>Pagas al recoger</h3><p>Sin tarjetas ni registros: pagas en la caja.</p></div>
+    <div class="ventaja revelar"><span class="circulo"><i class="bi bi-fire"></i></span><h3>Recién hecho</h3><p>Las empanadas y arepas se calientan al pedir.</p></div>
+  </div>
+</section>
+
+{# 3. lo mas pedido, en tablero de foto y texto #}
+<section class="seccion seccion-oscura" id="favoritos">
+  <h2 class="titulo-seccion revelar">Lo más <span>pedido</span></h2>
+  <p class="bajada revelar">Lo que más sale de la cafetería, según los pedidos reales.</p>
+  <div class="tablero-favoritos">
+    {% for p in destacados[:6] %}
+    {% set foto = foto_producto(p.nombre) %}
+    <article class="favorito revelar {{ 'invertido' if (loop.index0 // 2) % 2 }}">
+      <div class="foto">{% if foto %}<img src="{{ img(foto) }}" alt="{{ p.nombre }}" loading="lazy">{% endif %}</div>
+      <div class="texto">
+        <span class="puesto">#{{ loop.index }}</span>
+        <h3>{{ p.nombre }}</h3>
+        <p>{{ p.descripcion or p.categoria.nombre }}</p>
+        <strong>$ {{ p.precio|pesos }}</strong>
+      </div>
+    </article>
+    {% endfor %}
+  </div>
+  <div class="text-center mt-4 revelar"><a class="btn btn-ubite px-5" href="#pedir">Quiero pedir</a></div>
+</section>
+
+{# 4. recien horneado con letras grandes y panes flotando #}
+<section class="seccion horneado" aria-labelledby="titulo-horneado">
+  <h2 class="titulo-seccion revelar" id="titulo-horneado">Recién horneado <span>cada mañana</span></h2>
+  <div class="escena">
+    <svg class="curva" viewBox="0 0 1000 600" preserveAspectRatio="none" aria-hidden="true">
+      <path id="camino" d="M760 90 C 760 230, 240 160, 240 300 S 740 380, 720 520" fill="none" stroke="rgba(243,227,204,.35)" stroke-width="1.5" stroke-dasharray="6 8" vector-effect="non-scaling-stroke"/>
+    </svg>
+    <div class="fila-pan revelar">
+      <div class="palabra">Pandebono</div>
+      <img class="flotante" src="{{ img('img/marca/circulo-pandebono.webp') }}" alt="Pandebono" loading="lazy">
+      <p class="nota-pan">Queso costeño y almidón, recién salido del horno.</p>
+    </div>
+    <div class="fila-pan derecha revelar">
+      <div class="palabra">Buñuelo</div>
+      <img class="flotante" src="{{ img('img/marca/circulo-bunuelo.webp') }}" alt="Buñuelo" loading="lazy">
+      <p class="nota-pan">Dorado por fuera, suave por dentro.</p>
+    </div>
+    <div class="fila-pan revelar">
+      <div class="palabra">Almojábana</div>
+      <img class="flotante" src="{{ img('img/marca/circulo-almojabana.webp') }}" alt="Almojábana" loading="lazy">
+      <p class="nota-pan">La de la casa, perfecta con un tinto.</p>
+    </div>
+  </div>
+</section>
+
+{# 5. como funciona #}
+<section class="seccion seccion-crema" id="como">
+  <h2 class="titulo-seccion revelar">Así de <span>fácil</span></h2>
+  <div class="pasos-portada">
+    <div class="paso revelar"><span class="numero">1</span><i class="bi bi-qr-code-scan"></i><h3>Escanea el QR</h3><p>Está en las mesas y junto a la caja.</p></div>
+    <div class="paso revelar"><span class="numero">2</span><i class="bi bi-bag-plus"></i><h3>Arma tu pedido</h3><p>Ves el menú con lo que hay disponible ahora.</p></div>
+    <div class="paso revelar"><span class="numero">3</span><i class="bi bi-bell"></i><h3>Recoge y paga</h3><p>Te avisamos al celular y pagas al recogerlo.</p></div>
+  </div>
+</section>
+
+{# 6. formulario para empezar #}
+<section class="seccion seccion-oscura" id="pedir">
+  <div class="caja-pedir revelar">
+    <div class="foto-pedir"><img src="{{ img('img/marca/hero-cafeteria.jpg') }}" alt="Mostrador de la cafetería" loading="lazy">
+      <img class="sello-taza" src="{{ img('img/marca/circulo-cafe.webp') }}" alt="">
+    </div>
+    <div class="form-pedir">
+      <p class="sobre-titulo">Empieza aquí</p>
+      <h2>¿Para quién es el pedido?</h2>
+      <form method="post" novalidate>
+        <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+        <label class="solo-lectores" for="nombre">Nombre</label>
+        <input class="campo-oscuro" id="nombre" name="nombre" maxlength="60" autocomplete="given-name" placeholder="Tu nombre"
+               value="{{ form.get('nombre') or (cliente.nombre if cliente else '') }}" required>
+        {% if errores.nombre %}<div class="error-campo">{{ errores.nombre }}</div>{% endif %}
+        <label class="solo-lectores" for="telefono">Celular</label>
+        <input class="campo-oscuro mt-2" id="telefono" name="telefono" inputmode="numeric" maxlength="13" autocomplete="tel" placeholder="Celular (10 dígitos)"
+               value="{{ form.get('telefono') or (cliente.telefono if cliente else '') }}" required>
+        {% if errores.telefono %}<div class="error-campo">{{ errores.telefono }}</div>{% endif %}
+        <p class="legal">Tu celular solo se usa para avisarte o llamarte si no recoges. Al continuar aceptas ese uso de tus datos (Ley 1581 de 2012).</p>
+        <button class="btn btn-ubite w-100 py-3" type="submit">Ver el menú <i class="bi bi-arrow-right ms-1"></i></button>
+      </form>
+    </div>
+  </div>
+</section>
+
+<footer class="pie-portada">
+  {{ logo("claro") }}
+  <p>Cafetería de la Universidad Manuela Beltrán · Proyecto de Sistemas Transaccionales</p>
+  <a href="{{ url_for('auth.login') }}">¿Trabajas en la cafetería? Inicia sesión</a>
+</footer>
 {% endblock %}
+{% block scripts %}<script src="{{ url_for('static', filename='js/portada.js') }}"></script>{% endblock %}

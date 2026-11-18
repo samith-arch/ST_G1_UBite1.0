@@ -21,6 +21,7 @@
         const menos = form.querySelector(".menos");
         const mas = form.querySelector(".mas");
         cant.textContent = d.cantidad;
+        [cant, ...document.querySelectorAll(".globo")].forEach((e) => { e.classList.remove("salto"); void e.offsetWidth; e.classList.add("salto"); });
         cant.classList.toggle("oculto", d.cantidad === 0);
         menos.classList.toggle("oculto", d.cantidad === 0);
         mas.disabled = d.cantidad >= Number(mas.dataset.stock);
