@@ -1,17 +1,18 @@
+{% from "_logo.html" import logo %}
 {% extends "base.html" %}
 {% block titulo_pagina %}Personal{% endblock %}
 {% block clase_main %}container-xl py-4{% endblock %}
 {% block encabezado %}
 <header class="barra">
   <div class="container-xl">
-    <a class="marca" href="{{ url_for('cliente.inicio') }}"><span class="nombre">UBite</span><span class="sub">Cafetería UMB · Personal</span></a>
+    <a class="marca" href="{{ url_for('cliente.inicio') }}">{{ logo() }}<span class="sub-logo">Cafetería UMB · Personal</span></a>
   </div>
 </header>
 {% endblock %}
 {% block contenido %}
 <div class="row align-items-center g-4 g-lg-5 py-lg-5">
   <div class="col-lg-6 text-center">
-    {% include "_ilustracion.html" %}
+    <img class="foto-login" src="{{ url_for('static', filename='img/marca/hero-cafeteria.jpg') }}" alt="Mostrador de la cafetería">
   </div>
   <div class="col-lg-5 offset-lg-1">
     <p class="etiqueta mb-2">Solo personal de la cafetería</p>

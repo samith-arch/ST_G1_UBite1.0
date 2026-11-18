@@ -12,22 +12,34 @@
 </li>
 {% endmacro %}
 
+{% block cabecera_extra %}
+<div class="cabecera-pedido">
+  <div class="container contenedor-cliente"><div class="columna-movil">
+    <p class="etiqueta mb-1 mt-2">Tu código de pedido</p>
+    <div class="d-flex justify-content-between align-items-end gap-3 flex-wrap">
+      <div class="codigo-grande">{{ pedido.codigo }}</div>
+      <div class="d-flex gap-2 flex-wrap mb-1">
+        {% if pedido.pagado %}<span class="chip">Pagado</span>
+        {% elif pedido.estado != "cancelado" %}<span class="chip chip-punteado">Pendiente de pago</span>{% endif %}
+        {% if pedido.estado in ("listo", "entregado", "cancelado") %}<span class="chip {{ 'chip-oscuro' if pedido.estado == 'listo' }}">{{ ESTADOS[pedido.estado] }}</span>{% endif %}
+      </div>
+    </div>
+    {% if pedido.estado in ("en_cola", "en_preparacion") %}
+    <p class="avisos d-flex gap-2 mt-3 mb-0 oculto" id="estado-avisos"></p>
+    {% endif %}
+  </div></div>
+</div>
+{% endblock %}
+
 {% block contenido %}
 <div class="columna-movil" id="seguimiento" data-url="{{ url_for('cliente.estado', codigo=pedido.codigo) }}"
      data-estado="{{ pedido.estado }}" data-posicion="{{ posicion }}" data-listo="{{ url_for('cliente.seguimiento', codigo=pedido.codigo) }}"
      data-suscripcion="{{ url_for('cliente.suscripcion', codigo=pedido.codigo) }}">
-  <p class="etiqueta mb-1">Tu código de pedido</p>
-  <div class="codigo-grande mb-3">{{ pedido.codigo }}</div>
-  <div class="mb-3 d-flex gap-2 flex-wrap">
-    {% if pedido.pagado %}<span class="chip">Pagado</span>
-    {% elif pedido.estado != "cancelado" %}<span class="chip chip-punteado">Pendiente de pago</span>{% endif %}
-    {% if pedido.estado in ("listo", "entregado", "cancelado") %}<span class="chip {{ 'chip-oscuro' if pedido.estado == 'listo' }}">{{ ESTADOS[pedido.estado] }}</span>{% endif %}
-  </div>
 
   {% if pedido.estado == "cancelado" %}
   <div class="aviso mb-3">Este pedido se canceló y los productos volvieron al inventario.</div>
   {% else %}
-  <div class="tarjeta mb-3">
+  <div class="tarjeta-blanca mb-3">
     <ul class="pasos">
       {% set hora = "Hoy " ~ pedido.fecha_hora.strftime('%I:%M %p').lower() %}
       {% if pedido.estado == "en_cola" %}
@@ -46,25 +58,30 @@
   </div>
   {% endif %}
 
-  <div class="tarjeta lineas-total mb-4">
+  <div class="tarjeta-blanca mb-4">
     {% for d in pedido.detalles %}
-    <div class="fila"><span>{{ d.producto.nombre }} ×{{ d.cantidad }}</span><span class="mono">{{ d.subtotal|pesos }}</span></div>
+    {% set foto = foto_producto(d.producto.nombre) %}
+    <div class="d-flex align-items-center gap-3 py-1">
+      <div class="miniatura chica">{% if foto %}<img src="{{ url_for('static', filename=foto) }}" alt="">{% else %}<i class="bi bi-image"></i>{% endif %}</div>
+      <span class="flex-fill fw-semibold">{{ d.producto.nombre }} ×{{ d.cantidad }}</span>
+      <span class="fw-bold">$ {{ d.subtotal|pesos }}</span>
+    </div>
     {% endfor %}
-    <div class="fila total"><span class="etiqueta">{{ "Total pagado" if pedido.pagado else "Total" }}</span><span class="mono fs-4">$ {{ pedido.total|pesos }}</span></div>
+    <div class="fila total"><span class="fw-bolder">{{ "Total pagado" if pedido.pagado else "Total" }}</span><span class="monto">$ {{ pedido.total|pesos }}</span></div>
   </div>
 
-  {% if pedido.estado in ("en_cola", "en_preparacion") %}
-  <p class="small suave d-flex gap-2 oculto" id="estado-avisos"></p>
-  {% endif %}
-
   {% if pedido.estado == "en_cola" and not pedido.pagado %}
-  <a class="btn btn-contorno w-100 mb-3" href="{{ url_for('cliente.modificar', codigo=pedido.codigo) }}">Modificar pedido</a>
-  <form method="post" action="{{ url_for('cliente.cancelar', codigo=pedido.codigo) }}"
-        onsubmit="return confirm('¿Cancelar el pedido {{ pedido.codigo }}?')">
-    <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
-    <button class="btn btn-suave w-100">Cancelar pedido</button>
-  </form>
-  <p class="small suave mt-3">Mientras esté en cola puedes agregar o quitar productos, o cancelar el pedido.</p>
+  <div class="row g-2">
+    <div class="col-6"><a class="btn btn-contorno w-100" href="{{ url_for('cliente.modificar', codigo=pedido.codigo) }}">Modificar</a></div>
+    <div class="col-6">
+      <form method="post" action="{{ url_for('cliente.cancelar', codigo=pedido.codigo) }}"
+            onsubmit="return confirm('¿Cancelar el pedido {{ pedido.codigo }}?')">
+        <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+        <button class="btn btn-suave w-100">Cancelar pedido</button>
+      </form>
+    </div>
+  </div>
+  <p class="small suave mt-3 text-center">Puedes cambiarlo o cancelarlo mientras siga en cola.</p>
   {% elif pedido.estado in ("entregado", "cancelado") %}
   <a class="btn btn-ubite w-100" href="{{ url_for('cliente.menu') }}">Hacer otro pedido</a>
   {% endif %}
@@ -72,7 +89,7 @@
 {% if pedido.estado in ("en_cola", "en_preparacion") %}
 <div class="hoja oculto" id="hoja-avisos" role="dialog" aria-labelledby="hoja-titulo">
   <div class="hoja-caja">
-    <p class="mono small suave mb-2"><i class="bi bi-bell"></i> {{ request.host }}</p>
+    <p class="small suave mb-2"><i class="bi bi-bell"></i> {{ request.host }}</p>
     <h2 class="fs-5 fw-bold" id="hoja-titulo">¿Permitir que UBite te envíe notificaciones?</h2>
     <p class="suave small">Te avisaremos en el celular cuando el pedido {{ pedido.codigo }} esté listo, aunque cierres la página o bloquees la pantalla. No usamos SMS.</p>
     <div class="d-flex gap-2">

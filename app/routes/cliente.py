@@ -9,7 +9,7 @@ from flask_login import current_user, logout_user
 from .. import avisos, servicios
 from ..database import BaseOcupada
 from ..database import db
-from ..models import Producto
+from ..models import Pedido, Producto
 from ..servicios import ErrorNegocio
 from . import en_linea
 
@@ -107,8 +107,9 @@ def menu():
     if "cliente" not in session:
         return redirect(url_for("cliente.inicio"))
     _, total = _lineas_carrito()
+    en_cola = Pedido.query.filter_by(estado="en_cola").count()
     return render_template("cliente/menu.html", menu=servicios.menu_por_categoria(),
-                           carrito=_carrito(), total=total)
+                           carrito=_carrito(), total=total, en_cola=en_cola)
 
 
 @bp.route("/carrito/cambiar", methods=["POST"])

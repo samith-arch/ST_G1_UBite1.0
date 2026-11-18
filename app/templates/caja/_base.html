@@ -1,10 +1,11 @@
+{% from "_logo.html" import logo %}
 {% extends "base.html" %}
 {% block clase_main %}{{ 'con-lateral' if es_admin }} container-xl py-4 con-barra-inferior{% endblock %}
 
 {% block encabezado %}
 {% if es_admin %}
 <aside class="lateral d-none d-lg-flex">
-  <a class="marca mb-4" href="{{ url_for('admin.reporte') }}"><span class="nombre">UBite</span><span class="sub">Cafetería UMB · Personal</span></a>
+  <a class="marca mb-4" href="{{ url_for('admin.reporte') }}">{{ logo() }}<span class="sub-logo">Cafetería UMB · Personal</span></a>
   <nav>
     {% for ruta, texto, icono in menu_personal %}
     <a href="{{ url_for(ruta) }}" class="{{ 'activo' if seccion == ruta }}"><i class="bi {{ icono }}"></i>{{ texto }}</a>
@@ -22,7 +23,7 @@
     <a class="d-lg-none barra-titulo" href="{{ atras or url_for(menu_inferior[0][0]) }}"><i class="bi bi-arrow-left"></i><span class="titulo">{{ titulo_barra }}</span></a>
     {% endif %}
     <a class="marca {% if titulo_barra %}d-none d-lg-inline-block{% endif %}" href="{{ url_for(menu_personal[0][0]) }}">
-      <span class="nombre">UBite</span><span class="sub">Cafetería UMB · Personal</span>
+      {{ logo() }}<span class="sub-logo">Cafetería UMB · Personal</span>
     </a>
     {% if not es_admin %}
     <nav class="nav-personal d-none d-lg-flex gap-4 align-items-center">

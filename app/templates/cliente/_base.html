@@ -1,12 +1,14 @@
 {% extends "base.html" %}
+{% from "_logo.html" import logo %}
+{% block clase_body %}cliente{% if session.get('cliente') %} con-nav-cliente{% endif %}{% endblock %}
 {% block encabezado %}
-<header class="barra">
+<header class="barra barra-cliente">
   <div class="container contenedor-cliente d-flex justify-content-between align-items-center">
     {% if titulo_barra %}
     <a class="d-md-none barra-titulo" href="{{ atras }}"><i class="bi bi-arrow-left"></i><span class="titulo">{{ titulo_barra }}</span></a>
     {% endif %}
     <a class="marca {% if titulo_barra %}d-none d-md-inline-block{% endif %}" href="{{ url_for('cliente.menu') if session.get('cliente') else url_for('cliente.inicio') }}">
-      <span class="nombre">UBite</span><span class="sub">Cafetería UMB</span>
+      {{ logo("claro") }}
     </a>
     <nav class="nav-cliente d-none d-md-flex align-items-center gap-4">
       {% if session.get('cliente') %}
@@ -16,10 +18,19 @@
       <a class="btn btn-contorno btn-sm" href="{{ url_for('cliente.carrito') }}"><i class="bi bi-bag"></i> Pedido · <span class="unidades-carrito">{{ unidades_carrito }}</span></a>
       {% endif %}
     </nav>
-    {% if session.get('mis_pedidos') and not titulo_barra %}
-    <a class="icono-btn d-md-none" href="{{ url_for('cliente.mis_pedidos') }}" aria-label="Mis pedidos"><i class="bi bi-clock-history"></i></a>
+    {% if not titulo_barra and session.get('cliente') %}
+    <a class="d-md-none small" style="color:#CFC4BB" href="{{ url_for('cliente.salir') }}">No soy {{ session.cliente.nombre.split(' ')[0] }}</a>
     {% endif %}
   </div>
+  {% block cabecera_extra %}{% endblock %}
 </header>
+{% if session.get('cliente') %}
+<nav class="nav-inferior-cliente d-md-none" aria-label="Navegación">
+  <a href="{{ url_for('cliente.menu') }}" class="{{ 'activo' if request.endpoint == 'cliente.menu' }}"><i class="bi bi-house-door"></i>Menú</a>
+  <a href="{{ url_for('cliente.carrito') }}" class="{{ 'activo' if request.endpoint == 'cliente.carrito' }}"><i class="bi bi-bag"></i>Mi pedido
+    <span class="globo unidades-carrito {% if not unidades_carrito %}oculto{% endif %}">{{ unidades_carrito }}</span></a>
+  <a href="{{ url_for('cliente.mis_pedidos') }}" class="{{ 'activo' if request.endpoint in ('cliente.mis_pedidos', 'cliente.seguimiento') }}"><i class="bi bi-clock-history"></i>Mis pedidos</a>
+</nav>
+{% endif %}
 {% endblock %}
 {% block clase_main %}container contenedor-cliente py-4{% endblock %}

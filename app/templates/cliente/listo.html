@@ -1,15 +1,22 @@
 {% extends "base.html" %}
 {% block titulo_pagina %}¡Tu pedido está listo!{% endblock %}
+{% block clase_body %}oscuro{% endblock %}
 {% block contenido %}
-<div class="columna-movil text-center pt-5">
-  <div class="campana mx-auto mb-3"><span><i class="bi bi-bell"></i></span></div>
-  <p class="etiqueta mb-2">Pedido {{ pedido.codigo }}</p>
-  <h1 class="titulo display-5 mb-3">¡Tu pedido está listo!</h1>
-  <p class="suave mb-3">
+<div class="columna-movil pt-2">
+  <div class="foto-listo">
+    <img src="{{ url_for('static', filename='img/marca/pedido-listo.jpg') }}" alt="Pedido listo en una bandeja">
+    <span class="sello"><i class="bi bi-check-lg"></i>Listo para recoger</span>
+  </div>
+  <p class="etiqueta mt-4 mb-2" style="color: var(--ambar)">Pedido {{ pedido.codigo }}</p>
+  <h1 class="fw-bolder mb-2" style="font-size: clamp(2rem, 8vw, 2.6rem); letter-spacing: -.02em; line-height: 1.1">¡Tu pedido está listo!</h1>
+  <p class="suave mb-4">
     {% if pedido.pagado %}Acércate a la caja con tu código. Ya pagaste, así que te lo entregan de una.
     {% else %}Acércate a la caja con tu código, pagas $ {{ pedido.total|pesos }} y lo recoges.{% endif %}
   </p>
-  <span class="chip chip-oscuro mb-5">Listo</span>
-  <a class="btn btn-ubite w-100 mt-5" href="{{ url_for('cliente.seguimiento', codigo=pedido.codigo, ver=1) }}">Entendido</a>
+  <div class="caja-codigo mb-4">
+    <div><small>Muestra este código</small><strong class="fs-2">{{ pedido.codigo }}</strong></div>
+    <div class="text-end"><small>{{ "Pagado" if pedido.pagado else "Por pagar" }}</small><strong class="fs-5">$ {{ pedido.total|pesos }}</strong></div>
+  </div>
+  <a class="btn btn-ubite w-100 py-3" href="{{ url_for('cliente.seguimiento', codigo=pedido.codigo, ver=1) }}">Entendido</a>
 </div>
 {% endblock %}

@@ -1,0 +1,4 @@
+{# logo de UBite: la U es una taza. "claro" es la version con letras blancas para fondos oscuros #}
+{% macro logo(clase="") %}
+<img class="logo {{ clase }}" src="{{ url_for('static', filename='img/marca/logo-claro.png' if 'claro' in clase else 'img/marca/logo-oscuro.png') }}" alt="UBite">
+{% endmacro %}

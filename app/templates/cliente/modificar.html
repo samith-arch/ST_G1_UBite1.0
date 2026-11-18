@@ -7,7 +7,7 @@
 <form method="post" class="columna-movil" id="modificar">
   <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
   <p class="etiqueta mb-1">Pedido {{ pedido.codigo }} · sigue en cola</p>
-  <h1 class="titulo display-6 mb-3">Agrega o quita productos</h1>
+  <h1 class="titulo fs-2 mb-3">Agrega o quita productos</h1>
 
   {% for categoria, productos in menu.items() %}
   <h2 class="etiqueta mt-3 mb-0">{{ categoria }}</h2>
@@ -15,7 +15,8 @@
   {% set actual = actuales.get(p.id_producto, 0) %}
   {% set maximo = p.stock_actual + actual %}
   <div class="fila-menu {% if maximo == 0 %}agotado{% endif %}">
-    <span class="icono d-none d-sm-flex"><i class="bi {{ iconos.get(categoria, 'bi-basket') }}"></i></span>
+    {% set foto = foto_producto(p.nombre) %}
+    <div class="miniatura chica">{% if foto %}<img src="{{ url_for('static', filename=foto) }}" alt="">{% else %}<i class="bi {{ iconos.get(categoria, 'bi-basket') }}"></i>{% endif %}</div>
     <div class="info">
       <div class="nombre-prod"><span>{{ p.nombre }}</span><span class="puntos"></span><span class="precio">{{ p.precio|pesos }}</span></div>
       <div class="detalle">{% if maximo == 0 %}Agotado por hoy{% else %}puedes pedir hasta {{ maximo }}{% endif %}</div>

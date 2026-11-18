@@ -25,6 +25,7 @@
         menos.classList.toggle("oculto", d.cantidad === 0);
         mas.disabled = d.cantidad >= Number(mas.dataset.stock);
         document.querySelectorAll(".unidades-carrito").forEach((e) => (e.textContent = d.unidades));
+        document.querySelectorAll(".globo").forEach((e) => e.classList.toggle("oculto", d.unidades === 0));
         document.getElementById("total").textContent = pesos(d.total);
         document.getElementById("barra-pedido").classList.toggle("oculta", d.unidades === 0);
         aviso.textContent = d.aviso || "";

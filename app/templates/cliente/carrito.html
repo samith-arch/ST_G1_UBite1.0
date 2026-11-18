@@ -4,43 +4,53 @@
 {% block titulo_pagina %}Tu pedido{% endblock %}
 {% block contenido %}
 <div class="columna-movil">
-<p class="etiqueta mb-3">Pedido para {{ session.cliente.nombre }}</p>
+<h1 class="titulo fs-3 mb-1 d-none d-md-block">Tu pedido</h1>
+<p class="suave mb-3">Pedido para <strong class="text-body">{{ session.cliente.nombre }}</strong>{% if lineas %} · {{ unidades_carrito }} producto(s){% endif %}</p>
 
 {% if not lineas %}
-<div class="tarjeta text-center py-5">
+<div class="tarjeta-blanca text-center py-5">
   <p class="mb-3">Todavía no has agregado nada.</p>
   <a class="btn btn-ubite" href="{{ url_for('cliente.menu') }}">Ir al menú</a>
 </div>
 {% else %}
-<div class="tarjeta mb-3">
-  {% for p, cant in lineas %}
-  <div class="linea-pedido">
-    <span class="fw-bold flex-fill">{{ p.nombre }}</span>
-    <form method="post" action="{{ url_for('cliente.carrito_cambiar') }}" class="contador">
-      <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
-      <input type="hidden" name="id_producto" value="{{ p.id_producto }}">
-      <input type="hidden" name="volver" value="{{ url_for('cliente.carrito') }}">
-      <button class="btn-mas chico" name="delta" value="-1" aria-label="Quitar uno"><i class="bi bi-dash"></i></button>
-      <span class="cant">{{ cant }}</span>
-      <button class="btn-mas chico" name="delta" value="1" aria-label="Agregar uno" {% if cant >= p.stock_actual %}disabled{% endif %}><i class="bi bi-plus"></i></button>
-    </form>
-    <span class="mono subtotal">{{ (p.precio * cant)|pesos }}</span>
+{% for p, cant in lineas %}
+{% set foto = foto_producto(p.nombre) %}
+<div class="linea-producto">
+  <div class="miniatura">{% if foto %}<img src="{{ url_for('static', filename=foto) }}" alt="">{% else %}<i class="bi bi-image"></i>{% endif %}</div>
+  <div class="info">
+    <div>
+      <p class="fw-bold">{{ p.nombre }}</p>
+      <p class="small suave">$ {{ p.precio|pesos }} c/u</p>
+    </div>
+    <div class="abajo">
+      <span class="fw-bolder">$ {{ (p.precio * cant)|pesos }}</span>
+      <form method="post" action="{{ url_for('cliente.carrito_cambiar') }}" class="contador">
+        <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+        <input type="hidden" name="id_producto" value="{{ p.id_producto }}">
+        <input type="hidden" name="volver" value="{{ url_for('cliente.carrito') }}">
+        <button class="btn-mas" name="delta" value="-1" aria-label="Quitar uno"><i class="bi bi-dash"></i></button>
+        <span class="cant">{{ cant }}</span>
+        <button class="btn-mas mas" name="delta" value="1" aria-label="Agregar uno" {% if cant >= p.stock_actual %}disabled{% endif %}><i class="bi bi-plus"></i></button>
+      </form>
+    </div>
   </div>
-  {% endfor %}
-  <div class="lineas-total">
-    <div class="fila total suave"><span>Subtotal · {{ unidades_carrito }} producto(s)</span><span class="mono">{{ total|pesos }}</span></div>
-    <div class="fila pt-2"><span class="etiqueta">Total</span><span class="mono fs-4">$ {{ total|pesos }}</span></div>
-  </div>
+</div>
+{% endfor %}
+
+<div class="tarjeta-blanca mt-3 mb-3">
+  <div class="fila suave"><span>Subtotal</span><span>$ {{ total|pesos }}</span></div>
+  <div class="fila suave"><span>Pago</span><span>En caja, al recoger</span></div>
+  <div class="fila total"><span class="fw-bolder">Total</span><span class="monto">$ {{ total|pesos }}</span></div>
 </div>
 
 <p class="small suave mb-4">Tu pedido entra a la cola de inmediato. Lo pagas en la caja cuando te avisemos que está listo.</p>
 
-<form method="post" action="{{ url_for('cliente.confirmar') }}" class="mb-3">
+<form method="post" action="{{ url_for('cliente.confirmar') }}" class="mb-2">
   <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
   <input type="hidden" name="envio" value="{{ envio }}">
-  <button class="btn btn-ubite w-100" type="submit" onclick="this.disabled=true;this.form.submit()">Hacer pedido · pago al recoger</button>
+  <button class="btn btn-ubite w-100 py-3" type="submit" onclick="this.disabled=true;this.form.submit()">Hacer pedido · $ {{ total|pesos }}</button>
 </form>
-<a class="btn btn-suave w-100" href="{{ url_for('cliente.menu') }}">Seguir agregando</a>
+<a class="btn btn-oscuro w-100" href="{{ url_for('cliente.menu') }}">Seguir agregando</a>
 {% endif %}
 </div>
 {% endblock %}

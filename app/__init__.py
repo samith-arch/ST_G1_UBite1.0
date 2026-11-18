@@ -1,6 +1,8 @@
 import logging
 import os
+import re
 import secrets
+import unicodedata
 from datetime import datetime, timedelta
 
 from dotenv import load_dotenv
@@ -28,6 +30,19 @@ ESTADOS = {
 
 def pesos(valor):
     return f"{valor:,.0f}".replace(",", ".")
+
+
+def slug(texto):
+    texto = unicodedata.normalize("NFKD", texto).encode("ascii", "ignore").decode().lower()
+    return re.sub(r"[^a-z0-9]+", "-", texto).strip("-")
+
+
+def foto_producto(nombre):
+    # la foto se busca por el nombre: "Arepa de queso" -> static/img/productos/arepa-de-queso.jpg
+    archivo = f"img/productos/{slug(nombre)}.jpg"
+    if os.path.exists(os.path.join(os.path.dirname(__file__), "static", archivo)):
+        return archivo
+    return None
 
 
 def _configurar_log():
@@ -61,6 +76,7 @@ def create_app():
 
     app.jinja_env.filters["pesos"] = pesos
     app.jinja_env.globals["ESTADOS"] = ESTADOS
+    app.jinja_env.globals["foto_producto"] = foto_producto
 
     with app.app_context():
         from . import models  # noqa: F401

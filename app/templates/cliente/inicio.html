@@ -1,39 +1,35 @@
-{% extends "cliente/_base.html" %}
+{% extends "base.html" %}
+{% from "_logo.html" import logo %}
 {% block titulo_pagina %}Bienvenida{% endblock %}
+{% block clase_body %}oscuro{% endblock %}
+{% block clase_main %}{% endblock %}
 {% block contenido %}
-<div class="row align-items-center g-4 py-md-5">
-  <div class="col-md-6 order-md-2 text-center">
-    {% include "_ilustracion.html" %}
+<div class="bienvenida">
+  <div class="foto">
+    <img src="{{ url_for('static', filename='img/marca/hero-cafeteria.jpg') }}" alt="Mostrador de la cafetería">
+    {{ logo("claro") }}
   </div>
-  <div class="col-md-6 order-md-1">
-    <p class="etiqueta mb-2">Bienvenida</p>
-    <h1 class="titulo display-5 mb-3">Pide sin hacer fila.</h1>
-    <p class="suave mb-4">Arma tu pedido desde el celular o el computador y te avisamos cuando esté listo para recoger.</p>
+
+  <div class="hoja-bienvenida">
+    <h1>Pide sin hacer <span class="acento-claro">fila.</span></h1>
+    <p class="lema-sub">Arma tu pedido desde el celular o el computador y te avisamos cuando esté listo para recoger.</p>
 
     <form method="post" novalidate>
       <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
-      <div class="row g-3">
-        <div class="col-lg-6">
-          <label class="etiqueta" for="nombre">Nombre</label>
-          <div class="campo-icono"><i class="bi bi-person"></i>
-            <input class="form-control linea-campo" id="nombre" name="nombre" maxlength="60" autocomplete="given-name"
-                   value="{{ form.get('nombre') or (cliente.nombre if cliente else '') }}" required>
-          </div>
-          {% if errores.nombre %}<div class="error-campo">{{ errores.nombre }}</div>{% endif %}
-        </div>
-        <div class="col-lg-6">
-          <label class="etiqueta" for="telefono">Celular</label>
-          <div class="campo-icono"><i class="bi bi-telephone"></i>
-            <input class="form-control linea-campo" id="telefono" name="telefono" inputmode="numeric" maxlength="13" autocomplete="tel"
-                   value="{{ form.get('telefono') or (cliente.telefono if cliente else '') }}" required>
-          </div>
-          {% if errores.telefono %}<div class="error-campo">{{ errores.telefono }}</div>{% endif %}
-        </div>
-      </div>
-      <p class="small suave mt-3 mb-4">Tu celular solo se usa para avisarte o llamarte si no recoges. Al continuar aceptas ese uso de tus datos (Ley 1581 de 2012).</p>
-      <button class="btn btn-ubite w-100 w-md-auto px-md-5" type="submit">Ver el menú</button>
+      <label class="solo-lectores" for="nombre">Nombre</label>
+      <input class="campo-oscuro" id="nombre" name="nombre" maxlength="60" autocomplete="given-name" placeholder="Tu nombre"
+             value="{{ form.get('nombre') or (cliente.nombre if cliente else '') }}" required>
+      {% if errores.nombre %}<div class="error-campo">{{ errores.nombre }}</div>{% endif %}
+
+      <label class="solo-lectores" for="telefono">Celular</label>
+      <input class="campo-oscuro mt-2" id="telefono" name="telefono" inputmode="numeric" maxlength="13" autocomplete="tel" placeholder="Celular (10 dígitos)"
+             value="{{ form.get('telefono') or (cliente.telefono if cliente else '') }}" required>
+      {% if errores.telefono %}<div class="error-campo">{{ errores.telefono }}</div>{% endif %}
+
+      <p class="legal">Tu celular solo se usa para avisarte o llamarte si no recoges. Al continuar aceptas ese uso de tus datos (Ley 1581 de 2012).</p>
+      <button class="btn btn-ubite w-100 py-3" type="submit">Ver el menú <i class="bi bi-arrow-right ms-1"></i></button>
     </form>
-    <p class="small suave mt-4 mb-0">¿Trabajas en la cafetería? <a href="{{ url_for('auth.login') }}">Inicia sesión aquí</a></p>
+    <p class="small suave text-center mt-4 mb-0">¿Trabajas en la cafetería? <a class="fw-bold" href="{{ url_for('auth.login') }}">Inicia sesión</a></p>
   </div>
 </div>
 {% endblock %}
