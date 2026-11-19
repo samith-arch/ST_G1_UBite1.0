@@ -35,9 +35,9 @@
 {% endcall %}
 
 <div class="row g-3 mb-4">
-  <div class="col-4"><div class="kpi"><span class="icono-kpi neutro"><i class="bi bi-receipt"></i></span><span class="numero">{{ resumen.pedidos }}</span><span class="rotulo">Pedidos</span></div></div>
-  <div class="col-4"><div class="kpi"><span class="icono-kpi ok"><i class="bi bi-bag-check"></i></span><span class="numero">{{ resumen.entregados }}</span><span class="rotulo">Entregados</span></div></div>
-  <div class="col-4"><div class="kpi oscuro"><span class="icono-kpi"><i class="bi bi-cash-stack"></i></span><span class="numero">$ {{ resumen.vendido|pesos }}</span><span class="rotulo">Vendido</span></div></div>
+  <div class="col-4"><div class="kpi"><span class="numero">{{ resumen.pedidos }}</span><span class="rotulo">Pedidos</span></div></div>
+  <div class="col-4"><div class="kpi"><span class="numero">{{ resumen.entregados }}</span><span class="rotulo">Entregados</span></div></div>
+  <div class="col-4"><div class="kpi oscuro"><span class="numero">$ {{ resumen.vendido|pesos }}</span><span class="rotulo">Vendido</span></div></div>
 </div>
 
 <div class="tarjeta mb-3"><div class="table-responsive">
@@ -49,10 +49,10 @@
     <td class="mono fw-bolder">{{ p.codigo }}</td>
     <td class="text-nowrap">{{ p.fecha_hora.strftime('%d/%m/%Y') }} <span class="suave">{{ p.fecha_hora.strftime('%I:%M %p').lower() }}</span></td>
     <td>{{ p.cliente.nombre }}</td>
-    <td class="text-nowrap"><i class="bi {{ 'bi-qr-code' if p.origen == 'qr' else 'bi-shop' }} suave"></i> {{ "QR" if p.origen == "qr" else "Presencial" }}</td>
+    <td class="text-nowrap">{{ "QR" if p.origen == "qr" else "Presencial" }}</td>
     <td>{% set pago = p.pagos|selectattr("estado", "equalto", "aprobado")|first %}{{ ("App" if pago.metodo == "app" else "Efectivo") if pago else "Pendiente" }}</td>
     {% set clase = {"entregado": "chip-ok", "cancelado": "chip-mal", "listo": "chip-ok", "en_preparacion": "chip-medio"}.get(p.estado, "chip-gris") %}
-    <td><span class="chip {{ clase }}"><i class="bi bi-circle-fill"></i>{{ ESTADOS[p.estado] }}</span></td>
+    <td><span class="chip {{ clase }}">{{ ESTADOS[p.estado] }}</span></td>
     <td class="text-end mono">$ {{ p.total|pesos }}</td>
   </tr>
   {% else %}

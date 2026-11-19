@@ -24,7 +24,7 @@
       <td><span class="chip chip-gris">{{ f.pedidos }}</span></td>
       <td class="small">{{ f.ultimo.strftime('%d/%m %I:%M %p').lower() if f.ultimo else "—" }}</td>
       <td class="mono text-end">$ {{ f.gastado|pesos }}</td>
-      <td class="text-end">{% if f.activo %}<span class="chip chip-medio"><i class="bi bi-circle-fill"></i>Pedido en curso</span>{% endif %}</td>
+      <td class="text-end">{% if f.activo %}<span class="chip chip-medio">Pedido en curso</span>{% endif %}</td>
     </tr>
     {% else %}
     <tr><td colspan="6" class="suave">No hay clientes{{ " con esa búsqueda" if buscar }}.</td></tr>

@@ -29,17 +29,17 @@
 {% else %}
 <div class="row g-3 mb-4">
   <div class="col-6 col-xl-3"><div class="kpi">
-    <span class="icono-kpi {{ 'mal' if a.agotan else 'ok' }}"><i class="bi bi-exclamation-octagon"></i></span>
+    
     <span class="rotulo">Se agotarían</span><span class="numero">{{ a.agotan }}</span>
     <span class="nota">de {{ a.filas|length }} productos activos</span>
   </div></div>
   <div class="col-6 col-xl-3"><div class="kpi oscuro">
-    <span class="icono-kpi"><i class="bi bi-box-arrow-in-down"></i></span>
+    
     <span class="rotulo">Unidades a reponer</span><span class="numero">{{ a.filas|sum(attribute="faltan") }}</span>
     <span class="nota">para llegar al cierre</span>
   </div></div>
   <div class="col-12 col-xl-6"><div class="kpi">
-    <span class="icono-kpi neutro"><i class="bi bi-cpu"></i></span>
+    
     <span class="rotulo">Cómo se calcula</span>
     <span class="nota">Una red neuronal estima cuánto se venderá de cada producto en lo que queda del día y lo compara con el stock actual.</span>
   </div></div>
@@ -56,16 +56,15 @@
     <tbody>
     {% for f in a.filas %}
     <tr>
-      {% set foto = foto_producto(f.producto) %}
-      <td><div class="celda-producto"><span class="miniatura">{% if foto %}<img src="{{ url_for('static', filename=foto) }}" alt="">{% else %}<i class="bi bi-image"></i>{% endif %}</span><span class="fw-bold">{{ f.producto }}</span></div></td>
+      <td><div class="celda-producto"><span class="fw-bold">{{ f.producto }}</span></div></td>
       <td class="small d-none d-md-table-cell">{{ f.categoria }}</td>
       <td class="mono text-end">{{ f.stock_actual }}</td>
       <td class="mono text-end">{{ "%.1f"|format(f.estimado_resto_del_dia) }}</td>
       <td class="mono text-end {{ 'fw-bold' if f.se_agota }}">{{ f.faltan or "—" }}</td>
       <td class="text-end d-none d-md-table-cell">
-        {% if f.se_agota %}<span class="chip chip-mal"><i class="bi bi-circle-fill"></i>Se agota</span>
-        {% elif f.bajo_minimo %}<span class="chip chip-medio"><i class="bi bi-circle-fill"></i>Bajo el mínimo</span>
-        {% else %}<span class="chip chip-ok"><i class="bi bi-circle-fill"></i>Alcanza</span>{% endif %}
+        {% if f.se_agota %}<span class="chip chip-mal">Se agota</span>
+        {% elif f.bajo_minimo %}<span class="chip chip-medio">Bajo el mínimo</span>
+        {% else %}<span class="chip chip-ok">Alcanza</span>{% endif %}
       </td>
     </tr>
     {% endfor %}

@@ -43,22 +43,22 @@
 
 <div class="row g-3 mb-4">
   <div class="col-6 col-xl-3"><div class="kpi oscuro">
-    <span class="icono-kpi"><i class="bi bi-cash-stack"></i></span>
+    
     <span class="rotulo">Total vendido</span><span class="numero">$ {{ r.total|pesos }}</span>
     <span class="nota">{% if r.variacion is not none %}<span class="tendencia {{ 'baja' if r.variacion < 0 }}"><i class="bi {{ 'bi-arrow-down-right' if r.variacion < 0 else 'bi-arrow-up-right' }}"></i>{{ "%+d"|format(r.variacion) }} %</span> frente {{ anteriores[periodo] }}{% else %}sin ventas en el periodo anterior{% endif %}</span>
   </div></div>
   <div class="col-6 col-xl-3"><div class="kpi">
-    <span class="icono-kpi"><i class="bi bi-receipt"></i></span>
+    
     <span class="rotulo">Pedidos</span><span class="numero">{{ r.pedidos }}</span>
     <span class="nota"><i class="bi bi-qr-code"></i> {{ r.qr }} por QR · <i class="bi bi-shop"></i> {{ r.presenciales }} en caja</span>
   </div></div>
   <div class="col-6 col-xl-3"><div class="kpi">
-    <span class="icono-kpi ok"><i class="bi bi-phone"></i></span>
+    
     <span class="rotulo">Pagados en la app</span><span class="numero">{{ r.en_app }} <small class="fs-6 suave">· {{ r.pct_app }} %</small></span>
     <span class="nota">{{ r.en_efectivo }} pagados en efectivo</span>
   </div></div>
   <div class="col-6 col-xl-3"><div class="kpi">
-    <span class="icono-kpi neutro"><i class="bi bi-basket"></i></span>
+    
     <span class="rotulo">Ticket promedio</span><span class="numero">$ {{ r.ticket|pesos }}</span>
     <span class="nota">por pedido pagado</span>
   </div></div>

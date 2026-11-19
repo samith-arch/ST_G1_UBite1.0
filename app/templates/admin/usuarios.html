@@ -41,7 +41,7 @@
       <td class="mono">{{ u.username }}</td>
       <td><span class="chip {{ 'chip-medio' if u.rol == 'administrador' else 'chip-gris' }}"><i class="bi {{ 'bi-shield-lock' if u.rol == 'administrador' else 'bi-person-badge' }}" style="font-size:.75rem"></i> {{ u.rol }}</span></td>
       <td class="text-nowrap">
-        <span class="chip {{ 'chip-ok' if u.activo else 'chip-gris' }}"><i class="bi bi-circle-fill"></i>{{ "Activo" if u.activo else "Inactivo" }}</span>
+        <span class="chip {{ 'chip-ok' if u.activo else 'chip-gris' }}">{{ "Activo" if u.activo else "Inactivo" }}</span>
         {% if u.id_usuario in conectados %}<span class="chip chip-oscuro ms-1">En línea</span>{% endif %}
       </td>
     </tr>

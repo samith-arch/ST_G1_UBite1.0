@@ -4,7 +4,7 @@
 {% macro chip(p) %}
 {% set e = estado(p) %}
 {% set clase = {"activo": "chip-ok", "stock bajo": "chip-medio", "agotado": "chip-mal"}.get(e, "chip-gris") %}
-<span class="chip {{ clase }}"><i class="bi bi-circle-fill"></i>{{ "oculto" if e == "inactivo" else e }}</span>
+<span class="chip {{ clase }}">{{ "oculto" if e == "inactivo" else e }}</span>
 {% endmacro %}
 {% block panel %}
 <div class="d-flex flex-wrap justify-content-between align-items-end gap-3 mb-3">
@@ -24,13 +24,13 @@
 
 {% set agotados = productos|selectattr("stock_actual", "equalto", 0)|list|length %}
 <div class="row g-3 mb-4">
-  <div class="col-6 col-xl-3"><div class="kpi"><span class="icono-kpi neutro"><i class="bi bi-box-seam"></i></span><span class="numero">{{ total }}</span><span class="rotulo">Productos</span></div></div>
-  <div class="col-6 col-xl-3"><div class="kpi"><span class="icono-kpi"><i class="bi bi-tags"></i></span><span class="numero">{{ categorias|length }}</span><span class="rotulo">Categorías</span></div></div>
-  <div class="col-6 col-xl-3"><div class="kpi"><span class="icono-kpi {{ 'mal' if bajos else 'ok' }}"><i class="bi bi-exclamation-triangle"></i></span><span class="numero">{{ bajos|length }}</span><span class="rotulo">En o bajo el mínimo</span></div></div>
-  <div class="col-6 col-xl-3"><div class="kpi"><span class="icono-kpi {{ 'mal' if agotados else 'ok' }}"><i class="bi bi-x-octagon"></i></span><span class="numero">{{ agotados }}</span><span class="rotulo">Agotados{{ " en la lista" if productos|length != total }}</span></div></div>
+  <div class="col-6 col-xl-3"><div class="kpi"><span class="numero">{{ total }}</span><span class="rotulo">Productos</span></div></div>
+  <div class="col-6 col-xl-3"><div class="kpi"><span class="numero">{{ categorias|length }}</span><span class="rotulo">Categorías</span></div></div>
+  <div class="col-6 col-xl-3"><div class="kpi"><span class="numero">{{ bajos|length }}</span><span class="rotulo">En o bajo el mínimo</span></div></div>
+  <div class="col-6 col-xl-3"><div class="kpi"><span class="numero">{{ agotados }}</span><span class="rotulo">Agotados{{ " en la lista" if productos|length != total }}</span></div></div>
 </div>
 {% if bajos %}
-<div class="aviso mb-4"><i class="bi bi-exclamation-triangle me-1"></i>
+<div class="aviso mb-4">
   Reponer pronto: {{ bajos|map(attribute="nombre")|join(", ") }}.
 </div>
 {% endif %}
@@ -55,11 +55,9 @@
     <thead><tr><th>Producto</th><th>Categoría</th><th>Precio</th><th>Stock actual / mínimo</th><th>Estado</th></tr></thead>
     <tbody>
     {% for p in productos %}
-    {% set foto = foto_producto(p.nombre) %}
     <tr class="fila-buscable {{ 'text-body-secondary' if not p.activo }}" data-nombre="{{ p.nombre|lower }}">
       <td><div class="celda-producto">
-        <span class="miniatura">{% if foto %}<img src="{{ url_for('static', filename=foto) }}" alt="">{% else %}<i class="bi bi-image"></i>{% endif %}</span>
-        <span class="fw-bold">{{ p.nombre }}</span>
+                <span class="fw-bold">{{ p.nombre }}</span>
       </div></td>
       <td class="suave">{{ p.categoria.nombre }}</td>
       <td class="mono">$ {{ p.precio|pesos }}</td>
@@ -76,10 +74,8 @@
 
 <div class="d-md-none">
   {% for p in productos %}
-  {% set foto = foto_producto(p.nombre) %}
   <div class="fila-inventario fila-buscable" data-nombre="{{ p.nombre|lower }}">
-    <span class="miniatura">{% if foto %}<img src="{{ url_for('static', filename=foto) }}" alt="">{% else %}<i class="bi bi-image"></i>{% endif %}</span>
-    <div class="flex-fill min-w-0">
+        <div class="flex-fill min-w-0">
       <div class="d-flex justify-content-between gap-2"><span class="fw-bold">{{ p.nombre }}</span><span class="fw-bolder">$ {{ p.precio|pesos }}</span></div>
       <div class="d-flex justify-content-between align-items-center gap-2 small suave mt-1"><span>{{ p.categoria.nombre }} · {{ p.stock_actual }} / {{ p.stock_minimo }}</span>{{ chip(p) }}</div>
       <div class="medidor mt-2 {{ 'vacio' if p.stock_actual == 0 else ('bajo' if p.stock_actual <= p.stock_minimo) }}"><span style="width: {{ [p.stock_actual / tope * 100, 3]|max }}%"></span></div>

@@ -823,3 +823,32 @@ body.cliente { background: radial-gradient(900px 380px at 85% 0, rgba(240, 160, 
   .barra-cliente, .barra-cliente:has(.cabecera-menu) { border-radius: 0 0 30px 30px; }
 }
 @media (max-width: 575.98px) { .frase-hero { border-radius: 18px; padding: 12px 18px; } }
+
+/* ===== estados sobrios: tinta y un solo acento ===== */
+.chip, .panel .chip { background: transparent; border: 1px solid var(--linea); color: var(--tinta); border-radius: 6px; padding: 3px 8px; font-size: .68rem; letter-spacing: .08em; }
+.chip-ok { background: transparent; color: var(--tinta); border-color: #CDB89C; }
+.chip-medio { background: transparent; color: var(--acento-oscuro); border-color: rgba(156, 69, 19, .45); }
+.chip-mal { background: var(--tinta-oscura); color: var(--crema); border-color: var(--tinta-oscura); }
+.chip-gris { background: var(--lavado); color: var(--tinta-suave); border-color: transparent; }
+.chip-punteado { border: 1px dashed var(--tinta-suave); color: var(--tinta-suave); }
+.chip-oscuro { background: var(--acento); color: #FFFFFF; border-color: var(--acento); }
+.medidor span, .medidor.bajo span { background: var(--tinta); }
+.medidor.bajo span { background: var(--acento); }
+.medidor.vacio span { background: transparent; }
+.kpi .rotulo { margin-top: 2px; }
+.celda-producto { gap: 0; }
+
+/* pedido presencial: resumen claro, sin bloque oscuro */
+.presencial .zona-resumen { background: var(--superficie); color: var(--tinta-oscura); border: 1px solid var(--linea); }
+.presencial .zona-resumen .suave, .presencial .zona-resumen .small { color: var(--tinta-suave); }
+.presencial .zona-resumen .total { border-top-color: var(--linea); }
+.presencial .zona-resumen .total .monto { font-family: var(--f-logo); color: var(--acento-oscuro); }
+.presencial .zona-resumen .recibido { background: var(--papel); border: 1px solid var(--linea); color: var(--tinta-oscura); }
+
+/* cartel del QR en tonos crema */
+.cartel-qr { background: linear-gradient(160deg, #F6E8D4, #EBD4B5) !important; color: var(--tinta-oscura); border: 1px solid var(--linea) !important; }
+.cartel-qr .suave { color: var(--tinta-suave) !important; }
+.cartel-qr .qr { background: #FFFFFF; box-shadow: var(--sombra); }
+.cartel-qr .lema-qr { font-family: var(--f-logo); font-weight: 700; font-size: 1.6rem; }
+.cartel-qr .lema-qr span { color: var(--acento); }
+@media print { .cartel-qr { background: #F3E3CC !important; } }
