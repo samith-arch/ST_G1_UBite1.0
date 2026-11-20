@@ -1,0 +1,38 @@
+table Franja
+	lineageTag: 5c03ad8b-e789-e0d7-aea7-4e119a91ddfd
+
+	column id_franja
+		dataType: int64
+		lineageTag: 04e08ceb-e7cb-5ff0-cb05-b3b469ed1cc6
+		summarizeBy: none
+		sourceColumn: id_franja
+
+		annotation SummarizationSetBy = Automatic
+
+	column hora_inicio
+		dataType: string
+		lineageTag: 3ca0919b-1ea1-7a57-8a3e-dfd89c913e6e
+		summarizeBy: none
+		sourceColumn: hora_inicio
+
+		annotation SummarizationSetBy = Automatic
+
+	column hora_fin
+		dataType: string
+		lineageTag: 48fae235-9b92-09f6-6153-fc1df10b22f1
+		summarizeBy: none
+		sourceColumn: hora_fin
+
+		annotation SummarizationSetBy = Automatic
+
+	partition Franja = m
+		mode: import
+		source =
+				let
+				    Fuente = Odbc.Query(Conexion, "SELECT id_franja, hora_inicio, hora_fin FROM dim_franja"),
+				    Tipos = Table.TransformColumnTypes(Fuente, {{"id_franja", Int64.Type}, {"hora_inicio", type text}, {"hora_fin", type text}}, "en-US")
+				in
+				    Tipos
+
+	annotation PBI_ResultType = Table
+

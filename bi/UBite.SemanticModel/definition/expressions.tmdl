@@ -1,0 +1,10 @@
+expression RutaAlmacen = "C:\Users\josty\OneDrive\Documentos\ST_G1_UBite1.0\database\ubite_dw.db" meta [IsParameterQuery=true, Type="Text", IsParameterQueryRequired=true]
+	lineageTag: eeded6e7-6a72-8d57-6e9f-28f58625fb49
+
+	annotation PBI_ResultType = Text
+
+expression Conexion = "driver={SQLite3 ODBC Driver};database=" & RutaAlmacen
+	lineageTag: 9f873a67-efcf-e48c-ac10-405dc48d2263
+
+	annotation PBI_ResultType = Text
+

@@ -1,0 +1,83 @@
+table Fecha
+	lineageTag: 7fd9c895-7899-827d-3056-8302b1130c6e
+
+	column id_fecha
+		dataType: int64
+		lineageTag: a4d582b1-d3ec-01db-0f69-cdbd9f8a7628
+		summarizeBy: none
+		sourceColumn: id_fecha
+
+		annotation SummarizationSetBy = Automatic
+
+	column fecha
+		dataType: dateTime
+		formatString: yyyy-mm-dd
+		lineageTag: 24ed36e0-a0b8-3259-12ea-6cfccf2ac53b
+		summarizeBy: none
+		sourceColumn: fecha
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column dia_semana
+		dataType: int64
+		lineageTag: 16679fdd-95e9-5ecc-d778-f8a9409da9de
+		summarizeBy: none
+		sourceColumn: dia_semana
+
+		annotation SummarizationSetBy = Automatic
+
+	column nombre_dia
+		dataType: string
+		lineageTag: 2a673012-0da0-d3e2-62ab-ff6f01830242
+		summarizeBy: none
+		sourceColumn: nombre_dia
+		sortByColumn: dia_semana
+
+		annotation SummarizationSetBy = Automatic
+
+	column semana_semestre
+		dataType: int64
+		lineageTag: d5e10a5e-ae59-fa63-204f-09a5cee850d5
+		summarizeBy: none
+		sourceColumn: semana_semestre
+
+		annotation SummarizationSetBy = Automatic
+
+	column periodo
+		dataType: string
+		lineageTag: 0ab8b889-ff1f-27a4-2c85-79b1a9dc13c4
+		summarizeBy: none
+		sourceColumn: periodo
+
+		annotation SummarizationSetBy = Automatic
+
+	column es_festivo
+		dataType: int64
+		lineageTag: 7e6754ae-b9a5-3c7b-ba62-a966c199f247
+		summarizeBy: none
+		sourceColumn: es_festivo
+
+		annotation SummarizationSetBy = Automatic
+
+	column mes
+		dataType: string
+		lineageTag: d931f442-726d-22f3-977d-92c032e43b21
+		summarizeBy: none
+		sourceColumn: mes
+
+		annotation SummarizationSetBy = Automatic
+
+	partition Fecha = m
+		mode: import
+		source =
+				let
+				    Fuente = Odbc.Query(Conexion, "SELECT id_fecha, fecha, dia_semana, nombre_dia, semana_semestre, periodo, es_festivo FROM dim_fecha"),
+				    Tipos = Table.TransformColumnTypes(Fuente, {{"id_fecha", Int64.Type}, {"fecha", type date}, {"dia_semana", Int64.Type}, {"nombre_dia", type text}, {"semana_semestre", Int64.Type}, {"periodo", type text}, {"es_festivo", Int64.Type}}, "en-US"),
+				    Con_mes = Table.AddColumn(Tipos, "mes", each Date.ToText([fecha], "yyyy-MM"), type text)
+				in
+				    Con_mes
+
+	annotation PBI_ResultType = Table
+

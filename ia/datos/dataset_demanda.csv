@@ -152279,3 +152279,651 @@ fecha,dia_semana,nombre_dia,periodo,examenes,es_festivo,id_franja,id_producto,pr
 2026-11-18,2,miércoles,clases,0,0,37,25,Almojábana,Panadería,1,1,0
 2026-11-18,2,miércoles,clases,0,0,37,26,Buñuelo,Panadería,1,1,0
 2026-11-18,2,miércoles,clases,0,0,37,27,Pastel de arequipe,Panadería,0,1,0
+2026-11-19,3,jueves,clases,0,0,14,1,Agua en botella,Bebidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,14,2,Gaseosa,Bebidas,1,1,0
+2026-11-19,3,jueves,clases,0,0,14,3,Jugo en caja,Bebidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,14,4,Papas fritas,Snacks,0,1,0
+2026-11-19,3,jueves,clases,0,0,14,5,Galletas,Snacks,0,1,0
+2026-11-19,3,jueves,clases,0,0,14,6,Chocolatina,Snacks,1,1,0
+2026-11-19,3,jueves,clases,0,0,14,7,Empanada,Comidas,2,1,0
+2026-11-19,3,jueves,clases,0,0,14,8,Sándwich de jamón y queso,Comidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,14,9,Pastel de pollo,Comidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,14,10,Té frío,Bebidas,2,1,0
+2026-11-19,3,jueves,clases,0,0,14,11,Bebida energizante,Bebidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,14,12,Malta,Bebidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,14,13,Bebida hidratante,Bebidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,14,14,Avena en vaso,Bebidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,14,15,Gaseosa personal,Bebidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,14,16,Maní salado,Snacks,0,1,0
+2026-11-19,3,jueves,clases,0,0,14,17,Chicharrón en paquete,Snacks,0,1,0
+2026-11-19,3,jueves,clases,0,0,14,18,Platanitos,Snacks,0,1,0
+2026-11-19,3,jueves,clases,0,0,14,19,Barra de cereal,Snacks,0,1,0
+2026-11-19,3,jueves,clases,0,0,14,20,Chupeta,Snacks,0,1,0
+2026-11-19,3,jueves,clases,0,0,14,21,Papa rellena,Comidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,14,22,Arepa de queso,Comidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,14,23,Arepa rellena de pollo,Comidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,14,24,Pandebono,Panadería,1,1,0
+2026-11-19,3,jueves,clases,0,0,14,25,Almojábana,Panadería,0,1,0
+2026-11-19,3,jueves,clases,0,0,14,26,Buñuelo,Panadería,0,1,0
+2026-11-19,3,jueves,clases,0,0,14,27,Pastel de arequipe,Panadería,0,1,0
+2026-11-19,3,jueves,clases,0,0,15,1,Agua en botella,Bebidas,2,1,0
+2026-11-19,3,jueves,clases,0,0,15,2,Gaseosa,Bebidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,15,3,Jugo en caja,Bebidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,15,4,Papas fritas,Snacks,0,1,0
+2026-11-19,3,jueves,clases,0,0,15,5,Galletas,Snacks,0,1,0
+2026-11-19,3,jueves,clases,0,0,15,6,Chocolatina,Snacks,1,1,0
+2026-11-19,3,jueves,clases,0,0,15,7,Empanada,Comidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,15,8,Sándwich de jamón y queso,Comidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,15,9,Pastel de pollo,Comidas,1,1,0
+2026-11-19,3,jueves,clases,0,0,15,10,Té frío,Bebidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,15,11,Bebida energizante,Bebidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,15,12,Malta,Bebidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,15,13,Bebida hidratante,Bebidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,15,14,Avena en vaso,Bebidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,15,15,Gaseosa personal,Bebidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,15,16,Maní salado,Snacks,0,1,0
+2026-11-19,3,jueves,clases,0,0,15,17,Chicharrón en paquete,Snacks,0,1,0
+2026-11-19,3,jueves,clases,0,0,15,18,Platanitos,Snacks,0,1,0
+2026-11-19,3,jueves,clases,0,0,15,19,Barra de cereal,Snacks,1,1,0
+2026-11-19,3,jueves,clases,0,0,15,20,Chupeta,Snacks,0,1,0
+2026-11-19,3,jueves,clases,0,0,15,21,Papa rellena,Comidas,1,1,0
+2026-11-19,3,jueves,clases,0,0,15,22,Arepa de queso,Comidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,15,23,Arepa rellena de pollo,Comidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,15,24,Pandebono,Panadería,1,1,0
+2026-11-19,3,jueves,clases,0,0,15,25,Almojábana,Panadería,1,1,0
+2026-11-19,3,jueves,clases,0,0,15,26,Buñuelo,Panadería,0,1,0
+2026-11-19,3,jueves,clases,0,0,15,27,Pastel de arequipe,Panadería,0,1,0
+2026-11-19,3,jueves,clases,0,0,16,1,Agua en botella,Bebidas,2,1,0
+2026-11-19,3,jueves,clases,0,0,16,2,Gaseosa,Bebidas,2,1,0
+2026-11-19,3,jueves,clases,0,0,16,3,Jugo en caja,Bebidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,16,4,Papas fritas,Snacks,0,1,0
+2026-11-19,3,jueves,clases,0,0,16,5,Galletas,Snacks,2,1,0
+2026-11-19,3,jueves,clases,0,0,16,6,Chocolatina,Snacks,0,1,0
+2026-11-19,3,jueves,clases,0,0,16,7,Empanada,Comidas,1,1,0
+2026-11-19,3,jueves,clases,0,0,16,8,Sándwich de jamón y queso,Comidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,16,9,Pastel de pollo,Comidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,16,10,Té frío,Bebidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,16,11,Bebida energizante,Bebidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,16,12,Malta,Bebidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,16,13,Bebida hidratante,Bebidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,16,14,Avena en vaso,Bebidas,1,1,0
+2026-11-19,3,jueves,clases,0,0,16,15,Gaseosa personal,Bebidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,16,16,Maní salado,Snacks,0,1,0
+2026-11-19,3,jueves,clases,0,0,16,17,Chicharrón en paquete,Snacks,0,1,0
+2026-11-19,3,jueves,clases,0,0,16,18,Platanitos,Snacks,4,1,0
+2026-11-19,3,jueves,clases,0,0,16,19,Barra de cereal,Snacks,0,1,0
+2026-11-19,3,jueves,clases,0,0,16,20,Chupeta,Snacks,1,1,0
+2026-11-19,3,jueves,clases,0,0,16,21,Papa rellena,Comidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,16,22,Arepa de queso,Comidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,16,23,Arepa rellena de pollo,Comidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,16,24,Pandebono,Panadería,1,1,0
+2026-11-19,3,jueves,clases,0,0,16,25,Almojábana,Panadería,0,1,0
+2026-11-19,3,jueves,clases,0,0,16,26,Buñuelo,Panadería,1,1,0
+2026-11-19,3,jueves,clases,0,0,16,27,Pastel de arequipe,Panadería,0,1,0
+2026-11-19,3,jueves,clases,0,0,17,1,Agua en botella,Bebidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,17,2,Gaseosa,Bebidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,17,3,Jugo en caja,Bebidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,17,4,Papas fritas,Snacks,0,1,0
+2026-11-19,3,jueves,clases,0,0,17,5,Galletas,Snacks,0,1,0
+2026-11-19,3,jueves,clases,0,0,17,6,Chocolatina,Snacks,0,1,0
+2026-11-19,3,jueves,clases,0,0,17,7,Empanada,Comidas,1,1,0
+2026-11-19,3,jueves,clases,0,0,17,8,Sándwich de jamón y queso,Comidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,17,9,Pastel de pollo,Comidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,17,10,Té frío,Bebidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,17,11,Bebida energizante,Bebidas,2,1,0
+2026-11-19,3,jueves,clases,0,0,17,12,Malta,Bebidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,17,13,Bebida hidratante,Bebidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,17,14,Avena en vaso,Bebidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,17,15,Gaseosa personal,Bebidas,1,1,0
+2026-11-19,3,jueves,clases,0,0,17,16,Maní salado,Snacks,0,1,0
+2026-11-19,3,jueves,clases,0,0,17,17,Chicharrón en paquete,Snacks,0,1,0
+2026-11-19,3,jueves,clases,0,0,17,18,Platanitos,Snacks,1,1,0
+2026-11-19,3,jueves,clases,0,0,17,19,Barra de cereal,Snacks,0,1,0
+2026-11-19,3,jueves,clases,0,0,17,20,Chupeta,Snacks,1,1,0
+2026-11-19,3,jueves,clases,0,0,17,21,Papa rellena,Comidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,17,22,Arepa de queso,Comidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,17,23,Arepa rellena de pollo,Comidas,2,1,0
+2026-11-19,3,jueves,clases,0,0,17,24,Pandebono,Panadería,0,1,0
+2026-11-19,3,jueves,clases,0,0,17,25,Almojábana,Panadería,1,1,0
+2026-11-19,3,jueves,clases,0,0,17,26,Buñuelo,Panadería,0,1,0
+2026-11-19,3,jueves,clases,0,0,17,27,Pastel de arequipe,Panadería,1,1,0
+2026-11-19,3,jueves,clases,0,0,18,1,Agua en botella,Bebidas,2,1,0
+2026-11-19,3,jueves,clases,0,0,18,2,Gaseosa,Bebidas,1,1,0
+2026-11-19,3,jueves,clases,0,0,18,3,Jugo en caja,Bebidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,18,4,Papas fritas,Snacks,1,1,0
+2026-11-19,3,jueves,clases,0,0,18,5,Galletas,Snacks,0,1,0
+2026-11-19,3,jueves,clases,0,0,18,6,Chocolatina,Snacks,0,1,0
+2026-11-19,3,jueves,clases,0,0,18,7,Empanada,Comidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,18,8,Sándwich de jamón y queso,Comidas,1,1,0
+2026-11-19,3,jueves,clases,0,0,18,9,Pastel de pollo,Comidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,18,10,Té frío,Bebidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,18,11,Bebida energizante,Bebidas,1,1,0
+2026-11-19,3,jueves,clases,0,0,18,12,Malta,Bebidas,1,1,0
+2026-11-19,3,jueves,clases,0,0,18,13,Bebida hidratante,Bebidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,18,14,Avena en vaso,Bebidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,18,15,Gaseosa personal,Bebidas,3,1,0
+2026-11-19,3,jueves,clases,0,0,18,16,Maní salado,Snacks,0,1,0
+2026-11-19,3,jueves,clases,0,0,18,17,Chicharrón en paquete,Snacks,2,1,0
+2026-11-19,3,jueves,clases,0,0,18,18,Platanitos,Snacks,2,1,0
+2026-11-19,3,jueves,clases,0,0,18,19,Barra de cereal,Snacks,1,1,0
+2026-11-19,3,jueves,clases,0,0,18,20,Chupeta,Snacks,1,1,0
+2026-11-19,3,jueves,clases,0,0,18,21,Papa rellena,Comidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,18,22,Arepa de queso,Comidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,18,23,Arepa rellena de pollo,Comidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,18,24,Pandebono,Panadería,5,1,0
+2026-11-19,3,jueves,clases,0,0,18,25,Almojábana,Panadería,3,1,0
+2026-11-19,3,jueves,clases,0,0,18,26,Buñuelo,Panadería,1,1,0
+2026-11-19,3,jueves,clases,0,0,18,27,Pastel de arequipe,Panadería,1,1,0
+2026-11-19,3,jueves,clases,0,0,19,1,Agua en botella,Bebidas,3,1,0
+2026-11-19,3,jueves,clases,0,0,19,2,Gaseosa,Bebidas,2,1,0
+2026-11-19,3,jueves,clases,0,0,19,3,Jugo en caja,Bebidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,19,4,Papas fritas,Snacks,2,1,0
+2026-11-19,3,jueves,clases,0,0,19,5,Galletas,Snacks,1,1,0
+2026-11-19,3,jueves,clases,0,0,19,6,Chocolatina,Snacks,0,1,0
+2026-11-19,3,jueves,clases,0,0,19,7,Empanada,Comidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,19,8,Sándwich de jamón y queso,Comidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,19,9,Pastel de pollo,Comidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,19,10,Té frío,Bebidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,19,11,Bebida energizante,Bebidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,19,12,Malta,Bebidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,19,13,Bebida hidratante,Bebidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,19,14,Avena en vaso,Bebidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,19,15,Gaseosa personal,Bebidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,19,16,Maní salado,Snacks,1,1,0
+2026-11-19,3,jueves,clases,0,0,19,17,Chicharrón en paquete,Snacks,0,1,0
+2026-11-19,3,jueves,clases,0,0,19,18,Platanitos,Snacks,0,1,0
+2026-11-19,3,jueves,clases,0,0,19,19,Barra de cereal,Snacks,0,1,0
+2026-11-19,3,jueves,clases,0,0,19,20,Chupeta,Snacks,2,1,0
+2026-11-19,3,jueves,clases,0,0,19,21,Papa rellena,Comidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,19,22,Arepa de queso,Comidas,4,1,0
+2026-11-19,3,jueves,clases,0,0,19,23,Arepa rellena de pollo,Comidas,2,1,0
+2026-11-19,3,jueves,clases,0,0,19,24,Pandebono,Panadería,0,1,0
+2026-11-19,3,jueves,clases,0,0,19,25,Almojábana,Panadería,1,1,0
+2026-11-19,3,jueves,clases,0,0,19,26,Buñuelo,Panadería,0,1,0
+2026-11-19,3,jueves,clases,0,0,19,27,Pastel de arequipe,Panadería,1,1,0
+2026-11-19,3,jueves,clases,0,0,20,1,Agua en botella,Bebidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,20,2,Gaseosa,Bebidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,20,3,Jugo en caja,Bebidas,2,1,0
+2026-11-19,3,jueves,clases,0,0,20,4,Papas fritas,Snacks,0,1,0
+2026-11-19,3,jueves,clases,0,0,20,5,Galletas,Snacks,0,1,0
+2026-11-19,3,jueves,clases,0,0,20,6,Chocolatina,Snacks,0,1,0
+2026-11-19,3,jueves,clases,0,0,20,7,Empanada,Comidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,20,8,Sándwich de jamón y queso,Comidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,20,9,Pastel de pollo,Comidas,1,1,0
+2026-11-19,3,jueves,clases,0,0,20,10,Té frío,Bebidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,20,11,Bebida energizante,Bebidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,20,12,Malta,Bebidas,1,1,0
+2026-11-19,3,jueves,clases,0,0,20,13,Bebida hidratante,Bebidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,20,14,Avena en vaso,Bebidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,20,15,Gaseosa personal,Bebidas,2,1,0
+2026-11-19,3,jueves,clases,0,0,20,16,Maní salado,Snacks,0,1,0
+2026-11-19,3,jueves,clases,0,0,20,17,Chicharrón en paquete,Snacks,0,1,0
+2026-11-19,3,jueves,clases,0,0,20,18,Platanitos,Snacks,0,1,0
+2026-11-19,3,jueves,clases,0,0,20,19,Barra de cereal,Snacks,0,1,0
+2026-11-19,3,jueves,clases,0,0,20,20,Chupeta,Snacks,1,1,0
+2026-11-19,3,jueves,clases,0,0,20,21,Papa rellena,Comidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,20,22,Arepa de queso,Comidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,20,23,Arepa rellena de pollo,Comidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,20,24,Pandebono,Panadería,1,1,0
+2026-11-19,3,jueves,clases,0,0,20,25,Almojábana,Panadería,0,1,0
+2026-11-19,3,jueves,clases,0,0,20,26,Buñuelo,Panadería,0,1,0
+2026-11-19,3,jueves,clases,0,0,20,27,Pastel de arequipe,Panadería,0,1,0
+2026-11-19,3,jueves,clases,0,0,21,1,Agua en botella,Bebidas,4,1,0
+2026-11-19,3,jueves,clases,0,0,21,2,Gaseosa,Bebidas,2,1,0
+2026-11-19,3,jueves,clases,0,0,21,3,Jugo en caja,Bebidas,2,1,0
+2026-11-19,3,jueves,clases,0,0,21,4,Papas fritas,Snacks,0,1,0
+2026-11-19,3,jueves,clases,0,0,21,5,Galletas,Snacks,0,1,0
+2026-11-19,3,jueves,clases,0,0,21,6,Chocolatina,Snacks,0,1,0
+2026-11-19,3,jueves,clases,0,0,21,7,Empanada,Comidas,1,1,0
+2026-11-19,3,jueves,clases,0,0,21,8,Sándwich de jamón y queso,Comidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,21,9,Pastel de pollo,Comidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,21,10,Té frío,Bebidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,21,11,Bebida energizante,Bebidas,2,1,0
+2026-11-19,3,jueves,clases,0,0,21,12,Malta,Bebidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,21,13,Bebida hidratante,Bebidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,21,14,Avena en vaso,Bebidas,1,1,0
+2026-11-19,3,jueves,clases,0,0,21,15,Gaseosa personal,Bebidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,21,16,Maní salado,Snacks,2,1,0
+2026-11-19,3,jueves,clases,0,0,21,17,Chicharrón en paquete,Snacks,0,1,0
+2026-11-19,3,jueves,clases,0,0,21,18,Platanitos,Snacks,0,1,0
+2026-11-19,3,jueves,clases,0,0,21,19,Barra de cereal,Snacks,0,1,0
+2026-11-19,3,jueves,clases,0,0,21,20,Chupeta,Snacks,0,1,0
+2026-11-19,3,jueves,clases,0,0,21,21,Papa rellena,Comidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,21,22,Arepa de queso,Comidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,21,23,Arepa rellena de pollo,Comidas,1,1,0
+2026-11-19,3,jueves,clases,0,0,21,24,Pandebono,Panadería,0,1,0
+2026-11-19,3,jueves,clases,0,0,21,25,Almojábana,Panadería,2,1,0
+2026-11-19,3,jueves,clases,0,0,21,26,Buñuelo,Panadería,0,1,0
+2026-11-19,3,jueves,clases,0,0,21,27,Pastel de arequipe,Panadería,0,1,0
+2026-11-19,3,jueves,clases,0,0,22,1,Agua en botella,Bebidas,1,1,0
+2026-11-19,3,jueves,clases,0,0,22,2,Gaseosa,Bebidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,22,3,Jugo en caja,Bebidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,22,4,Papas fritas,Snacks,0,1,0
+2026-11-19,3,jueves,clases,0,0,22,5,Galletas,Snacks,0,1,0
+2026-11-19,3,jueves,clases,0,0,22,6,Chocolatina,Snacks,0,1,0
+2026-11-19,3,jueves,clases,0,0,22,7,Empanada,Comidas,2,1,0
+2026-11-19,3,jueves,clases,0,0,22,8,Sándwich de jamón y queso,Comidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,22,9,Pastel de pollo,Comidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,22,10,Té frío,Bebidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,22,11,Bebida energizante,Bebidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,22,12,Malta,Bebidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,22,13,Bebida hidratante,Bebidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,22,14,Avena en vaso,Bebidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,22,15,Gaseosa personal,Bebidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,22,16,Maní salado,Snacks,0,1,0
+2026-11-19,3,jueves,clases,0,0,22,17,Chicharrón en paquete,Snacks,0,1,0
+2026-11-19,3,jueves,clases,0,0,22,18,Platanitos,Snacks,0,1,0
+2026-11-19,3,jueves,clases,0,0,22,19,Barra de cereal,Snacks,0,1,0
+2026-11-19,3,jueves,clases,0,0,22,20,Chupeta,Snacks,1,1,0
+2026-11-19,3,jueves,clases,0,0,22,21,Papa rellena,Comidas,3,1,0
+2026-11-19,3,jueves,clases,0,0,22,22,Arepa de queso,Comidas,2,1,0
+2026-11-19,3,jueves,clases,0,0,22,23,Arepa rellena de pollo,Comidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,22,24,Pandebono,Panadería,1,1,0
+2026-11-19,3,jueves,clases,0,0,22,25,Almojábana,Panadería,0,1,0
+2026-11-19,3,jueves,clases,0,0,22,26,Buñuelo,Panadería,0,1,0
+2026-11-19,3,jueves,clases,0,0,22,27,Pastel de arequipe,Panadería,0,1,0
+2026-11-19,3,jueves,clases,0,0,23,1,Agua en botella,Bebidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,23,2,Gaseosa,Bebidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,23,3,Jugo en caja,Bebidas,4,1,0
+2026-11-19,3,jueves,clases,0,0,23,4,Papas fritas,Snacks,1,1,0
+2026-11-19,3,jueves,clases,0,0,23,5,Galletas,Snacks,1,1,0
+2026-11-19,3,jueves,clases,0,0,23,6,Chocolatina,Snacks,0,1,0
+2026-11-19,3,jueves,clases,0,0,23,7,Empanada,Comidas,1,1,0
+2026-11-19,3,jueves,clases,0,0,23,8,Sándwich de jamón y queso,Comidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,23,9,Pastel de pollo,Comidas,4,1,0
+2026-11-19,3,jueves,clases,0,0,23,10,Té frío,Bebidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,23,11,Bebida energizante,Bebidas,1,1,0
+2026-11-19,3,jueves,clases,0,0,23,12,Malta,Bebidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,23,13,Bebida hidratante,Bebidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,23,14,Avena en vaso,Bebidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,23,15,Gaseosa personal,Bebidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,23,16,Maní salado,Snacks,0,1,0
+2026-11-19,3,jueves,clases,0,0,23,17,Chicharrón en paquete,Snacks,0,1,0
+2026-11-19,3,jueves,clases,0,0,23,18,Platanitos,Snacks,1,1,0
+2026-11-19,3,jueves,clases,0,0,23,19,Barra de cereal,Snacks,0,1,0
+2026-11-19,3,jueves,clases,0,0,23,20,Chupeta,Snacks,0,1,0
+2026-11-19,3,jueves,clases,0,0,23,21,Papa rellena,Comidas,4,1,0
+2026-11-19,3,jueves,clases,0,0,23,22,Arepa de queso,Comidas,4,1,0
+2026-11-19,3,jueves,clases,0,0,23,23,Arepa rellena de pollo,Comidas,2,1,0
+2026-11-19,3,jueves,clases,0,0,23,24,Pandebono,Panadería,1,1,0
+2026-11-19,3,jueves,clases,0,0,23,25,Almojábana,Panadería,0,1,0
+2026-11-19,3,jueves,clases,0,0,23,26,Buñuelo,Panadería,0,1,0
+2026-11-19,3,jueves,clases,0,0,23,27,Pastel de arequipe,Panadería,0,1,0
+2026-11-19,3,jueves,clases,0,0,24,1,Agua en botella,Bebidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,24,2,Gaseosa,Bebidas,4,1,0
+2026-11-19,3,jueves,clases,0,0,24,3,Jugo en caja,Bebidas,4,1,0
+2026-11-19,3,jueves,clases,0,0,24,4,Papas fritas,Snacks,0,1,0
+2026-11-19,3,jueves,clases,0,0,24,5,Galletas,Snacks,0,1,0
+2026-11-19,3,jueves,clases,0,0,24,6,Chocolatina,Snacks,0,1,0
+2026-11-19,3,jueves,clases,0,0,24,7,Empanada,Comidas,6,1,0
+2026-11-19,3,jueves,clases,0,0,24,8,Sándwich de jamón y queso,Comidas,2,1,0
+2026-11-19,3,jueves,clases,0,0,24,9,Pastel de pollo,Comidas,6,1,0
+2026-11-19,3,jueves,clases,0,0,24,10,Té frío,Bebidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,24,11,Bebida energizante,Bebidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,24,12,Malta,Bebidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,24,13,Bebida hidratante,Bebidas,1,1,0
+2026-11-19,3,jueves,clases,0,0,24,14,Avena en vaso,Bebidas,2,1,0
+2026-11-19,3,jueves,clases,0,0,24,15,Gaseosa personal,Bebidas,2,1,0
+2026-11-19,3,jueves,clases,0,0,24,16,Maní salado,Snacks,0,1,0
+2026-11-19,3,jueves,clases,0,0,24,17,Chicharrón en paquete,Snacks,1,1,0
+2026-11-19,3,jueves,clases,0,0,24,18,Platanitos,Snacks,0,1,0
+2026-11-19,3,jueves,clases,0,0,24,19,Barra de cereal,Snacks,0,1,0
+2026-11-19,3,jueves,clases,0,0,24,20,Chupeta,Snacks,4,1,0
+2026-11-19,3,jueves,clases,0,0,24,21,Papa rellena,Comidas,2,1,0
+2026-11-19,3,jueves,clases,0,0,24,22,Arepa de queso,Comidas,4,1,0
+2026-11-19,3,jueves,clases,0,0,24,23,Arepa rellena de pollo,Comidas,3,1,0
+2026-11-19,3,jueves,clases,0,0,24,24,Pandebono,Panadería,2,1,0
+2026-11-19,3,jueves,clases,0,0,24,25,Almojábana,Panadería,0,1,0
+2026-11-19,3,jueves,clases,0,0,24,26,Buñuelo,Panadería,1,1,0
+2026-11-19,3,jueves,clases,0,0,24,27,Pastel de arequipe,Panadería,0,1,0
+2026-11-19,3,jueves,clases,0,0,25,1,Agua en botella,Bebidas,4,1,0
+2026-11-19,3,jueves,clases,0,0,25,2,Gaseosa,Bebidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,25,3,Jugo en caja,Bebidas,3,1,0
+2026-11-19,3,jueves,clases,0,0,25,4,Papas fritas,Snacks,0,1,0
+2026-11-19,3,jueves,clases,0,0,25,5,Galletas,Snacks,0,1,0
+2026-11-19,3,jueves,clases,0,0,25,6,Chocolatina,Snacks,0,1,0
+2026-11-19,3,jueves,clases,0,0,25,7,Empanada,Comidas,7,1,0
+2026-11-19,3,jueves,clases,0,0,25,8,Sándwich de jamón y queso,Comidas,2,1,0
+2026-11-19,3,jueves,clases,0,0,25,9,Pastel de pollo,Comidas,2,1,0
+2026-11-19,3,jueves,clases,0,0,25,10,Té frío,Bebidas,1,1,0
+2026-11-19,3,jueves,clases,0,0,25,11,Bebida energizante,Bebidas,1,1,0
+2026-11-19,3,jueves,clases,0,0,25,12,Malta,Bebidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,25,13,Bebida hidratante,Bebidas,2,1,0
+2026-11-19,3,jueves,clases,0,0,25,14,Avena en vaso,Bebidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,25,15,Gaseosa personal,Bebidas,2,1,0
+2026-11-19,3,jueves,clases,0,0,25,16,Maní salado,Snacks,0,1,0
+2026-11-19,3,jueves,clases,0,0,25,17,Chicharrón en paquete,Snacks,0,1,0
+2026-11-19,3,jueves,clases,0,0,25,18,Platanitos,Snacks,0,1,0
+2026-11-19,3,jueves,clases,0,0,25,19,Barra de cereal,Snacks,1,1,0
+2026-11-19,3,jueves,clases,0,0,25,20,Chupeta,Snacks,1,1,0
+2026-11-19,3,jueves,clases,0,0,25,21,Papa rellena,Comidas,1,1,0
+2026-11-19,3,jueves,clases,0,0,25,22,Arepa de queso,Comidas,2,1,0
+2026-11-19,3,jueves,clases,0,0,25,23,Arepa rellena de pollo,Comidas,2,1,0
+2026-11-19,3,jueves,clases,0,0,25,24,Pandebono,Panadería,0,1,0
+2026-11-19,3,jueves,clases,0,0,25,25,Almojábana,Panadería,0,1,0
+2026-11-19,3,jueves,clases,0,0,25,26,Buñuelo,Panadería,0,1,0
+2026-11-19,3,jueves,clases,0,0,25,27,Pastel de arequipe,Panadería,0,1,0
+2026-11-19,3,jueves,clases,0,0,26,1,Agua en botella,Bebidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,26,2,Gaseosa,Bebidas,2,1,0
+2026-11-19,3,jueves,clases,0,0,26,3,Jugo en caja,Bebidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,26,4,Papas fritas,Snacks,0,1,0
+2026-11-19,3,jueves,clases,0,0,26,5,Galletas,Snacks,1,1,0
+2026-11-19,3,jueves,clases,0,0,26,6,Chocolatina,Snacks,0,1,0
+2026-11-19,3,jueves,clases,0,0,26,7,Empanada,Comidas,4,1,0
+2026-11-19,3,jueves,clases,0,0,26,8,Sándwich de jamón y queso,Comidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,26,9,Pastel de pollo,Comidas,1,1,0
+2026-11-19,3,jueves,clases,0,0,26,10,Té frío,Bebidas,3,1,0
+2026-11-19,3,jueves,clases,0,0,26,11,Bebida energizante,Bebidas,1,1,0
+2026-11-19,3,jueves,clases,0,0,26,12,Malta,Bebidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,26,13,Bebida hidratante,Bebidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,26,14,Avena en vaso,Bebidas,4,1,0
+2026-11-19,3,jueves,clases,0,0,26,15,Gaseosa personal,Bebidas,1,1,0
+2026-11-19,3,jueves,clases,0,0,26,16,Maní salado,Snacks,0,1,0
+2026-11-19,3,jueves,clases,0,0,26,17,Chicharrón en paquete,Snacks,0,1,0
+2026-11-19,3,jueves,clases,0,0,26,18,Platanitos,Snacks,0,1,0
+2026-11-19,3,jueves,clases,0,0,26,19,Barra de cereal,Snacks,0,1,0
+2026-11-19,3,jueves,clases,0,0,26,20,Chupeta,Snacks,0,1,0
+2026-11-19,3,jueves,clases,0,0,26,21,Papa rellena,Comidas,4,1,0
+2026-11-19,3,jueves,clases,0,0,26,22,Arepa de queso,Comidas,6,1,0
+2026-11-19,3,jueves,clases,0,0,26,23,Arepa rellena de pollo,Comidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,26,24,Pandebono,Panadería,0,1,0
+2026-11-19,3,jueves,clases,0,0,26,25,Almojábana,Panadería,0,1,0
+2026-11-19,3,jueves,clases,0,0,26,26,Buñuelo,Panadería,0,1,0
+2026-11-19,3,jueves,clases,0,0,26,27,Pastel de arequipe,Panadería,0,1,0
+2026-11-19,3,jueves,clases,0,0,27,1,Agua en botella,Bebidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,27,2,Gaseosa,Bebidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,27,3,Jugo en caja,Bebidas,1,1,0
+2026-11-19,3,jueves,clases,0,0,27,4,Papas fritas,Snacks,1,1,0
+2026-11-19,3,jueves,clases,0,0,27,5,Galletas,Snacks,0,1,0
+2026-11-19,3,jueves,clases,0,0,27,6,Chocolatina,Snacks,0,1,0
+2026-11-19,3,jueves,clases,0,0,27,7,Empanada,Comidas,2,1,0
+2026-11-19,3,jueves,clases,0,0,27,8,Sándwich de jamón y queso,Comidas,1,1,0
+2026-11-19,3,jueves,clases,0,0,27,9,Pastel de pollo,Comidas,2,1,0
+2026-11-19,3,jueves,clases,0,0,27,10,Té frío,Bebidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,27,11,Bebida energizante,Bebidas,3,1,0
+2026-11-19,3,jueves,clases,0,0,27,12,Malta,Bebidas,3,1,0
+2026-11-19,3,jueves,clases,0,0,27,13,Bebida hidratante,Bebidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,27,14,Avena en vaso,Bebidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,27,15,Gaseosa personal,Bebidas,1,1,0
+2026-11-19,3,jueves,clases,0,0,27,16,Maní salado,Snacks,0,1,0
+2026-11-19,3,jueves,clases,0,0,27,17,Chicharrón en paquete,Snacks,0,1,0
+2026-11-19,3,jueves,clases,0,0,27,18,Platanitos,Snacks,0,1,0
+2026-11-19,3,jueves,clases,0,0,27,19,Barra de cereal,Snacks,0,1,0
+2026-11-19,3,jueves,clases,0,0,27,20,Chupeta,Snacks,0,1,0
+2026-11-19,3,jueves,clases,0,0,27,21,Papa rellena,Comidas,1,1,0
+2026-11-19,3,jueves,clases,0,0,27,22,Arepa de queso,Comidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,27,23,Arepa rellena de pollo,Comidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,27,24,Pandebono,Panadería,0,1,0
+2026-11-19,3,jueves,clases,0,0,27,25,Almojábana,Panadería,0,1,0
+2026-11-19,3,jueves,clases,0,0,27,26,Buñuelo,Panadería,1,1,0
+2026-11-19,3,jueves,clases,0,0,27,27,Pastel de arequipe,Panadería,0,1,0
+2026-11-19,3,jueves,clases,0,0,28,1,Agua en botella,Bebidas,2,1,0
+2026-11-19,3,jueves,clases,0,0,28,2,Gaseosa,Bebidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,28,3,Jugo en caja,Bebidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,28,4,Papas fritas,Snacks,0,1,0
+2026-11-19,3,jueves,clases,0,0,28,5,Galletas,Snacks,0,1,0
+2026-11-19,3,jueves,clases,0,0,28,6,Chocolatina,Snacks,1,1,0
+2026-11-19,3,jueves,clases,0,0,28,7,Empanada,Comidas,2,1,0
+2026-11-19,3,jueves,clases,0,0,28,8,Sándwich de jamón y queso,Comidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,28,9,Pastel de pollo,Comidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,28,10,Té frío,Bebidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,28,11,Bebida energizante,Bebidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,28,12,Malta,Bebidas,2,1,0
+2026-11-19,3,jueves,clases,0,0,28,13,Bebida hidratante,Bebidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,28,14,Avena en vaso,Bebidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,28,15,Gaseosa personal,Bebidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,28,16,Maní salado,Snacks,3,1,0
+2026-11-19,3,jueves,clases,0,0,28,17,Chicharrón en paquete,Snacks,0,1,0
+2026-11-19,3,jueves,clases,0,0,28,18,Platanitos,Snacks,0,1,0
+2026-11-19,3,jueves,clases,0,0,28,19,Barra de cereal,Snacks,2,1,0
+2026-11-19,3,jueves,clases,0,0,28,20,Chupeta,Snacks,0,1,0
+2026-11-19,3,jueves,clases,0,0,28,21,Papa rellena,Comidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,28,22,Arepa de queso,Comidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,28,23,Arepa rellena de pollo,Comidas,1,1,0
+2026-11-19,3,jueves,clases,0,0,28,24,Pandebono,Panadería,2,1,0
+2026-11-19,3,jueves,clases,0,0,28,25,Almojábana,Panadería,0,1,0
+2026-11-19,3,jueves,clases,0,0,28,26,Buñuelo,Panadería,0,1,0
+2026-11-19,3,jueves,clases,0,0,28,27,Pastel de arequipe,Panadería,0,1,0
+2026-11-19,3,jueves,clases,0,0,29,1,Agua en botella,Bebidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,29,2,Gaseosa,Bebidas,2,1,0
+2026-11-19,3,jueves,clases,0,0,29,3,Jugo en caja,Bebidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,29,4,Papas fritas,Snacks,0,1,0
+2026-11-19,3,jueves,clases,0,0,29,5,Galletas,Snacks,0,1,0
+2026-11-19,3,jueves,clases,0,0,29,6,Chocolatina,Snacks,0,1,0
+2026-11-19,3,jueves,clases,0,0,29,7,Empanada,Comidas,3,1,0
+2026-11-19,3,jueves,clases,0,0,29,8,Sándwich de jamón y queso,Comidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,29,9,Pastel de pollo,Comidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,29,10,Té frío,Bebidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,29,11,Bebida energizante,Bebidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,29,12,Malta,Bebidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,29,13,Bebida hidratante,Bebidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,29,14,Avena en vaso,Bebidas,2,1,0
+2026-11-19,3,jueves,clases,0,0,29,15,Gaseosa personal,Bebidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,29,16,Maní salado,Snacks,0,1,0
+2026-11-19,3,jueves,clases,0,0,29,17,Chicharrón en paquete,Snacks,3,1,0
+2026-11-19,3,jueves,clases,0,0,29,18,Platanitos,Snacks,0,1,0
+2026-11-19,3,jueves,clases,0,0,29,19,Barra de cereal,Snacks,0,1,0
+2026-11-19,3,jueves,clases,0,0,29,20,Chupeta,Snacks,0,1,0
+2026-11-19,3,jueves,clases,0,0,29,21,Papa rellena,Comidas,2,1,0
+2026-11-19,3,jueves,clases,0,0,29,22,Arepa de queso,Comidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,29,23,Arepa rellena de pollo,Comidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,29,24,Pandebono,Panadería,0,1,0
+2026-11-19,3,jueves,clases,0,0,29,25,Almojábana,Panadería,0,1,0
+2026-11-19,3,jueves,clases,0,0,29,26,Buñuelo,Panadería,0,1,0
+2026-11-19,3,jueves,clases,0,0,29,27,Pastel de arequipe,Panadería,0,1,0
+2026-11-19,3,jueves,clases,0,0,30,1,Agua en botella,Bebidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,30,2,Gaseosa,Bebidas,1,1,0
+2026-11-19,3,jueves,clases,0,0,30,3,Jugo en caja,Bebidas,3,1,0
+2026-11-19,3,jueves,clases,0,0,30,4,Papas fritas,Snacks,2,1,0
+2026-11-19,3,jueves,clases,0,0,30,5,Galletas,Snacks,0,1,0
+2026-11-19,3,jueves,clases,0,0,30,6,Chocolatina,Snacks,0,1,0
+2026-11-19,3,jueves,clases,0,0,30,7,Empanada,Comidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,30,8,Sándwich de jamón y queso,Comidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,30,9,Pastel de pollo,Comidas,1,1,0
+2026-11-19,3,jueves,clases,0,0,30,10,Té frío,Bebidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,30,11,Bebida energizante,Bebidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,30,12,Malta,Bebidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,30,13,Bebida hidratante,Bebidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,30,14,Avena en vaso,Bebidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,30,15,Gaseosa personal,Bebidas,2,1,0
+2026-11-19,3,jueves,clases,0,0,30,16,Maní salado,Snacks,0,1,0
+2026-11-19,3,jueves,clases,0,0,30,17,Chicharrón en paquete,Snacks,0,1,0
+2026-11-19,3,jueves,clases,0,0,30,18,Platanitos,Snacks,1,1,0
+2026-11-19,3,jueves,clases,0,0,30,19,Barra de cereal,Snacks,1,1,0
+2026-11-19,3,jueves,clases,0,0,30,20,Chupeta,Snacks,1,1,0
+2026-11-19,3,jueves,clases,0,0,30,21,Papa rellena,Comidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,30,22,Arepa de queso,Comidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,30,23,Arepa rellena de pollo,Comidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,30,24,Pandebono,Panadería,1,1,0
+2026-11-19,3,jueves,clases,0,0,30,25,Almojábana,Panadería,0,1,0
+2026-11-19,3,jueves,clases,0,0,30,26,Buñuelo,Panadería,1,1,0
+2026-11-19,3,jueves,clases,0,0,30,27,Pastel de arequipe,Panadería,0,1,0
+2026-11-19,3,jueves,clases,0,0,31,1,Agua en botella,Bebidas,4,1,0
+2026-11-19,3,jueves,clases,0,0,31,2,Gaseosa,Bebidas,1,1,0
+2026-11-19,3,jueves,clases,0,0,31,3,Jugo en caja,Bebidas,1,1,0
+2026-11-19,3,jueves,clases,0,0,31,4,Papas fritas,Snacks,1,1,0
+2026-11-19,3,jueves,clases,0,0,31,5,Galletas,Snacks,0,1,0
+2026-11-19,3,jueves,clases,0,0,31,6,Chocolatina,Snacks,0,1,0
+2026-11-19,3,jueves,clases,0,0,31,7,Empanada,Comidas,2,1,0
+2026-11-19,3,jueves,clases,0,0,31,8,Sándwich de jamón y queso,Comidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,31,9,Pastel de pollo,Comidas,1,1,0
+2026-11-19,3,jueves,clases,0,0,31,10,Té frío,Bebidas,1,1,0
+2026-11-19,3,jueves,clases,0,0,31,11,Bebida energizante,Bebidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,31,12,Malta,Bebidas,2,1,0
+2026-11-19,3,jueves,clases,0,0,31,13,Bebida hidratante,Bebidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,31,14,Avena en vaso,Bebidas,1,1,0
+2026-11-19,3,jueves,clases,0,0,31,15,Gaseosa personal,Bebidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,31,16,Maní salado,Snacks,0,1,0
+2026-11-19,3,jueves,clases,0,0,31,17,Chicharrón en paquete,Snacks,1,1,0
+2026-11-19,3,jueves,clases,0,0,31,18,Platanitos,Snacks,0,1,0
+2026-11-19,3,jueves,clases,0,0,31,19,Barra de cereal,Snacks,0,1,0
+2026-11-19,3,jueves,clases,0,0,31,20,Chupeta,Snacks,2,1,0
+2026-11-19,3,jueves,clases,0,0,31,21,Papa rellena,Comidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,31,22,Arepa de queso,Comidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,31,23,Arepa rellena de pollo,Comidas,2,1,0
+2026-11-19,3,jueves,clases,0,0,31,24,Pandebono,Panadería,3,1,0
+2026-11-19,3,jueves,clases,0,0,31,25,Almojábana,Panadería,1,1,0
+2026-11-19,3,jueves,clases,0,0,31,26,Buñuelo,Panadería,6,1,0
+2026-11-19,3,jueves,clases,0,0,31,27,Pastel de arequipe,Panadería,1,1,0
+2026-11-19,3,jueves,clases,0,0,32,1,Agua en botella,Bebidas,1,1,0
+2026-11-19,3,jueves,clases,0,0,32,2,Gaseosa,Bebidas,1,1,0
+2026-11-19,3,jueves,clases,0,0,32,3,Jugo en caja,Bebidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,32,4,Papas fritas,Snacks,0,1,0
+2026-11-19,3,jueves,clases,0,0,32,5,Galletas,Snacks,3,1,0
+2026-11-19,3,jueves,clases,0,0,32,6,Chocolatina,Snacks,0,1,0
+2026-11-19,3,jueves,clases,0,0,32,7,Empanada,Comidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,32,8,Sándwich de jamón y queso,Comidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,32,9,Pastel de pollo,Comidas,1,1,0
+2026-11-19,3,jueves,clases,0,0,32,10,Té frío,Bebidas,1,1,0
+2026-11-19,3,jueves,clases,0,0,32,11,Bebida energizante,Bebidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,32,12,Malta,Bebidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,32,13,Bebida hidratante,Bebidas,1,1,0
+2026-11-19,3,jueves,clases,0,0,32,14,Avena en vaso,Bebidas,1,1,0
+2026-11-19,3,jueves,clases,0,0,32,15,Gaseosa personal,Bebidas,2,1,0
+2026-11-19,3,jueves,clases,0,0,32,16,Maní salado,Snacks,0,1,0
+2026-11-19,3,jueves,clases,0,0,32,17,Chicharrón en paquete,Snacks,0,1,0
+2026-11-19,3,jueves,clases,0,0,32,18,Platanitos,Snacks,0,1,0
+2026-11-19,3,jueves,clases,0,0,32,19,Barra de cereal,Snacks,0,1,0
+2026-11-19,3,jueves,clases,0,0,32,20,Chupeta,Snacks,3,1,0
+2026-11-19,3,jueves,clases,0,0,32,21,Papa rellena,Comidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,32,22,Arepa de queso,Comidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,32,23,Arepa rellena de pollo,Comidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,32,24,Pandebono,Panadería,1,1,0
+2026-11-19,3,jueves,clases,0,0,32,25,Almojábana,Panadería,0,1,0
+2026-11-19,3,jueves,clases,0,0,32,26,Buñuelo,Panadería,0,1,0
+2026-11-19,3,jueves,clases,0,0,32,27,Pastel de arequipe,Panadería,0,1,0
+2026-11-19,3,jueves,clases,0,0,33,1,Agua en botella,Bebidas,2,1,0
+2026-11-19,3,jueves,clases,0,0,33,2,Gaseosa,Bebidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,33,3,Jugo en caja,Bebidas,1,1,0
+2026-11-19,3,jueves,clases,0,0,33,4,Papas fritas,Snacks,1,1,0
+2026-11-19,3,jueves,clases,0,0,33,5,Galletas,Snacks,0,1,0
+2026-11-19,3,jueves,clases,0,0,33,6,Chocolatina,Snacks,0,1,0
+2026-11-19,3,jueves,clases,0,0,33,7,Empanada,Comidas,1,1,0
+2026-11-19,3,jueves,clases,0,0,33,8,Sándwich de jamón y queso,Comidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,33,9,Pastel de pollo,Comidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,33,10,Té frío,Bebidas,1,1,0
+2026-11-19,3,jueves,clases,0,0,33,11,Bebida energizante,Bebidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,33,12,Malta,Bebidas,1,1,0
+2026-11-19,3,jueves,clases,0,0,33,13,Bebida hidratante,Bebidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,33,14,Avena en vaso,Bebidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,33,15,Gaseosa personal,Bebidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,33,16,Maní salado,Snacks,0,1,0
+2026-11-19,3,jueves,clases,0,0,33,17,Chicharrón en paquete,Snacks,0,1,0
+2026-11-19,3,jueves,clases,0,0,33,18,Platanitos,Snacks,0,1,0
+2026-11-19,3,jueves,clases,0,0,33,19,Barra de cereal,Snacks,0,1,0
+2026-11-19,3,jueves,clases,0,0,33,20,Chupeta,Snacks,0,1,0
+2026-11-19,3,jueves,clases,0,0,33,21,Papa rellena,Comidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,33,22,Arepa de queso,Comidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,33,23,Arepa rellena de pollo,Comidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,33,24,Pandebono,Panadería,1,1,0
+2026-11-19,3,jueves,clases,0,0,33,25,Almojábana,Panadería,0,1,0
+2026-11-19,3,jueves,clases,0,0,33,26,Buñuelo,Panadería,0,1,0
+2026-11-19,3,jueves,clases,0,0,33,27,Pastel de arequipe,Panadería,0,1,0
+2026-11-19,3,jueves,clases,0,0,34,1,Agua en botella,Bebidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,34,2,Gaseosa,Bebidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,34,3,Jugo en caja,Bebidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,34,4,Papas fritas,Snacks,0,1,0
+2026-11-19,3,jueves,clases,0,0,34,5,Galletas,Snacks,0,1,0
+2026-11-19,3,jueves,clases,0,0,34,6,Chocolatina,Snacks,0,1,0
+2026-11-19,3,jueves,clases,0,0,34,7,Empanada,Comidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,34,8,Sándwich de jamón y queso,Comidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,34,9,Pastel de pollo,Comidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,34,10,Té frío,Bebidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,34,11,Bebida energizante,Bebidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,34,12,Malta,Bebidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,34,13,Bebida hidratante,Bebidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,34,14,Avena en vaso,Bebidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,34,15,Gaseosa personal,Bebidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,34,16,Maní salado,Snacks,1,1,0
+2026-11-19,3,jueves,clases,0,0,34,17,Chicharrón en paquete,Snacks,0,1,0
+2026-11-19,3,jueves,clases,0,0,34,18,Platanitos,Snacks,0,1,0
+2026-11-19,3,jueves,clases,0,0,34,19,Barra de cereal,Snacks,1,1,0
+2026-11-19,3,jueves,clases,0,0,34,20,Chupeta,Snacks,0,1,0
+2026-11-19,3,jueves,clases,0,0,34,21,Papa rellena,Comidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,34,22,Arepa de queso,Comidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,34,23,Arepa rellena de pollo,Comidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,34,24,Pandebono,Panadería,0,1,0
+2026-11-19,3,jueves,clases,0,0,34,25,Almojábana,Panadería,1,1,0
+2026-11-19,3,jueves,clases,0,0,34,26,Buñuelo,Panadería,0,1,0
+2026-11-19,3,jueves,clases,0,0,34,27,Pastel de arequipe,Panadería,0,1,0
+2026-11-19,3,jueves,clases,0,0,35,1,Agua en botella,Bebidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,35,2,Gaseosa,Bebidas,2,1,0
+2026-11-19,3,jueves,clases,0,0,35,3,Jugo en caja,Bebidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,35,4,Papas fritas,Snacks,2,1,0
+2026-11-19,3,jueves,clases,0,0,35,5,Galletas,Snacks,0,1,0
+2026-11-19,3,jueves,clases,0,0,35,6,Chocolatina,Snacks,0,1,0
+2026-11-19,3,jueves,clases,0,0,35,7,Empanada,Comidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,35,8,Sándwich de jamón y queso,Comidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,35,9,Pastel de pollo,Comidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,35,10,Té frío,Bebidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,35,11,Bebida energizante,Bebidas,1,1,0
+2026-11-19,3,jueves,clases,0,0,35,12,Malta,Bebidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,35,13,Bebida hidratante,Bebidas,1,1,0
+2026-11-19,3,jueves,clases,0,0,35,14,Avena en vaso,Bebidas,1,1,0
+2026-11-19,3,jueves,clases,0,0,35,15,Gaseosa personal,Bebidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,35,16,Maní salado,Snacks,0,1,0
+2026-11-19,3,jueves,clases,0,0,35,17,Chicharrón en paquete,Snacks,0,1,0
+2026-11-19,3,jueves,clases,0,0,35,18,Platanitos,Snacks,0,1,0
+2026-11-19,3,jueves,clases,0,0,35,19,Barra de cereal,Snacks,1,1,0
+2026-11-19,3,jueves,clases,0,0,35,20,Chupeta,Snacks,0,1,0
+2026-11-19,3,jueves,clases,0,0,35,21,Papa rellena,Comidas,4,1,0
+2026-11-19,3,jueves,clases,0,0,35,22,Arepa de queso,Comidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,35,23,Arepa rellena de pollo,Comidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,35,24,Pandebono,Panadería,1,1,0
+2026-11-19,3,jueves,clases,0,0,35,25,Almojábana,Panadería,0,1,0
+2026-11-19,3,jueves,clases,0,0,35,26,Buñuelo,Panadería,1,1,0
+2026-11-19,3,jueves,clases,0,0,35,27,Pastel de arequipe,Panadería,1,1,0
+2026-11-19,3,jueves,clases,0,0,36,1,Agua en botella,Bebidas,3,1,0
+2026-11-19,3,jueves,clases,0,0,36,2,Gaseosa,Bebidas,1,1,0
+2026-11-19,3,jueves,clases,0,0,36,3,Jugo en caja,Bebidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,36,4,Papas fritas,Snacks,0,1,0
+2026-11-19,3,jueves,clases,0,0,36,5,Galletas,Snacks,1,1,0
+2026-11-19,3,jueves,clases,0,0,36,6,Chocolatina,Snacks,1,1,0
+2026-11-19,3,jueves,clases,0,0,36,7,Empanada,Comidas,1,1,0
+2026-11-19,3,jueves,clases,0,0,36,8,Sándwich de jamón y queso,Comidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,36,9,Pastel de pollo,Comidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,36,10,Té frío,Bebidas,3,1,0
+2026-11-19,3,jueves,clases,0,0,36,11,Bebida energizante,Bebidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,36,12,Malta,Bebidas,1,1,0
+2026-11-19,3,jueves,clases,0,0,36,13,Bebida hidratante,Bebidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,36,14,Avena en vaso,Bebidas,2,1,0
+2026-11-19,3,jueves,clases,0,0,36,15,Gaseosa personal,Bebidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,36,16,Maní salado,Snacks,0,1,0
+2026-11-19,3,jueves,clases,0,0,36,17,Chicharrón en paquete,Snacks,2,1,0
+2026-11-19,3,jueves,clases,0,0,36,18,Platanitos,Snacks,0,1,0
+2026-11-19,3,jueves,clases,0,0,36,19,Barra de cereal,Snacks,0,1,0
+2026-11-19,3,jueves,clases,0,0,36,20,Chupeta,Snacks,1,1,0
+2026-11-19,3,jueves,clases,0,0,36,21,Papa rellena,Comidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,36,22,Arepa de queso,Comidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,36,23,Arepa rellena de pollo,Comidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,36,24,Pandebono,Panadería,1,1,0
+2026-11-19,3,jueves,clases,0,0,36,25,Almojábana,Panadería,1,1,0
+2026-11-19,3,jueves,clases,0,0,36,26,Buñuelo,Panadería,2,1,0
+2026-11-19,3,jueves,clases,0,0,36,27,Pastel de arequipe,Panadería,3,1,0
+2026-11-19,3,jueves,clases,0,0,37,1,Agua en botella,Bebidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,37,2,Gaseosa,Bebidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,37,3,Jugo en caja,Bebidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,37,4,Papas fritas,Snacks,0,1,0
+2026-11-19,3,jueves,clases,0,0,37,5,Galletas,Snacks,0,1,0
+2026-11-19,3,jueves,clases,0,0,37,6,Chocolatina,Snacks,1,1,0
+2026-11-19,3,jueves,clases,0,0,37,7,Empanada,Comidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,37,8,Sándwich de jamón y queso,Comidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,37,9,Pastel de pollo,Comidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,37,10,Té frío,Bebidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,37,11,Bebida energizante,Bebidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,37,12,Malta,Bebidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,37,13,Bebida hidratante,Bebidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,37,14,Avena en vaso,Bebidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,37,15,Gaseosa personal,Bebidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,37,16,Maní salado,Snacks,0,1,0
+2026-11-19,3,jueves,clases,0,0,37,17,Chicharrón en paquete,Snacks,0,1,0
+2026-11-19,3,jueves,clases,0,0,37,18,Platanitos,Snacks,0,1,0
+2026-11-19,3,jueves,clases,0,0,37,19,Barra de cereal,Snacks,0,1,0
+2026-11-19,3,jueves,clases,0,0,37,20,Chupeta,Snacks,0,1,0
+2026-11-19,3,jueves,clases,0,0,37,21,Papa rellena,Comidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,37,22,Arepa de queso,Comidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,37,23,Arepa rellena de pollo,Comidas,0,1,0
+2026-11-19,3,jueves,clases,0,0,37,24,Pandebono,Panadería,0,1,0
+2026-11-19,3,jueves,clases,0,0,37,25,Almojábana,Panadería,0,1,0
+2026-11-19,3,jueves,clases,0,0,37,26,Buñuelo,Panadería,2,1,0
+2026-11-19,3,jueves,clases,0,0,37,27,Pastel de arequipe,Panadería,0,1,0

@@ -1,0 +1,102 @@
+table Pedidos
+	lineageTag: 6d267c99-6648-a8c8-ff4f-20557de7f6df
+
+	measure Pedidos = COUNTROWS ( Pedidos )
+		formatString: #,0
+		lineageTag: cc4ebfdf-1c64-5598-7a2c-649058a0fd70
+
+	measure 'Pedidos entregados' = CALCULATE ( [Pedidos], Pedidos[estado_final] = "entregado" )
+		formatString: #,0
+		lineageTag: 0c1b272f-5df2-24c7-7ecc-687c44d6cf67
+
+	measure '% cancelados' = DIVIDE ( CALCULATE ( [Pedidos], Pedidos[estado_final] = "cancelado" ), [Pedidos] )
+		formatString: 0.0%
+		lineageTag: 30572f32-bc2d-5f94-b7e5-6eb4c54cc165
+
+	measure '% por QR' = DIVIDE ( CALCULATE ( [Pedidos], Pedidos[origen] = "qr" ), [Pedidos] )
+		formatString: 0.0%
+		lineageTag: 6e9cb51c-812e-e8f3-3b2b-e6dbc4bdabfd
+
+	measure 'Ticket promedio' = DIVIDE ( [Ventas], [Pedidos entregados] )
+		formatString: \$ #,0
+		lineageTag: 45761ecf-901c-111e-194e-a89c3f841b8f
+
+	column id_pedido
+		dataType: int64
+		isHidden
+		lineageTag: 6861bace-23e0-193d-33a7-d8cfecac5c5e
+		summarizeBy: none
+		sourceColumn: id_pedido
+
+		annotation SummarizationSetBy = Automatic
+
+	column id_fecha
+		dataType: int64
+		isHidden
+		lineageTag: 15300c95-0672-512a-bfa8-a1d5017b3071
+		summarizeBy: none
+		sourceColumn: id_fecha
+
+		annotation SummarizationSetBy = Automatic
+
+	column id_franja
+		dataType: int64
+		isHidden
+		lineageTag: fc04688b-21ef-bbb0-6f79-70d4585bda61
+		summarizeBy: none
+		sourceColumn: id_franja
+
+		annotation SummarizationSetBy = Automatic
+
+	column origen
+		dataType: string
+		lineageTag: bdb463a5-528a-0923-47cd-8ddf1db2f833
+		summarizeBy: none
+		sourceColumn: origen
+
+		annotation SummarizationSetBy = Automatic
+
+	column estado_final
+		dataType: string
+		lineageTag: c696faee-1c42-80dc-8f88-a702ab88b59b
+		summarizeBy: none
+		sourceColumn: estado_final
+
+		annotation SummarizationSetBy = Automatic
+
+	column min_cola_a_listo
+		dataType: double
+		lineageTag: 6097d5a8-6905-bdbd-d8f2-ca06791e5ebf
+		summarizeBy: sum
+		sourceColumn: min_cola_a_listo
+
+		annotation SummarizationSetBy = Automatic
+
+	column min_listo_a_entrega
+		dataType: double
+		lineageTag: 4cf425ac-3259-d86e-e12e-30cecbf1f51d
+		summarizeBy: sum
+		sourceColumn: min_listo_a_entrega
+
+		annotation SummarizationSetBy = Automatic
+
+	column total
+		dataType: double
+		formatString: \$ #,0
+		lineageTag: a6291412-33bd-03ce-31f0-5b1f3ec5a2be
+		summarizeBy: sum
+		sourceColumn: total
+
+		annotation SummarizationSetBy = Automatic
+
+	partition Pedidos = m
+		mode: import
+		source =
+				let
+				    Fuente = Odbc.Query(Conexion, "SELECT id_pedido, id_fecha, id_franja, origen, estado_final, min_cola_a_listo, min_listo_a_entrega, total FROM hecho_pedido"),
+				    Tipos = Table.TransformColumnTypes(Fuente, {{"id_pedido", Int64.Type}, {"id_fecha", Int64.Type}, {"id_franja", Int64.Type}, {"origen", type text}, {"estado_final", type text}, {"min_cola_a_listo", type number}, {"min_listo_a_entrega", type number}, {"total", type number}}, "en-US")
+				in
+				    Tipos
+
+	annotation PBI_ResultType = Table
+

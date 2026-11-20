@@ -1,0 +1,60 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.7.0/schema.json",
+  "name": "ia_estimadas",
+  "position": {
+    "x": 24,
+    "y": 84,
+    "z": 1,
+    "height": 110,
+    "width": 290,
+    "tabOrder": 1
+  },
+  "visual": {
+    "visualType": "card",
+    "query": {
+      "queryState": {
+        "Values": {
+          "projections": [
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Prediccion"
+                    }
+                  },
+                  "Property": "Unidades estimadas"
+                }
+              },
+              "queryRef": "Prediccion.Unidades estimadas",
+              "nativeQueryRef": "Unidades estimadas"
+            }
+          ]
+        }
+      }
+    },
+    "drillFilterOtherVisuals": true,
+    "visualContainerObjects": {
+      "title": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Unidades estimadas'"
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

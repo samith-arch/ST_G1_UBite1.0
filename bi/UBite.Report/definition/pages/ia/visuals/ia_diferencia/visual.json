@@ -1,0 +1,60 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.7.0/schema.json",
+  "name": "ia_diferencia",
+  "position": {
+    "x": 636,
+    "y": 84,
+    "z": 3,
+    "height": 110,
+    "width": 290,
+    "tabOrder": 3
+  },
+  "visual": {
+    "visualType": "card",
+    "query": {
+      "queryState": {
+        "Values": {
+          "projections": [
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Prediccion"
+                    }
+                  },
+                  "Property": "Diferencia estimado vs real"
+                }
+              },
+              "queryRef": "Prediccion.Diferencia estimado vs real",
+              "nativeQueryRef": "Diferencia estimado vs real"
+            }
+          ]
+        }
+      }
+    },
+    "drillFilterOtherVisuals": true,
+    "visualContainerObjects": {
+      "title": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Diferencia'"
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

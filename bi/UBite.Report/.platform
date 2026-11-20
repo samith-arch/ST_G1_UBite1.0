@@ -1,0 +1,11 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/gitIntegration/platformProperties/2.0.0/schema.json",
+  "metadata": {
+    "type": "Report",
+    "displayName": "UBite"
+  },
+  "config": {
+    "version": "2.0",
+    "logicalId": "cbdac900-ba4e-d75c-50dd-5b71bccf6c9a"
+  }
+}

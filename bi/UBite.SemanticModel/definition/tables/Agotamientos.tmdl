@@ -1,0 +1,57 @@
+table Agotamientos
+	lineageTag: f36ed2c7-eca6-e019-a9ef-398cbb18714c
+
+	measure 'Franjas agotadas' = COUNTROWS ( Agotamientos )
+		formatString: #,0
+		lineageTag: ef164b0b-d216-29f2-12ec-9d61a0abaeab
+
+	measure 'Franjas sin reposición' = CALCULATE ( COUNTROWS ( Agotamientos ), Agotamientos[sin_reposicion] = 1 )
+		formatString: #,0
+		lineageTag: 4e6d29bf-e610-fe15-ae35-e1a202bff000
+
+	column id_fecha
+		dataType: int64
+		isHidden
+		lineageTag: f8125f51-c071-a4db-6fc1-492f444cd9b9
+		summarizeBy: none
+		sourceColumn: id_fecha
+
+		annotation SummarizationSetBy = Automatic
+
+	column id_franja
+		dataType: int64
+		isHidden
+		lineageTag: 736f80f0-b7fd-fcb1-5127-c375495ebf2d
+		summarizeBy: none
+		sourceColumn: id_franja
+
+		annotation SummarizationSetBy = Automatic
+
+	column id_producto
+		dataType: int64
+		isHidden
+		lineageTag: 48f28e54-1826-ce59-9728-289090c018eb
+		summarizeBy: none
+		sourceColumn: id_producto
+
+		annotation SummarizationSetBy = Automatic
+
+	column sin_reposicion
+		dataType: int64
+		lineageTag: 52eae3de-f343-2117-5812-325e9b20216c
+		summarizeBy: none
+		sourceColumn: sin_reposicion
+
+		annotation SummarizationSetBy = Automatic
+
+	partition Agotamientos = m
+		mode: import
+		source =
+				let
+				    Fuente = Odbc.Query(Conexion, "SELECT id_fecha, id_franja, id_producto, sin_reposicion FROM hecho_agotamiento"),
+				    Tipos = Table.TransformColumnTypes(Fuente, {{"id_fecha", Int64.Type}, {"id_franja", Int64.Type}, {"id_producto", Int64.Type}, {"sin_reposicion", Int64.Type}}, "en-US")
+				in
+				    Tipos
+
+	annotation PBI_ResultType = Table
+

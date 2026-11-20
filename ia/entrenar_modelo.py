@@ -1,6 +1,7 @@
 # entrena la red neuronal que estima las unidades vendidas por producto y franja.
 #
-#   python entrenar_modelo.py
+#   python entrenar_modelo.py                  entrena, evalua y guarda las predicciones
+#   python entrenar_modelo.py --solo-predecir  usa el modelo guardado para estimar el siguiente dia
 #
 # lee datos/dataset_demanda.csv (lo genera "flask etl"), entrena con todas las semanas menos
 # las dos ultimas, prueba con esas dos y compara contra el promedio historico de la franja.
@@ -10,6 +11,7 @@
 import json
 import os
 import sqlite3
+import sys
 from datetime import date, datetime, timedelta
 
 import numpy as np
@@ -97,7 +99,10 @@ def guardar_predicciones(modelo, meta, datos, usar, referencia, prueba):
     try:
         with con:     # una sola transaccion
             con.executemany("INSERT OR IGNORE INTO dim_fecha VALUES (?, ?, ?, ?, ?, ?, ?)", [_fila_fecha(x) for x in dias])
-            con.execute("DELETE FROM prediccion_demanda")
+            if len(prueba):
+                con.execute("DELETE FROM prediccion_demanda")
+            else:
+                con.execute("DELETE FROM prediccion_demanda WHERE id_fecha = ?", (int(dia.strftime("%Y%m%d")),))
             con.executemany("INSERT INTO prediccion_demanda VALUES (?, ?, ?, ?, ?, ?)", filas)
     finally:
         con.close()
@@ -123,6 +128,21 @@ def demanda_simulada(prueba):
     total = max(t["unidades_queridas"].sum(), 1)
     return {"red": round(float(t["red"].sum() / total - 1), 4),
             "con_agotadas": round(float(t["ingenua"].sum() / total - 1), 4)}
+
+
+def solo_predecir():
+    # lo corre la tarea de cada noche: no reentrena, solo deja lista la estimacion de mañana
+    if not os.path.exists(d.MODELO):
+        raise SystemExit("No hay modelo entrenado. Corre primero: python entrenar_modelo.py")
+    with open(d.METADATOS, encoding="utf-8") as f:
+        meta = json.load(f)
+    meta["nombres"] = {int(k): v for k, v in meta["nombres"].items()}
+    datos = cargar()
+    datos = datos[datos["id_producto"].isin(meta["productos"])]
+    modelo = tf.keras.models.load_model(d.MODELO)
+    referencia = pd.read_csv(d.REFERENCIA)
+    dia, filas, _ = guardar_predicciones(modelo, meta, datos, meta["usar"], referencia, datos.iloc[0:0])
+    print(f"Predicciones del {dia} guardadas en prediccion_demanda ({filas} filas, modelo {meta['usar']}).")
 
 
 def main():
@@ -200,4 +220,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    solo_predecir() if "--solo-predecir" in sys.argv else main()

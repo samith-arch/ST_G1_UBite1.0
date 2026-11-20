@@ -1,0 +1,24 @@
+model Model
+	culture: es-CO
+	defaultPowerBIDataSourceVersion: powerBI_V3
+	sourceQueryCulture: es-CO
+	dataAccessOptions
+		legacyRedirects
+		returnErrorValuesAsNull
+
+annotation __PBI_TimeIntelligenceEnabled = 0
+
+annotation PBI_QueryOrder = ["RutaAlmacen", "Conexion", "Fecha", "Franja", "Producto", "Ventas", "Pedidos", "Prediccion", "Agotamientos", "Rechazos", "Inventario"]
+
+annotation PBI_ProTooling = ["DevMode"]
+
+ref table Fecha
+ref table Franja
+ref table Producto
+ref table Ventas
+ref table Pedidos
+ref table Prediccion
+ref table Agotamientos
+ref table Rechazos
+ref table Inventario
+

@@ -1,0 +1,35 @@
+{
+  "name": "UBite",
+  "dataColors": [
+    "#C2571A",
+    "#2E1D15",
+    "#F0A060",
+    "#8C6A55",
+    "#E2C9A6",
+    "#5E7D63",
+    "#B4351F",
+    "#6E5A4C"
+  ],
+  "foreground": "#2E1D15",
+  "foregroundNeutralSecondary": "#6E5A4C",
+  "background": "#FFFFFF",
+  "backgroundLight": "#F7EEE2",
+  "backgroundNeutral": "#E7D5BD",
+  "tableAccent": "#C2571A",
+  "good": "#5E7D63",
+  "neutral": "#F0A060",
+  "bad": "#B4351F",
+  "maximum": "#C2571A",
+  "center": "#F0A060",
+  "minimum": "#F7EEE2",
+  "textClasses": {
+    "title": {
+      "fontFace": "Segoe UI Semibold",
+      "color": "#2E1D15"
+    },
+    "callout": {
+      "fontFace": "Segoe UI Semibold",
+      "color": "#2E1D15"
+    }
+  }
+}

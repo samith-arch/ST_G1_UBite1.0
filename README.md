@@ -316,6 +316,11 @@ Con la API encendida, el inventario (`/inventario`) muestra en **Avisos de stock
 
 Power BI se conecta en modo importación a `database/ubite_dw.db` con el controlador [SQLite ODBC](http://www.ch-werner.de/sqliteodbc/) (versión de 64 bits). Usa siete tablas: `dim_fecha`, `dim_franja` y `dim_producto`, y los hechos `hecho_venta`, `hecho_pedido`, `hecho_inventario` y `prediccion_demanda`. Además de la estimación del siguiente día, `prediccion_demanda` guarda la de las dos semanas de prueba, así el tablero compara lo estimado contra lo vendido. Para ver datos nuevos se corre el ETL (y el entrenamiento, si se quiere) y luego se actualiza el tablero.
 
+El tablero está en `bi/UBite.pbip` (formato de proyecto de Power BI: el modelo en TMDL y el reporte
+en PBIR, como archivos de texto). Tiene cuatro páginas: ventas, demanda por franja, IA (estimado
+contra real) y faltantes y rechazos. Se conecta por ODBC a `database/ubite_dw.db`; si el proyecto
+está en otra carpeta, se cambia el parámetro `RutaAlmacen` en Transformar datos > Editar parámetros.
+
 Para que el almacén esté al día sin correr nada a mano, `bi/cierre_diario.py` hace el ETL y deja en
 `prediccion_demanda` la estimación del siguiente día con el modelo guardado; los domingos además
 vuelve a entrenar la red. Se programa una sola vez en el Programador de tareas de Windows:

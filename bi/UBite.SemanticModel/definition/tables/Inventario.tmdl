@@ -1,0 +1,56 @@
+table Inventario
+	lineageTag: bd4c432b-f478-e742-2213-27f668e6ceb1
+
+	column id_fecha
+		dataType: int64
+		isHidden
+		lineageTag: acf9af3d-799f-8e41-7efe-d982e328187e
+		summarizeBy: none
+		sourceColumn: id_fecha
+
+		annotation SummarizationSetBy = Automatic
+
+	column id_producto
+		dataType: int64
+		isHidden
+		lineageTag: d53331db-027c-819a-b93e-dcd9b35399a6
+		summarizeBy: none
+		sourceColumn: id_producto
+
+		annotation SummarizationSetBy = Automatic
+
+	column stock_cierre
+		dataType: int64
+		lineageTag: cf7cd5cf-18bd-00b1-8f71-433dbee1a89a
+		summarizeBy: sum
+		sourceColumn: stock_cierre
+
+		annotation SummarizationSetBy = Automatic
+
+	column stock_minimo
+		dataType: int64
+		lineageTag: c6f23428-c51a-2c3e-761e-1d096fcc8de8
+		summarizeBy: sum
+		sourceColumn: stock_minimo
+
+		annotation SummarizationSetBy = Automatic
+
+	column unidades_vendidas
+		dataType: int64
+		lineageTag: af4a78b7-8f4e-0c10-5d85-138b1576a4b8
+		summarizeBy: sum
+		sourceColumn: unidades_vendidas
+
+		annotation SummarizationSetBy = Automatic
+
+	partition Inventario = m
+		mode: import
+		source =
+				let
+				    Fuente = Odbc.Query(Conexion, "SELECT id_fecha, id_producto, stock_cierre, stock_minimo, unidades_vendidas FROM hecho_inventario"),
+				    Tipos = Table.TransformColumnTypes(Fuente, {{"id_fecha", Int64.Type}, {"id_producto", Int64.Type}, {"stock_cierre", Int64.Type}, {"stock_minimo", Int64.Type}, {"unidades_vendidas", Int64.Type}}, "en-US")
+				in
+				    Tipos
+
+	annotation PBI_ResultType = Table
+

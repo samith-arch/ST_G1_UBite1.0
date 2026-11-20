@@ -1,0 +1,55 @@
+table Producto
+	lineageTag: cfba3aea-0c1c-3e7b-2679-1f265db626c7
+
+	column id_producto
+		dataType: int64
+		lineageTag: f81f5a5b-9d4a-2dc8-8529-afa431258d36
+		summarizeBy: none
+		sourceColumn: id_producto
+
+		annotation SummarizationSetBy = Automatic
+
+	column nombre
+		dataType: string
+		lineageTag: ef47405c-10c3-d682-1655-88f6ac0db3b7
+		summarizeBy: none
+		sourceColumn: nombre
+
+		annotation SummarizationSetBy = Automatic
+
+	column categoria
+		dataType: string
+		lineageTag: 591c0de5-d02d-8636-b2f4-921809fe29f2
+		summarizeBy: none
+		sourceColumn: categoria
+
+		annotation SummarizationSetBy = Automatic
+
+	column precio_actual
+		dataType: double
+		formatString: \$ #,0
+		lineageTag: 535f3ea8-4588-a0f4-9b04-729de6b1733f
+		summarizeBy: sum
+		sourceColumn: precio_actual
+
+		annotation SummarizationSetBy = Automatic
+
+	column activo
+		dataType: int64
+		lineageTag: 53cc137a-9dfd-b619-4381-56f04386c3e0
+		summarizeBy: none
+		sourceColumn: activo
+
+		annotation SummarizationSetBy = Automatic
+
+	partition Producto = m
+		mode: import
+		source =
+				let
+				    Fuente = Odbc.Query(Conexion, "SELECT id_producto, nombre, categoria, precio_actual, activo FROM dim_producto"),
+				    Tipos = Table.TransformColumnTypes(Fuente, {{"id_producto", Int64.Type}, {"nombre", type text}, {"categoria", type text}, {"precio_actual", type number}, {"activo", Int64.Type}}, "en-US")
+				in
+				    Tipos
+
+	annotation PBI_ResultType = Table
+

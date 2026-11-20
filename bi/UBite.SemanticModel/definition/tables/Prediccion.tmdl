@@ -1,0 +1,69 @@
+table Prediccion
+	lineageTag: f4b38a02-7399-5a26-09ce-8435cdb87ed4
+
+	measure 'Unidades estimadas' = SUM ( Prediccion[unidades_estimadas] )
+		formatString: #,0
+		lineageTag: bac8950f-43bf-c971-2366-326064324451
+
+	measure 'Vendidas en días estimados' = IF ( NOT ISBLANK ( [Unidades estimadas] ), [Unidades vendidas] + 0 )
+		formatString: #,0
+		lineageTag: 5663fd9b-6f53-25b5-49fe-38e059acc26b
+
+	measure 'Diferencia estimado vs real' = DIVIDE ( [Unidades estimadas] - [Vendidas en días estimados], [Vendidas en días estimados] )
+		formatString: +0.0%;-0.0%;0.0%
+		lineageTag: 691a1c19-dcce-ae04-9159-274f8aa29f2f
+
+	column id_fecha
+		dataType: int64
+		isHidden
+		lineageTag: 81370343-b10b-16a4-17d7-ae042c7ed6d5
+		summarizeBy: none
+		sourceColumn: id_fecha
+
+		annotation SummarizationSetBy = Automatic
+
+	column id_franja
+		dataType: int64
+		isHidden
+		lineageTag: 63f53389-a05e-c2d9-cf92-92cf9670881d
+		summarizeBy: none
+		sourceColumn: id_franja
+
+		annotation SummarizationSetBy = Automatic
+
+	column id_producto
+		dataType: int64
+		isHidden
+		lineageTag: 00a32c07-264d-9d78-bd16-7af3e588c9a2
+		summarizeBy: none
+		sourceColumn: id_producto
+
+		annotation SummarizationSetBy = Automatic
+
+	column unidades_estimadas
+		dataType: double
+		lineageTag: d6752541-1e7a-3295-480e-c70bd40af0bc
+		summarizeBy: sum
+		sourceColumn: unidades_estimadas
+
+		annotation SummarizationSetBy = Automatic
+
+	column modelo
+		dataType: string
+		lineageTag: 296ce934-2f6a-a7a9-59c7-05cf58e995b4
+		summarizeBy: none
+		sourceColumn: modelo
+
+		annotation SummarizationSetBy = Automatic
+
+	partition Prediccion = m
+		mode: import
+		source =
+				let
+				    Fuente = Odbc.Query(Conexion, "SELECT id_fecha, id_franja, id_producto, unidades_estimadas, modelo FROM prediccion_demanda"),
+				    Tipos = Table.TransformColumnTypes(Fuente, {{"id_fecha", Int64.Type}, {"id_franja", Int64.Type}, {"id_producto", Int64.Type}, {"unidades_estimadas", type number}, {"modelo", type text}}, "en-US")
+				in
+				    Tipos
+
+	annotation PBI_ResultType = Table
+

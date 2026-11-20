@@ -1,0 +1,60 @@
+relationship 95d94665-daea-70f4-c22b-71d229b83ce6
+	fromColumn: Ventas.id_fecha
+	toColumn: Fecha.id_fecha
+
+relationship 300d0259-26c5-3b86-0c33-e76e30854037
+	fromColumn: Ventas.id_franja
+	toColumn: Franja.id_franja
+
+relationship 7fcd3ce4-1809-4e20-797e-a709a292f21d
+	fromColumn: Ventas.id_producto
+	toColumn: Producto.id_producto
+
+relationship 10cb475c-94d9-681a-a4df-bd4a85e4e4e5
+	fromColumn: Pedidos.id_fecha
+	toColumn: Fecha.id_fecha
+
+relationship 995d09e1-3e08-3cae-feb0-1d6888be8ca3
+	fromColumn: Pedidos.id_franja
+	toColumn: Franja.id_franja
+
+relationship c0412ea2-3944-4275-c588-67c776ba78ad
+	fromColumn: Prediccion.id_fecha
+	toColumn: Fecha.id_fecha
+
+relationship 71d47a07-b254-3301-11cd-71d09e1182d7
+	fromColumn: Prediccion.id_franja
+	toColumn: Franja.id_franja
+
+relationship dc41ba84-42ce-a3b8-0d7d-7c8593e08191
+	fromColumn: Prediccion.id_producto
+	toColumn: Producto.id_producto
+
+relationship 715e291b-e1e0-d559-24f6-95a55c73444c
+	fromColumn: Agotamientos.id_fecha
+	toColumn: Fecha.id_fecha
+
+relationship 0ae53a54-4b77-ad4e-4d5f-a3d0ad24d173
+	fromColumn: Agotamientos.id_franja
+	toColumn: Franja.id_franja
+
+relationship 4e7b7370-b551-f09a-2304-293987e3bcf9
+	fromColumn: Agotamientos.id_producto
+	toColumn: Producto.id_producto
+
+relationship f0cd7c40-9a06-30f0-ebf4-3e6bf95d86d5
+	fromColumn: Rechazos.id_fecha
+	toColumn: Fecha.id_fecha
+
+relationship 6a77c090-2d7c-dc6d-fe5d-c1c2e482713b
+	fromColumn: Rechazos.id_franja
+	toColumn: Franja.id_franja
+
+relationship a7aea611-9fc9-219e-22ad-fede4bc3857a
+	fromColumn: Inventario.id_fecha
+	toColumn: Fecha.id_fecha
+
+relationship 923d641f-8486-1e38-8381-8e2c962951b1
+	fromColumn: Inventario.id_producto
+	toColumn: Producto.id_producto
+

@@ -45398,3 +45398,6 @@ fecha,nombre_dia,periodo,franja,id_producto,producto,categoria,cantidad,valor,or
 2026-11-18,miércoles,clases,18:30,5,Galletas,Snacks,2,4000.0,presencial,efectivo,c0398d5bbf668b4c
 2026-11-18,miércoles,clases,18:30,9,Pastel de pollo,Comidas,1,4000.0,qr,efectivo,3ebc0bd834298624
 2026-11-18,miércoles,clases,18:30,14,Avena en vaso,Bebidas,2,7000.0,qr,efectivo,6e7e8b2ac68d66b4
+2026-11-19,jueves,clases,20:30,4,Papas fritas,Snacks,1,2500.0,qr,app,4915fc05caba3691
+2026-11-19,jueves,clases,20:30,2,Gaseosa,Bebidas,1,3500.0,qr,app,4915fc05caba3691
+2026-11-19,jueves,clases,21:00,8,Sándwich de jamón y queso,Comidas,1,7000.0,presencial,efectivo,513e0af3f09112a1
