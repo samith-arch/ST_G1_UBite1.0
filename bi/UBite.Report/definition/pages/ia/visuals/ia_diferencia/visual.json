@@ -1,12 +1,12 @@
 {
-  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.7.0/schema.json",
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.14.0/schema.json",
   "name": "ia_diferencia",
   "position": {
-    "x": 636,
-    "y": 84,
+    "x": 636.10942249240122,
+    "y": 83.647416413373861,
     "z": 3,
-    "height": 110,
-    "width": 290,
+    "height": 126.44376899696049,
+    "width": 289.84802431610944,
     "tabOrder": 3
   },
   "visual": {
@@ -33,7 +33,6 @@
         }
       }
     },
-    "drillFilterOtherVisuals": true,
     "visualContainerObjects": {
       "title": [
         {
@@ -55,6 +54,25 @@
           }
         }
       ]
-    }
+    },
+    "drillFilterOtherVisuals": true
+  },
+  "filterConfig": {
+    "filters": [
+      {
+        "name": "d5f11d07c89988aa1a17",
+        "field": {
+          "Measure": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "Prediccion"
+              }
+            },
+            "Property": "Diferencia estimado vs real"
+          }
+        },
+        "type": "Advanced"
+      }
+    ]
   }
 }

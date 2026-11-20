@@ -1,12 +1,12 @@
 {
-  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.7.0/schema.json",
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.14.0/schema.json",
   "name": "ia_estimadas",
   "position": {
-    "x": 24,
-    "y": 84,
+    "x": 24.316109422492403,
+    "y": 83.647416413373861,
     "z": 1,
-    "height": 110,
-    "width": 290,
+    "height": 126.44376899696049,
+    "width": 289.84802431610944,
     "tabOrder": 1
   },
   "visual": {
@@ -33,7 +33,6 @@
         }
       }
     },
-    "drillFilterOtherVisuals": true,
     "visualContainerObjects": {
       "title": [
         {
@@ -55,6 +54,25 @@
           }
         }
       ]
-    }
+    },
+    "drillFilterOtherVisuals": true
+  },
+  "filterConfig": {
+    "filters": [
+      {
+        "name": "3540ddcdb42a449cab20",
+        "field": {
+          "Measure": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "Prediccion"
+              }
+            },
+            "Property": "Unidades estimadas"
+          }
+        },
+        "type": "Advanced"
+      }
+    ]
   }
 }

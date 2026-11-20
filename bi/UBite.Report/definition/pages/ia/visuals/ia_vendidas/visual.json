@@ -1,12 +1,12 @@
 {
-  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.7.0/schema.json",
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.14.0/schema.json",
   "name": "ia_vendidas",
   "position": {
-    "x": 330,
-    "y": 84,
+    "x": 329.726443768997,
+    "y": 83.647416413373861,
     "z": 2,
-    "height": 110,
-    "width": 290,
+    "height": 126.44376899696049,
+    "width": 289.84802431610944,
     "tabOrder": 2
   },
   "visual": {
@@ -33,7 +33,6 @@
         }
       }
     },
-    "drillFilterOtherVisuals": true,
     "visualContainerObjects": {
       "title": [
         {
@@ -55,6 +54,25 @@
           }
         }
       ]
-    }
+    },
+    "drillFilterOtherVisuals": true
+  },
+  "filterConfig": {
+    "filters": [
+      {
+        "name": "c1bd1501da415cd69d9b",
+        "field": {
+          "Measure": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "Prediccion"
+              }
+            },
+            "Property": "Vendidas en días estimados"
+          }
+        },
+        "type": "Advanced"
+      }
+    ]
   }
 }
