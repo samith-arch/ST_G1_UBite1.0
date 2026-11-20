@@ -36,20 +36,6 @@
   {% endcall %}
 {% endcall %}
 
-<div class="row g-3 mb-4">
-  <div class="col-6 col-xl-3"><a class="kpi enlace-kpi" href="{{ url_for('caja.historial', **dict(args, resultado='confirmada', pagina=1)) }}">
-    <span class="numero">{{ resumen.confirmadas }}</span><span class="rotulo">Confirmadas</span></a></div>
-  <div class="col-6 col-xl-3"><a class="kpi oscuro enlace-kpi" href="{{ url_for('caja.historial', **dict(args, resultado='rechazada', pagina=1)) }}">
-    <span class="numero">{{ resumen.rechazadas }}</span><span class="rotulo">Rechazadas</span></a></div>
-  <div class="col-12 col-xl-6"><div class="kpi">
-    <span class="rotulo">Motivos de rechazo más comunes</span>
-    {% if resumen.motivos %}
-    <ul class="lista-motivos">
-      {% for m, n in resumen.motivos %}<li><span>{{ m }}</span><span class="mono">{{ n }}</span></li>{% endfor %}
-    </ul>
-    {% else %}<span class="nota">Ningún rechazo en este periodo.</span>{% endif %}
-  </div></div>
-</div>
 
 <div class="tarjeta mb-3 d-none d-md-block"><div class="table-responsive">
 <table class="table tabla-ubite align-middle">

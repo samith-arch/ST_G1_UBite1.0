@@ -144,10 +144,10 @@ def _historial_operaciones():
     if filtros["desde"] and filtros["hasta"] and filtros["desde"] > filtros["hasta"]:
         filtros["desde"], filtros["hasta"] = filtros["hasta"], filtros["desde"]
     pagina = max(request.args.get("pagina", 1, type=int), 1)
-    paginas, resumen = gestion.operaciones(pagina=pagina, **filtros)
+    paginas = gestion.operaciones(pagina=pagina, **filtros)
     args = {k: (v.isoformat() if isinstance(v, date) else v) for k, v in filtros.items() if v}
     args["vista"] = "operaciones"
     hoy = gestion.hoy()
-    return render_template("caja/operaciones.html", paginas=paginas, resumen=resumen, filtros=filtros,
+    return render_template("caja/operaciones.html", paginas=paginas, filtros=filtros,
                            args=args, hoy=hoy, OPERACIONES=gestion.OPERACIONES,
                            atras=lambda dias: (hoy - timedelta(days=dias)).isoformat())

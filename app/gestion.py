@@ -301,21 +301,13 @@ def operaciones(buscar="", desde=None, hasta=None, resultado="", operacion="", p
         q = q.where(func.date(todo.c.fecha) <= hasta.isoformat())
     if operacion:
         q = q.where(todo.c.operacion == operacion)
-    sub = q.subquery()
-    conteo = dict(db.session.execute(
-        db.select(sub.c.resultado, func.count()).group_by(sub.c.resultado)).all())
-    motivos = db.session.execute(
-        db.select(func.coalesce(sub.c.motivo, "Operación revertida"), func.count().label("n"))
-        .where(sub.c.resultado == "rechazada").group_by(sub.c.motivo)
-        .order_by(db.desc("n")).limit(3)).all()
     if resultado:
         q = q.where(todo.c.resultado == resultado)
     total = db.session.execute(db.select(func.count()).select_from(q.subquery())).scalar()
     filas = db.session.execute(q.order_by(todo.c.fecha.desc())
                                .limit(POR_PAGINA).offset((pagina - 1) * POR_PAGINA)).all()
     paginas = Paginas(filas, pagina, total)
-    return paginas, {"confirmadas": conteo.get("confirmada", 0), "rechazadas": conteo.get("rechazada", 0),
-                     "motivos": [tuple(m) for m in motivos]}
+    return paginas
 
 
 # clientes y usuarios
