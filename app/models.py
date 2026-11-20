@@ -78,9 +78,26 @@ class Producto(db.Model):
         if not self.validar_stock(cantidad):
             raise ValueError(f"No hay stock suficiente de {self.nombre}")
         self.stock_actual -= cantidad
+        self.revisar_agotamiento()
 
     def devolver_stock(self, cantidad):
         self.stock_actual += cantidad
+        self.revisar_agotamiento()
+
+    def revisar_agotamiento(self):
+        # deja constancia de desde cuando no hay unidades; la red no debe aprender esas
+        # horas como si nadie hubiera querido el producto
+        if self.id_producto is None:
+            return
+        with db.session.no_autoflush:
+            abierto = Agotamiento.query.filter_by(id_producto=self.id_producto, hasta=None).first()
+        if self.stock_actual == 0 and abierto is None:
+            db.session.add(Agotamiento(id_producto=self.id_producto, desde=ahora()))
+        elif self.stock_actual > 0 and abierto is not None:
+            abierto.hasta = ahora()
+
+    def agotamiento_abierto(self):
+        return Agotamiento.query.filter_by(id_producto=self.id_producto, hasta=None).first()
 
 
 class Pedido(db.Model):
@@ -207,6 +224,20 @@ class Transaccion(db.Model):
         db.session.add(t)
         return t
 
+
+
+class Agotamiento(db.Model):
+    # periodo en que un producto estuvo en cero; hasta queda vacio mientras siga agotado
+    __tablename__ = "agotamiento"
+
+    id_agotamiento = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    id_producto = db.Column(db.Integer, db.ForeignKey("producto.id_producto"), nullable=False)
+    desde = db.Column(db.DateTime, nullable=False, default=ahora)
+    hasta = db.Column(db.DateTime)
+    sin_reposicion = db.Column(db.Boolean, nullable=False, default=False)
+    nota = db.Column(db.Text)
+
+    producto = db.relationship("Producto")
 
 
 class OperacionRechazada(db.Model):

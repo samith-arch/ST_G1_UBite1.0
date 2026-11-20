@@ -82,7 +82,8 @@ def create_app():
     with app.app_context():
         from . import models  # noqa: F401
         # bases creadas antes de existir esta tabla
-        models.OperacionRechazada.__table__.create(db.engine, checkfirst=True)
+        for tabla in (models.OperacionRechazada, models.Agotamiento):
+            tabla.__table__.create(db.engine, checkfirst=True)
 
     from .routes import datos_menu, en_linea
     from .routes.admin import bp as admin_bp

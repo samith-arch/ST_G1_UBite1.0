@@ -21,7 +21,7 @@ ESQUEMA = os.path.join(RAIZ, "database", "almacen.sql")
 SALIDA = os.path.join(RAIZ, "ia", "datos")
 DIAS = ["lunes", "martes", "miércoles", "jueves", "viernes", "sábado", "domingo"]
 FRANJAS_ATENCION = range(14, 38)     # de 7:00 a 18:30
-TABLAS = ("hecho_venta", "hecho_pedido", "hecho_inventario", "prediccion_demanda",
+TABLAS = ("hecho_venta", "hecho_pedido", "hecho_inventario", "hecho_agotamiento", "hecho_rechazo", "prediccion_demanda",
           "etl_control", "dim_producto", "dim_franja", "dim_fecha")
 
 
@@ -55,7 +55,40 @@ def _extraer(origen, desde, hasta):
     productos = q("""SELECT p.id_producto, p.nombre, c.nombre AS categoria, p.precio AS precio_actual,
                             p.activo, p.stock_actual, p.stock_minimo
                      FROM producto p JOIN categoria c USING (id_categoria)""")
-    return pedidos, detalles, pagos, tiempos, productos
+    agotamientos = q("""SELECT id_producto, desde, hasta, sin_reposicion FROM agotamiento
+                        WHERE date(desde) <= ? AND (hasta IS NULL OR date(hasta) > ?)""", hasta, desde)
+    rechazos = q("""SELECT fecha_hora, operacion, motivo, COALESCE(origen, 'qr') AS origen FROM operacion_rechazada
+                    WHERE date(fecha_hora) > ? AND date(fecha_hora) <= ?""", desde, hasta)
+    return pedidos, detalles, pagos, tiempos, productos, agotamientos, rechazos
+
+
+def _franjas_agotadas(agotamientos, hasta):
+    # cada agotamiento se parte en las franjas de atencion que toca, incluida aquella en que se acabo
+    filas = {}
+    tope = datetime.combine(hasta, datetime.max.time())
+    for a in agotamientos.itertuples():
+        inicio = pd.Timestamp(a.desde).to_pydatetime()
+        fin = min(pd.Timestamp(a.hasta).to_pydatetime() if a.hasta else tope, tope)
+        dia = inicio.date()
+        while dia <= fin.date():
+            for f in FRANJAS_ATENCION:
+                ini_f = datetime(dia.year, dia.month, dia.day, f // 2, 30 * (f % 2))
+                if ini_f + timedelta(minutes=30) > inicio and ini_f < fin:
+                    clave = (int(dia.strftime("%Y%m%d")), f, int(a.id_producto))
+                    filas[clave] = max(filas.get(clave, 0), int(a.sin_reposicion))
+            dia += timedelta(days=1)
+    return [k + (v,) for k, v in filas.items()]
+
+
+def _rechazos(rechazos):
+    if rechazos.empty:
+        return []
+    r = rechazos.copy()
+    r["fecha_hora"] = pd.to_datetime(r["fecha_hora"], format="mixed")
+    r["id_fecha"], r["id_franja"] = _id_fecha(r["fecha_hora"]), _id_franja(r["fecha_hora"])
+    g = r.groupby(["id_fecha", "id_franja", "operacion", "motivo", "origen"]).size().reset_index(name="n")
+    return [(int(f.id_fecha), int(f.id_franja), f.operacion, f.motivo, f.origen, int(f.n))
+            for f in g.itertuples(index=False)]
 
 
 def _transformar(pedidos, detalles, pagos, tiempos, clave):
@@ -101,7 +134,7 @@ def _dim_fecha(desde, hasta):
     return filas
 
 
-def _cargar(dw, hecho_pedido, hecho_venta, productos, desde, hasta, hoy, vendido_hoy):
+def _cargar(dw, hecho_pedido, hecho_venta, productos, desde, hasta, hoy, vendido_hoy, agotadas=(), rechazos=()):
     nulos = lambda df: [tuple(None if pd.isna(v) else v for v in fila) for fila in df.itertuples(index=False)]
     with dw:     # una sola transaccion: si algo falla no queda nada a medias
         dw.executemany("INSERT OR IGNORE INTO dim_franja VALUES (?, ?, ?)",
@@ -117,6 +150,8 @@ def _cargar(dw, hecho_pedido, hecho_venta, productos, desde, hasta, hoy, vendido
                        "(SELECT 1 FROM hecho_venta WHERE id_pedido = ? AND id_producto = ?)",
                        [f + (f[0], f[3]) for f in nulos(hecho_venta)])
         ventas = dw.total_changes - antes
+        dw.executemany("INSERT OR REPLACE INTO hecho_agotamiento VALUES (?, ?, ?, ?)", agotadas)
+        dw.executemany("INSERT OR REPLACE INTO hecho_rechazo VALUES (?, ?, ?, ?, ?, ?)", rechazos)
         id_hoy = int(hoy.strftime("%Y%m%d"))
         dw.executemany("INSERT OR REPLACE INTO hecho_inventario VALUES (?, ?, ?, ?, ?)",
                        [(id_hoy, int(r.id_producto), int(r.stock_actual), int(r.stock_minimo),
@@ -142,6 +177,9 @@ def _exportar(dw):
     tabla = dias.merge(franjas, how="cross").merge(productos, how="cross")
     tabla = tabla.merge(agregado, on=["id_fecha", "id_franja", "id_producto"], how="left")
     tabla["unidades"] = tabla["unidades"].fillna(0).astype(int)
+    agotadas = pd.read_sql_query("SELECT id_fecha, id_franja, id_producto, 0 AS disponible FROM hecho_agotamiento", dw)
+    tabla = tabla.merge(agotadas, on=["id_fecha", "id_franja", "id_producto"], how="left")
+    tabla["disponible"] = tabla["disponible"].fillna(1).astype(int)
 
     tabla["fecha"] = pd.to_datetime(tabla["fecha"])
     previa = tabla[["fecha", "id_franja", "id_producto", "unidades"]].copy()
@@ -152,7 +190,7 @@ def _exportar(dw):
     tabla["examenes"] = tabla["periodo"].isin(["parciales", "finales"]).astype(int)
     tabla["fecha"] = tabla["fecha"].dt.date
     columnas = ["fecha", "dia_semana", "nombre_dia", "periodo", "examenes", "es_festivo", "id_franja",
-                "id_producto", "producto", "categoria", "ventas_semana_anterior", "unidades"]
+                "id_producto", "producto", "categoria", "ventas_semana_anterior", "disponible", "unidades"]
     tabla[columnas].sort_values(["fecha", "id_franja", "id_producto"]).to_csv(
         os.path.join(SALIDA, "dataset_demanda.csv"), index=False, encoding="utf-8")
     return len(ventas), len(tabla)
@@ -183,7 +221,8 @@ def ejecutar(completo=False):
     # la base transaccional se abre en solo lectura
     origen = sqlite3.connect(f"file:{DB_PATH}?mode=ro", uri=True)
     try:
-        pedidos, detalles, pagos, tiempos, productos = _extraer(origen, desde.isoformat(), hasta.isoformat())
+        pedidos, detalles, pagos, tiempos, productos, agotamientos, rechazos = _extraer(
+            origen, desde.isoformat(), hasta.isoformat())
         vendido_hoy = pd.read_sql_query(
             "SELECT d.id_producto, SUM(d.cantidad) AS n FROM detalle_pedido d JOIN pedido p USING (id_pedido) "
             "WHERE p.estado = 'entregado' AND date(p.fecha_hora) = ? GROUP BY 1", origen,
@@ -196,9 +235,12 @@ def ejecutar(completo=False):
         inicio = pd.to_datetime(pedidos["fecha_hora"], format="mixed").min().date() if len(pedidos) else hasta
         primero = dw.execute("SELECT MIN(fecha) FROM dim_fecha").fetchone()[0]
         inicio = min(inicio, date.fromisoformat(primero)) if primero else inicio
-        ventas = _cargar(dw, hecho_pedido, hecho_venta, productos, inicio, hasta, hoy, vendido_hoy)
+        agotadas = _franjas_agotadas(agotamientos, hasta)
+        ventas = _cargar(dw, hecho_pedido, hecho_venta, productos, inicio, hasta, hoy, vendido_hoy,
+                         agotadas, _rechazos(rechazos))
         detalle = (f"{len(hecho_pedido)} pedidos; omitidos {rechazados['abiertos']} sin cerrar "
-                   f"y {rechazados['descuadrados']} con total descuadrado")
+                   f"y {rechazados['descuadrados']} con total descuadrado; "
+                   f"{len(agotadas)} franjas con producto agotado; {len(rechazos)} operaciones rechazadas")
         with dw:
             dw.execute("INSERT INTO etl_control (fecha_ejecucion, ultima_fecha_extraida, filas_cargadas, resultado, detalle) "
                        "VALUES (?, ?, ?, 'ok', ?)", (datetime.now().isoformat(" ", "seconds"), hasta.isoformat(),

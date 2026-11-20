@@ -865,7 +865,9 @@ body.cliente { background: radial-gradient(900px 380px at 85% 0, rgba(240, 160, 
 .tarjeta .tabla-ubite td { vertical-align: top; }
 
 /* inventario: avisos de stock */
-.avisos-stock { scroll-margin-top: 90px; }
+.avisos-stock { scroll-margin-top: 90px; position: relative; z-index: 5; overflow: visible; }
+.avisos-stock + .avisos-stock { z-index: 4; }
+.sin-reposicion .panel-filtros { right: 0; left: auto; min-width: 17rem; }
 .lista-avisos { list-style: none; padding: 0; margin: 0; }
 .lista-avisos li { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 12px 0 12px 14px; border-top: 1px solid var(--linea); border-left: 3px solid var(--linea); }
 .lista-avisos li.nivel-0 { border-left-color: var(--tinta-oscura); }

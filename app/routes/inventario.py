@@ -25,11 +25,31 @@ def lista():
     except alertas_ia.ServicioNoDisponible as e:
         ia, estimado, ia_error = None, {}, (e.args[0] if e.args and e.args[0] else None)
     avisos = alertas_ia.avisos_stock(todos, estimado)
+    manana = None
+    # despues del cierre los avisos ya son del siguiente dia, no hace falta la otra tabla
+    if ia and ia["fecha"] == gestion.hoy():
+        try:
+            manana = alertas_ia.para_manana([p for p in todos if p.activo], ia)
+        except alertas_ia.ServicioNoDisponible:
+            pass
     return render_template("inventario/lista.html", productos=productos, bajos=bajos, total=len(todos),
-                           ia=ia, estimado=estimado, ia_error=ia_error, avisos=avisos,
+                           ia=ia, estimado=estimado, ia_error=ia_error, avisos=avisos, manana=manana,
                            filtros=filtros, estado=gestion.estado_producto,
                            categorias=Categoria.query.order_by(Categoria.nombre).all(),
                            tope=max([p.stock_actual for p in todos] + [1]))
+
+
+@bp.route("/sin-reposicion", methods=["POST"])
+@rol_requerido("cajero", "administrador")
+def sin_reposicion():
+    id_producto = request.form.get("id_producto", "")
+    try:
+        nombre = gestion.marcar_sin_reposicion(int(id_producto) if id_producto.isdigit() else 0,
+                                               request.form.get("nota"))
+        flash(f"Listo: {nombre} queda marcado como sin reposición por hoy.")
+    except ErrorNegocio as e:
+        flash(f"{e.titulo}: {e.mensaje}", "error")
+    return redirect(url_for("inventario.lista", _anchor="avisos"))
 
 
 @bp.route("/editar")

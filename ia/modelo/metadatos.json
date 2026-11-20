@@ -57,15 +57,22 @@
     "26": "Buñuelo",
     "27": "Pastel de arequipe"
   },
-  "max_semana_anterior": 13.0,
-  "entrenado": "2026-11-19 21:36:32",
-  "filas_entrenamiento": 143208,
+  "max_semana_anterior": 16.0,
+  "entrenado": "2026-11-19 22:35:01",
+  "filas_entrenamiento": 138323,
   "filas_prueba": 9072,
   "prueba_desde": "2026-10-31",
-  "epocas": 6,
-  "mae_red_franja": 0.3804,
-  "mae_referencia_franja": 0.3913,
-  "mae_red_dia": 2.341,
-  "mae_referencia_dia": 2.623,
-  "usar": "red_neuronal"
+  "epocas": 21,
+  "neuronas": 8,
+  "franjas_agotadas_excluidas": 4885,
+  "mae_red_franja": 0.5572,
+  "mae_referencia_franja": 0.5805,
+  "mae_red_dia": 2.9,
+  "mae_referencia_dia": 3.212,
+  "mae_red_con_agotadas": 0.5555,
+  "usar": "red_neuronal",
+  "demanda_simulada": {
+    "red": -0.019,
+    "con_agotadas": -0.0563
+  }
 }

@@ -45,7 +45,21 @@
         <p class="mb-0"><span class="fw-bold">{{ a.p.nombre }}</span> · <span class="estado-aviso">{{ a.titulo }}</span></p>
         <p class="small suave mb-0">{{ a.texto }}</p>
       </div>
-      <a class="btn btn-contorno btn-chico flex-none" href="{{ url_for('inventario.entrada', producto=a.p.id_producto) }}">Registrar entrada{% if a.reponer %} · {{ a.reponer }}{% endif %}</a>
+      <div class="d-flex flex-wrap gap-2 flex-none">
+        {% if a.nivel == 0 and a.agotamiento and not a.agotamiento.sin_reposicion %}
+        <details class="desplegable-filtros sin-reposicion">
+          <summary class="btn btn-suave btn-chico">No llega hoy</summary>
+          <form method="post" action="{{ url_for('inventario.sin_reposicion') }}" class="panel-filtros">
+            <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+            <input type="hidden" name="id_producto" value="{{ a.p.id_producto }}">
+            <label class="etiqueta" for="nota-{{ a.p.id_producto }}">Motivo (opcional)</label>
+            <input class="form-control linea-campo mb-2" id="nota-{{ a.p.id_producto }}" name="nota" maxlength="200" placeholder="El proveedor no vino">
+            <button class="btn btn-ubite btn-chico w-100">Marcar sin reposición hoy</button>
+          </form>
+        </details>
+        {% endif %}
+        <a class="btn btn-contorno btn-chico" href="{{ url_for('inventario.entrada', producto=a.p.id_producto) }}">Registrar entrada{% if a.reponer %} · {{ a.reponer }}{% endif %}</a>
+      </div>
     </li>
     {% endfor %}
   </ul>
@@ -58,6 +72,26 @@
   <p class="small suave mt-3 mb-0">La red todavía no conoce {{ ia.sin_modelo|join(", ") }}. Hay que correr el ETL y volver a entrenar para incluirlos.</p>
   {% endif %}
 </section>
+
+{% if manana and manana.filas %}
+<section class="tarjeta avisos-stock mb-4">
+  <div class="d-flex flex-wrap justify-content-between align-items-baseline gap-2 mb-2">
+    <h2 class="fs-5 fw-bolder mb-0">Pedir para el {{ ["lunes","martes","miércoles","jueves","viernes","sábado","domingo"][manana.fecha.weekday()] }} {{ manana.fecha.strftime('%d/%m') }}</h2>
+    <span class="small suave">Lo que quedaría al cierre de hoy contra lo que la red estima para ese día</span>
+  </div>
+  <div class="table-responsive">
+  <table class="table tabla-ubite align-middle mb-0">
+    <thead><tr><th>Producto</th><th class="text-end">Quedaría</th><th class="text-end">Venta estimada</th><th class="text-end">Pedir</th></tr></thead>
+    <tbody>
+    {% for f in manana.filas %}
+    <tr><td class="fw-bold">{{ f.producto }}</td><td class="mono text-end">{{ f.quedaria }}</td>
+      <td class="mono text-end">{{ "%.0f"|format(f.estimado_resto_del_dia) }}</td><td class="mono text-end fw-bolder">{{ f.pedir }}</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  </div>
+</section>
+{% endif %}
 
 {% set activos = [filtros.categoria, filtros.estado]|select|list|length %}
 {% call f.barra(url_for('inventario.lista'), filtros.buscar, "Buscar producto…", activos, url_for('inventario.lista')) %}

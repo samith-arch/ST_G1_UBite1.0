@@ -91,14 +91,87 @@ def momento(franja):
     return "tarde"
 
 
+MARCA = "Historial simulado"
+VOLUMEN = 1.75              # mas pedidos por franja que la primera version (unos 30.000 en total)
+FALLA_PROVEEDOR = 0.025     # probabilidad de que un producto no llegue en la mañana
+SUSTITUYE, QUITA = 0.55, 0.30   # lo que hace el cliente si le falta algo; el resto se va sin comprar
+
+
+def _tablas_nuevas(con):
+    # bases creadas antes de que existieran estas dos tablas
+    import re
+    with open(os.path.join(DIR, "schema.sql"), encoding="utf-8") as f:
+        esquema = f.read()
+    for tabla in ("agotamiento", "operacion_rechazada"):
+        con.execute(re.search(rf'CREATE TABLE IF NOT EXISTS "{tabla}" \(.*?\n\);', esquema, re.S).group(0))
+
+
 def borrar(con):
     ids = "SELECT id_pedido FROM pedido WHERE codigo LIKE 'S-%'"
     for tabla in ("notificacion", "transaccion", "pago", "detalle_pedido"):
         con.execute(f"DELETE FROM {tabla} WHERE id_pedido IN ({ids})")
+    con.execute(f"DELETE FROM operacion_rechazada WHERE detalle LIKE '%{MARCA.lower()}'")
+    con.execute(f"DELETE FROM agotamiento WHERE nota LIKE '{MARCA}%'")
     n = con.execute("DELETE FROM pedido WHERE codigo LIKE 'S-%'").rowcount
     con.execute("DELETE FROM cliente WHERE telefono LIKE '3009%' "
                 "AND id_cliente NOT IN (SELECT id_cliente FROM pedido)")
     return n
+
+
+class Bodega:
+    # stock simulado de cada producto: se repone cada mañana segun lo que se ha venido pidiendo
+    def __init__(self, con, productos):
+        self.con, self.productos = con, {p[0]: p for p in productos}
+        self.stock = {p[0]: 12 for p in productos}
+        self.promedio = {p[0]: 10.0 for p in productos}
+        self.pedido_hoy = {p[0]: 0 for p in productos}
+        self.agotado = {}       # id_producto -> id_agotamiento abierto
+        self.sin_entrega = set()
+        self.fallas = 0
+
+    def abrir_dia(self, dia):
+        manana = datetime(dia.year, dia.month, dia.day, 6, 50)
+        self.sin_entrega = set()
+        for i in self.productos:
+            if random.random() < FALLA_PROVEEDOR:
+                self.fallas += 1
+                self.sin_entrega.add(i)
+                if i in self.agotado:
+                    self._sin_reposicion(self.agotado[i])
+                continue
+            nivel = math.ceil(self.promedio[i] * random.uniform(1.15, 1.6)) + 3
+            if self.stock[i] < nivel:
+                self.stock[i] = nivel
+                self._cerrar(i, manana)
+
+    def cerrar_dia(self):
+        for i in self.productos:
+            self.promedio[i] = 0.8 * self.promedio[i] + 0.2 * self.pedido_hoy[i]
+            self.pedido_hoy[i] = 0
+
+    def descontar(self, i, cantidad, cuando):
+        self.stock[i] -= cantidad
+        if self.stock[i] == 0 and i not in self.agotado:
+            cur = self.con.execute("INSERT INTO agotamiento (id_producto, desde, nota) VALUES (?, ?, ?)",
+                                   (i, cuando.isoformat(" "), MARCA))
+            self.agotado[i] = cur.lastrowid
+            if i in self.sin_entrega:
+                self._sin_reposicion(cur.lastrowid)
+
+    def _sin_reposicion(self, id_agotamiento):
+        self.con.execute("UPDATE agotamiento SET sin_reposicion = 1, nota = ? WHERE id_agotamiento = ?",
+                         (f"{MARCA}: el proveedor no llegó", id_agotamiento))
+
+    def _cerrar(self, i, cuando):
+        if i in self.agotado:
+            self.con.execute("UPDATE agotamiento SET hasta = ? WHERE id_agotamiento = ?",
+                             (cuando.isoformat(" "), self.agotado.pop(i)))
+
+    def cerrar_todo(self, dia):
+        # lo que siga agotado al final se cierra para no confundir el inventario real
+        fin = datetime(dia.year, dia.month, dia.day, 19, 0)
+        for i in list(self.agotado):
+            self._cerrar(i, fin)
 
 
 def generar(con):
@@ -112,28 +185,49 @@ def generar(con):
 
     # clientes ficticios: los celulares empiezan por 3009 para reconocerlos al borrar
     clientes = []
-    for i in range(600):
+    for i in range(900):
         nombre = f"{random.choice(NOMBRES)} {random.choice(APELLIDOS)}"
         cur = con.execute("INSERT INTO cliente (nombre, telefono, fecha_registro) VALUES (?, ?, ?)",
                           (nombre, f"3009{i:06d}", f"{INICIO} 07:00:00"))
         clientes.append(cur.lastrowid)
 
-    numero, dia, ayer = 0, INICIO, date.today() - timedelta(days=1)
+    bodega = Bodega(con, productos)
+    cuenta = {"pedidos": 0, "rechazos": 0, "perdidos": 0, "querido": {}}
+    dia, ayer = INICIO, date.today() - timedelta(days=1)
     while dia <= ayer:
-        base = 0 if dia in FESTIVOS else BASE_DIA[dia.weekday()]
+        base = 0 if dia in FESTIVOS else BASE_DIA[dia.weekday()] * VOLUMEN
         for desde, hasta, factor in PERIODOS:
             if desde <= dia <= hasta:
                 base *= factor
+        if base:
+            bodega.abrir_dia(dia)
         examenes = any(d <= dia <= h for d, h, _ in EXAMENES)
         for franja, peso in PESOS.items():
             for _ in range(poisson(base * peso * random.uniform(0.85, 1.15))):
-                numero += 1
-                _pedido(con, numero, dia, franja, productos, clientes, cajeros, examenes)
+                _cliente(con, cuenta, bodega, dia, franja, productos, clientes, cajeros, examenes)
+        if base:
+            bodega.cerrar_dia()
         dia += timedelta(days=1)
-    return numero
+    bodega.cerrar_todo(ayer)
+    cuenta["fallas"] = bodega.fallas
+    _guardar_querido(cuenta.pop("querido"))
+    cuenta["agotamientos"] = con.execute("SELECT COUNT(*) FROM agotamiento WHERE nota LIKE ?", (MARCA + "%",)).fetchone()[0]
+    return cuenta
 
 
-def _pedido(con, numero, dia, franja, productos, clientes, cajeros, examenes):
+def _guardar_querido(querido):
+    # solo en lo simulado se sabe cuanto se queria comprar de verdad, aunque no hubiera;
+    # entrenar_modelo.py lo usa para medir si la red aprende bien la demanda
+    import csv
+    carpeta = os.path.join(os.path.dirname(DIR), "ia", "datos")
+    os.makedirs(carpeta, exist_ok=True)
+    with open(os.path.join(carpeta, "demanda_simulada.csv"), "w", newline="", encoding="utf-8") as f:
+        w = csv.writer(f)
+        w.writerow(["fecha", "id_franja", "id_producto", "unidades_queridas"])
+        w.writerows(sorted(k + (v,) for k, v in querido.items()))
+
+
+def _cliente(con, cuenta, bodega, dia, franja, productos, clientes, cajeros, examenes):
     gusto = PREFERENCIA[momento(franja)]
     pesos = [gusto.get(cat, 1.0) * POPULARIDAD.get(nombre, 1.0) * (EN_EXAMENES.get(nombre, 1.0) if examenes else 1.0)
              for _, _, cat, nombre in productos]
@@ -141,14 +235,44 @@ def _pedido(con, numero, dia, franja, productos, clientes, cajeros, examenes):
     for _ in range(random.choices([1, 2, 3], [0.55, 0.35, 0.10])[0]):
         id_producto, precio, _, _ = random.choices(productos, pesos)[0]
         elegidos[id_producto] = (elegidos.get(id_producto, (0, precio))[0] + random.choice([1, 1, 1, 2]), precio)
+    clave_franja = (dia.isoformat(), int(franja[:2]) * 2 + (1 if franja[3:] == "30" else 0))
+    for i, (c, _) in elegidos.items():
+        bodega.pedido_hoy[i] += c
+        cuenta["querido"][clave_franja + (i,)] = cuenta["querido"].get(clave_franja + (i,), 0) + c
 
     h, m = int(franja[:2]), int(franja[3:]) + random.randint(0, 29)
     cuando = datetime(dia.year, dia.month, dia.day, h, m, random.randint(0, 59))
     qr = random.random() < 0.7
-    cancelado = random.random() < 0.04
     cajero = random.choice(cajeros)
-    total = sum(c * p for c, p in elegidos.values())
 
+    faltan = {i: c for i, (c, _) in elegidos.items() if bodega.stock[i] < c}
+    if faltan:
+        # igual que en la app: el pedido completo se rechaza y queda en el historial
+        detalle = "; ".join(f"{bodega.productos[i][3]}: pediste {c} · quedan {bodega.stock[i]}" for i, c in faltan.items())
+        con.execute("INSERT INTO operacion_rechazada (id_usuario, operacion, origen, fecha_hora, motivo, detalle) "
+                    "VALUES (?, 'registro_pedido', ?, ?, 'Sin stock suficiente', ?)",
+                    (None if qr else cajero, "qr" if qr else "presencial", cuando.isoformat(" "),
+                     f"{detalle} · {MARCA.lower()}"))
+        cuenta["rechazos"] += 1
+        cuando += timedelta(seconds=random.randint(20, 90))
+        reaccion = random.random()
+        for i, c in faltan.items():
+            del elegidos[i]
+            if reaccion < SUSTITUYE:
+                cat = bodega.productos[i][2]
+                opciones = [p for p in productos if p[2] == cat and p[0] != i and bodega.stock[p[0]] >= c
+                            and p[0] not in elegidos]
+                if opciones:
+                    otro = random.choice(opciones)
+                    elegidos[otro[0]] = (c, otro[1])
+        if not elegidos or reaccion >= SUSTITUYE + QUITA:
+            cuenta["perdidos"] += 1
+            return
+
+    cuenta["pedidos"] += 1
+    numero = cuenta["pedidos"]
+    cancelado = random.random() < 0.04
+    total = sum(c * p for c, p in elegidos.values())
     cur = con.execute(
         "INSERT INTO pedido (codigo, id_cliente, id_usuario, fecha_hora, origen, estado, total) "
         "VALUES (?, ?, ?, ?, ?, ?, ?)",
@@ -160,17 +284,16 @@ def _pedido(con, numero, dia, franja, productos, clientes, cajeros, examenes):
         "VALUES (?, ?, ?, ?, ?)",
         [(id_pedido, i, c, p, c * p) for i, (c, p) in elegidos.items()])
     con.execute("INSERT INTO transaccion (id_pedido, id_usuario, tipo, resultado, descripcion, fecha_hora) "
-                "VALUES (?, ?, 'registro_pedido', 'confirmada', 'Historial simulado', ?)",
-                (id_pedido, None if qr else cajero, cuando.isoformat(" ")))
+                "VALUES (?, ?, 'registro_pedido', 'confirmada', ?, ?)",
+                (id_pedido, None if qr else cajero, MARCA, cuando.isoformat(" ")))
     if cancelado:
+        # al cancelar el stock vuelve, asi que en la bodega no se descuenta
         return
-    # casi todos pagan en caja; algunos pedidos por QR se pagaron en la app (modo pruebas)
-    en_app = qr and random.random() < 0.2
+    for i, (c, _) in elegidos.items():
+        bodega.descontar(i, c, cuando)
     con.execute("INSERT INTO pago (id_pedido, id_usuario, metodo, medio, estado, monto, referencia, fecha) "
-                "VALUES (?, ?, ?, ?, 'aprobado', ?, ?, ?)",
-                (id_pedido, None if en_app else cajero, "app" if en_app else "efectivo",
-                 random.choice(["nequi", "daviplata"]) if en_app else None, total,
-                 f"SIM-{numero:06d}" if en_app else None, cuando.isoformat(" ")))
+                "VALUES (?, ?, 'efectivo', NULL, 'aprobado', ?, NULL, ?)",
+                (id_pedido, cajero, total, cuando.isoformat(" ")))
 
 
 if __name__ == "__main__":
@@ -180,12 +303,15 @@ if __name__ == "__main__":
     con.execute("PRAGMA foreign_keys = ON")
     try:
         with con:
+            _tablas_nuevas(con)
             quitados = borrar(con)
             if "--borrar" in sys.argv:
                 print(f"Se quitaron {quitados} pedidos simulados.")
             else:
-                n = generar(con)
-                print(f"Historial simulado: {n} pedidos desde {INICIO} hasta ayer "
-                      f"(se reemplazaron {quitados} anteriores).")
+                r = generar(con)
+                print(f"Historial simulado desde {INICIO} hasta ayer: {r['pedidos']} pedidos, "
+                      f"{r['rechazos']} intentos rechazados por falta de stock "
+                      f"({r['perdidos']} clientes se fueron sin comprar), {r['agotamientos']} agotamientos "
+                      f"y {r['fallas']} veces que un proveedor no llegó. Se reemplazaron {quitados} pedidos anteriores.")
     finally:
         con.close()

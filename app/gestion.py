@@ -186,6 +186,22 @@ def eliminar_producto(id_producto):
 
 
 @reintentar
+def marcar_sin_reposicion(id_producto, nota=None):
+    # el producto esta en cero y hoy no llega mas; el aviso deja de pedir una entrada
+    with transaccion("sin_reposicion"):
+        p = db.session.get(Producto, id_producto)
+        if p is None:
+            raise ErrorNegocio("Producto no encontrado", "El producto ya no existe.")
+        a = p.agotamiento_abierto()
+        if a is None:
+            raise ErrorNegocio("El producto no está agotado",
+                               f"{p.nombre} todavía tiene {p.stock_actual} unidades.")
+        a.sin_reposicion = True
+        a.nota = (nota or "").strip()[:200] or None
+        return p.nombre
+
+
+@reintentar
 def entrada_stock(id_producto, cantidad):
     cantidad = _entero(cantidad, "La cantidad", 1, MAX_ENTRADA)
     with transaccion("entrada_stock"):
@@ -196,6 +212,7 @@ def entrada_stock(id_producto, cantidad):
             raise ErrorNegocio("Cantidad no válida",
                                f"{p.nombre} quedaría con más de {MAX_STOCK} unidades. Revisa la cantidad.")
         p.stock_actual += cantidad
+        p.revisar_agotamiento()
         return p.nombre, p.stock_actual
 
 
@@ -230,6 +247,7 @@ def guardar_producto(datos, id_producto=None):
             raise ErrorNegocio("Producto no encontrado", "El producto ya no existe.")
         p.nombre, p.descripcion, p.precio = nombre, descripcion or None, precio
         p.stock_actual, p.stock_minimo, p.categoria = stock, minimo, cat
+        p.revisar_agotamiento()
         p.activo = datos.get("activo") == "si"
         db.session.add(p)
         return p.nombre

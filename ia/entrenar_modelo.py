@@ -4,6 +4,8 @@
 #
 # lee datos/dataset_demanda.csv (lo genera "flask etl"), entrena con todas las semanas menos
 # las dos ultimas, prueba con esas dos y compara contra el promedio historico de la franja.
+# las franjas en que el producto estaba agotado no se usan: ahi se vendio cero porque no
+# habia, no porque nadie lo quisiera.
 # guarda el modelo en modelo/ y las estimaciones de manana en la tabla prediccion_demanda.
 import json
 import os
@@ -19,6 +21,7 @@ import demanda as d
 SEMILLA = 42
 DIAS_PRUEBA = 14
 SEMANAS_REFERENCIA = 4
+NEURONAS = 8
 
 
 def cargar():
@@ -27,6 +30,8 @@ def cargar():
     datos = pd.read_csv(d.DATASET, parse_dates=["fecha"])
     datos = datos[datos["dia_semana"] < d.DIAS_ABIERTOS].copy()
     datos["periodo_red"] = datos["periodo"].map(d.periodo_red)
+    if "disponible" not in datos:
+        datos["disponible"] = 1
     return datos
 
 
@@ -46,7 +51,7 @@ def construir(n_entradas):
     # la misma red del documento: entrada, una capa oculta de 8 neuronas con ReLU y una salida lineal
     modelo = tf.keras.Sequential([
         tf.keras.layers.Input(shape=(n_entradas,)),
-        tf.keras.layers.Dense(8, activation="relu", name="capa_oculta"),
+        tf.keras.layers.Dense(NEURONAS, activation="relu", name="capa_oculta"),
         tf.keras.layers.Dense(1, activation="linear", name="salida"),
     ])
     modelo.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.005), loss="mse", metrics=["mae"])
@@ -99,24 +104,45 @@ def guardar_predicciones(modelo, meta, datos, usar, referencia, prueba):
     return dia, len(tabla), len(filas) - len(tabla)
 
 
-def main():
+def entrenar(x, y):
     tf.keras.utils.set_random_seed(SEMILLA)
+    modelo = construir(x.shape[1])
+    parar = tf.keras.callbacks.EarlyStopping(monitor="val_loss", patience=4, restore_best_weights=True)
+    historia = modelo.fit(x, y, validation_split=0.1, epochs=60, batch_size=256, callbacks=[parar], verbose=0)
+    return modelo, len(historia.history["loss"])
+
+
+def demanda_simulada(prueba):
+    # el simulador guarda cuanto se pidio de cada producto aunque no hubiera; con datos reales
+    # ese archivo no existe y esta comparacion se salta
+    ruta = os.path.join(os.path.dirname(d.DATASET), "demanda_simulada.csv")
+    if not os.path.exists(ruta):
+        return None
+    q = pd.read_csv(ruta, parse_dates=["fecha"])
+    t = prueba.merge(q, on=["fecha", "id_franja", "id_producto"], how="left").fillna({"unidades_queridas": 0})
+    total = max(t["unidades_queridas"].sum(), 1)
+    return {"red": round(float(t["red"].sum() / total - 1), 4),
+            "con_agotadas": round(float(t["ingenua"].sum() / total - 1), 4)}
+
+
+def main():
     datos = cargar()
-    entreno, prueba, corte = separar(datos)
+    todo_entreno, prueba, corte = separar(datos)
+    entreno = todo_entreno[todo_entreno["disponible"] == 1]
+    agotadas = len(todo_entreno) - len(entreno)
     meta = {"productos": sorted(int(p) for p in datos["id_producto"].unique()),
             "nombres": datos.drop_duplicates("id_producto").set_index("id_producto")["producto"].to_dict(),
             "max_semana_anterior": float(max(entreno["ventas_semana_anterior"].max(), 1))}
     meta["nombres"] = {int(k): v for k, v in meta["nombres"].items()}
 
     x_entreno, y_entreno = matriz(entreno, meta), entreno["unidades"].to_numpy(np.float32)
-    x_prueba, y_prueba = matriz(prueba, meta), prueba["unidades"].to_numpy(np.float32)
-    print(f"Entrenamiento: {len(entreno)} filas hasta {corte - timedelta(days=1)} | prueba: {len(prueba)} filas desde {corte}")
-    print(f"Capa de entrada: {x_entreno.shape[1]} valores")
+    print(f"Entrenamiento: {len(entreno)} filas hasta {corte - timedelta(days=1)} "
+          f"({agotadas} franjas con el producto agotado se dejaron por fuera) | prueba: {len(prueba)} filas desde {corte}")
+    print(f"Capa de entrada: {x_entreno.shape[1]} valores | capa oculta: {NEURONAS} neuronas")
 
-    modelo = construir(x_entreno.shape[1])
-    parar = tf.keras.callbacks.EarlyStopping(monitor="val_loss", patience=3, restore_best_weights=True)
-    historia = modelo.fit(x_entreno, y_entreno, validation_split=0.1, epochs=40, batch_size=256,
-                          callbacks=[parar], verbose=2)
+    modelo, epocas = entrenar(x_entreno, y_entreno)
+    # la misma red entrenada con todo, incluidas las franjas agotadas, para ver cuanto la engañan
+    ingenua, _ = entrenar(matriz(todo_entreno, meta), todo_entreno["unidades"].to_numpy(np.float32))
 
     # referencia simple: promedio vendido en la misma franja y el mismo dia de la semana
     # durante las ultimas semanas antes de la prueba
@@ -124,14 +150,18 @@ def main():
     referencia = (recientes.groupby(["id_producto", "dia_semana", "id_franja"])["unidades"].mean()
                   .rename("promedio").reset_index())
     con_ref = prueba.merge(referencia, how="left", on=["id_producto", "dia_semana", "id_franja"])
-    mae_ref = float(np.mean(np.abs(con_ref["promedio"].fillna(0) - con_ref["unidades"])))
-    estimado = np.clip(modelo.predict(x_prueba, verbose=0).ravel(), 0, None)
-    mae_red = float(np.mean(np.abs(estimado - y_prueba)))
+    x_prueba = matriz(prueba, meta)
+    prueba = prueba.assign(red=np.clip(modelo.predict(x_prueba, verbose=0).ravel(), 0, None),
+                           ingenua=np.clip(ingenua.predict(x_prueba, verbose=0).ravel(), 0, None),
+                           ref=con_ref["promedio"].fillna(0).to_numpy())
+    # se evalua solo donde habia producto: ahi lo vendido si es lo que se queria
+    evaluar = prueba[prueba["disponible"] == 1]
+    error = lambda col: float(np.mean(np.abs(evaluar[col] - evaluar["unidades"])))
+    mae_red, mae_ref, mae_ingenua = error("red"), error("ref"), error("ingenua")
     usar = "red_neuronal" if mae_red <= mae_ref else "referencia"
 
     # el error por dia completo es mas facil de explicar: cuantas unidades se equivoca en todo el dia
-    prueba = prueba.assign(red=estimado, ref=con_ref["promedio"].fillna(0).to_numpy())
-    por_dia = prueba.groupby(["fecha", "id_producto"])[["unidades", "red", "ref"]].sum()
+    por_dia = evaluar.groupby(["fecha", "id_producto"])[["unidades", "red", "ref"]].sum()
     mae_dia_red = float(np.mean(np.abs(por_dia["red"] - por_dia["unidades"])))
     mae_dia_ref = float(np.mean(np.abs(por_dia["ref"] - por_dia["unidades"])))
 
@@ -141,9 +171,11 @@ def main():
     meta.update({
         "entrenado": datetime.now().isoformat(" ", "seconds"),
         "filas_entrenamiento": len(entreno), "filas_prueba": len(prueba),
-        "prueba_desde": corte.isoformat(), "epocas": len(historia.history["loss"]),
+        "prueba_desde": corte.isoformat(), "epocas": epocas, "neuronas": NEURONAS,
+        "franjas_agotadas_excluidas": int(agotadas),
         "mae_red_franja": round(mae_red, 4), "mae_referencia_franja": round(mae_ref, 4),
         "mae_red_dia": round(mae_dia_red, 3), "mae_referencia_dia": round(mae_dia_ref, 3),
+        "mae_red_con_agotadas": round(mae_ingenua, 4),
         "usar": usar,
     })
     with open(d.METADATOS, "w", encoding="utf-8") as f:
@@ -151,6 +183,14 @@ def main():
 
     print(f"\nError absoluto medio por franja: red {mae_red:.3f} | referencia {mae_ref:.3f}")
     print(f"Error absoluto medio por producto en el día: red {mae_dia_red:.2f} | referencia {mae_dia_ref:.2f} unidades")
+    print(f"Si se entrenara también con las franjas agotadas, el error por franja sería {mae_ingenua:.3f}")
+    querido = demanda_simulada(prueba)
+    if querido is not None:
+        meta["demanda_simulada"] = querido
+        print(f"Contra lo que de verdad se quería comprar (solo en lo simulado): la red estima {querido['red']:+.1%} "
+              f"y entrenada con las franjas agotadas {querido['con_agotadas']:+.1%}")
+        with open(d.METADATOS, "w", encoding="utf-8") as f:
+            json.dump(meta, f, ensure_ascii=False, indent=2)
     print(f"Se usará: {usar}. Modelo guardado en {d.MODELO}")
     prueba["estimado"] = prueba["red"] if usar == "red_neuronal" else prueba["ref"]
     dia, filas, filas_prueba = guardar_predicciones(modelo, meta, datos, usar, referencia, prueba)

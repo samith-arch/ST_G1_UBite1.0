@@ -7,7 +7,7 @@ from sqlalchemy.exc import IntegrityError
 
 from app import servicios
 from app.database import db
-from app.models import Cliente, OperacionRechazada, Pago, Pedido, Producto, Transaccion, Usuario
+from app.models import Agotamiento, Cliente, OperacionRechazada, Pago, Pedido, Producto, Transaccion, Usuario
 from app.servicios import ErrorNegocio
 from conftest import BASE_PRUEBA
 
@@ -41,6 +41,19 @@ def test_un_producto_sin_stock_cancela_todo_el_pedido(app):
     assert e.value.faltantes
     db.session.expire_all()
     assert db.session.get(Producto, 1).stock_actual == agua
+
+
+def test_agotarse_y_reponer_queda_registrado(app):
+    from app import gestion
+    p = db.session.get(Producto, 3)
+    servicios.registrar_pedido("Prueba", "3001112233", {3: p.stock_actual})
+    db.session.expire_all()
+    abierto = Agotamiento.query.filter_by(id_producto=3, hasta=None).one()
+    gestion.marcar_sin_reposicion(3, "El proveedor no vino")
+    gestion.entrada_stock(3, 10)
+    db.session.expire_all()
+    a = db.session.get(Agotamiento, abierto.id_agotamiento)
+    assert a.hasta is not None and a.sin_reposicion and a.nota == "El proveedor no vino"
 
 
 def test_el_pedido_rechazado_queda_en_el_historial(app):

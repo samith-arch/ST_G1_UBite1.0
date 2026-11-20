@@ -272,13 +272,20 @@ primera vez en `instance/` y no se suben al repositorio.
 ### 8. Historial simulado, ETL y servicio de inteligencia artificial
 
 UBite todavía no tiene meses de ventas reales, así que para entrenar la red neuronal se genera
-un historial simulado de 2026 (unos 17.000 pedidos con código `S-#####`, clientes ficticios con
-celular `3009…`). Se puede borrar en cualquier momento sin tocar los pedidos reales.
+un historial simulado de 2026 (unos 31.000 pedidos con código `S-#####`, clientes ficticios con
+celular `3009…`). El simulador maneja un stock por producto que se repone cada mañana, así que
+también hay días en que algo se agota o el proveedor no llega: esos intentos quedan como
+rechazados en el historial y cada faltante queda en la tabla `agotamiento`. Además guarda en
+`ia/datos/demanda_simulada.csv` cuánto se quería comprar de verdad, para medir la red. Se puede
+borrar en cualquier momento sin tocar los pedidos reales.
 
 ```bash
 python database/historial_simulado.py          # genera el historial (o --borrar para quitarlo)
 flask --app run etl --completo                  # llena database/ubite_dw.db y exporta ia/datos/*.csv
 ```
+
+Las franjas en que un producto estuvo agotado se marcan con `disponible = 0` en el dataset y la red
+no se entrena con ellas: ahí se vendió cero porque no había, no porque nadie lo quisiera.
 
 El ETL lee `ubite.db` en solo lectura, carga el almacén en estrella en una sola transacción y
 exporta dos datasets sin datos personales: `dataset_ventas.csv` (una fila por producto vendido)
@@ -308,6 +315,19 @@ Con la API encendida, el inventario (`/inventario`) muestra en **Avisos de stock
 ### 9. Tablero en Power BI
 
 Power BI se conecta en modo importación a `database/ubite_dw.db` con el controlador [SQLite ODBC](http://www.ch-werner.de/sqliteodbc/) (versión de 64 bits). Usa siete tablas: `dim_fecha`, `dim_franja` y `dim_producto`, y los hechos `hecho_venta`, `hecho_pedido`, `hecho_inventario` y `prediccion_demanda`. Además de la estimación del siguiente día, `prediccion_demanda` guarda la de las dos semanas de prueba, así el tablero compara lo estimado contra lo vendido. Para ver datos nuevos se corre el ETL (y el entrenamiento, si se quiere) y luego se actualiza el tablero.
+
+Para que el almacén esté al día sin correr nada a mano, `bi/cierre_diario.py` hace el ETL y deja en
+`prediccion_demanda` la estimación del siguiente día con el modelo guardado; los domingos además
+vuelve a entrenar la red. Se programa una sola vez en el Programador de tareas de Windows:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File bi\programar_tarea.ps1           # todos los días a la 1:00 a. m.
+Start-ScheduledTask -TaskName "UBite cierre diario"                         # correrla ya para probar
+powershell -ExecutionPolicy Bypass -File bi\programar_tarea.ps1 -Quitar   # borrar la tarea
+```
+
+Cada ejecución queda en `bi/cierre_diario.log` y en la tabla `etl_control`. En Power BI Desktop solo
+queda pulsar **Actualizar** (o activar "Actualizar datos al abrir el archivo" en las opciones de la consulta).
 
 Si el ODBC da problemas, `python bi/exportar_tablas.py` deja las mismas tablas en `bi/tablas/*.csv` para cargarlas como texto.
 

@@ -59,6 +59,25 @@ CREATE TABLE IF NOT EXISTS hecho_inventario (
     PRIMARY KEY (id_fecha, id_producto)
 );
 
+-- franjas en que un producto estuvo en cero: ahi lo vendido no es lo que se queria comprar
+CREATE TABLE IF NOT EXISTS hecho_agotamiento (
+    id_fecha        INTEGER NOT NULL REFERENCES dim_fecha (id_fecha),
+    id_franja       INTEGER NOT NULL REFERENCES dim_franja (id_franja),
+    id_producto     INTEGER NOT NULL REFERENCES dim_producto (id_producto),
+    sin_reposicion  INTEGER NOT NULL CHECK (sin_reposicion IN (0, 1)),
+    PRIMARY KEY (id_fecha, id_franja, id_producto)
+);
+
+CREATE TABLE IF NOT EXISTS hecho_rechazo (
+    id_fecha   INTEGER NOT NULL REFERENCES dim_fecha (id_fecha),
+    id_franja  INTEGER NOT NULL REFERENCES dim_franja (id_franja),
+    operacion  TEXT NOT NULL,
+    motivo     TEXT NOT NULL,
+    origen     TEXT NOT NULL,
+    cantidad   INTEGER NOT NULL,
+    PRIMARY KEY (id_fecha, id_franja, operacion, motivo, origen)
+);
+
 CREATE TABLE IF NOT EXISTS prediccion_demanda (
     id_fecha            INTEGER NOT NULL REFERENCES dim_fecha (id_fecha),
     id_franja           INTEGER NOT NULL REFERENCES dim_franja (id_franja),

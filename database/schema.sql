@@ -7,6 +7,7 @@ BEGIN TRANSACTION;
 DROP TABLE IF EXISTS "producto_insumo";
 DROP TABLE IF EXISTS "insumo";
 DROP TABLE IF EXISTS "notificacion";
+DROP TABLE IF EXISTS "agotamiento";
 DROP TABLE IF EXISTS "operacion_rechazada";
 DROP TABLE IF EXISTS "transaccion";
 DROP TABLE IF EXISTS "pago";
@@ -112,6 +113,17 @@ CREATE TABLE IF NOT EXISTS "transaccion" (
 	FOREIGN KEY("id_usuario") REFERENCES "usuario"("id_usuario")
 );
 
+CREATE TABLE IF NOT EXISTS "agotamiento" (
+	"id_agotamiento"	INTEGER,
+	"id_producto"	INTEGER NOT NULL,
+	"desde"	DATETIME NOT NULL DEFAULT (datetime('now','localtime')),
+	"hasta"	DATETIME,
+	"sin_reposicion"	INTEGER NOT NULL DEFAULT 0 CHECK("sin_reposicion" IN (0, 1)),
+	"nota"	TEXT,
+	PRIMARY KEY("id_agotamiento" AUTOINCREMENT),
+	FOREIGN KEY("id_producto") REFERENCES "producto"("id_producto")
+);
+
 CREATE TABLE IF NOT EXISTS "operacion_rechazada" (
 	"id_rechazo"	INTEGER,
 	"id_pedido"	INTEGER,
@@ -142,6 +154,7 @@ CREATE INDEX IF NOT EXISTS "idx_pedido_fecha" ON "pedido" ("fecha_hora");
 CREATE INDEX IF NOT EXISTS "idx_detalle_pedido" ON "detalle_pedido" ("id_pedido");
 CREATE INDEX IF NOT EXISTS "idx_pago_pedido" ON "pago" ("id_pedido");
 CREATE INDEX IF NOT EXISTS "idx_transaccion_pedido" ON "transaccion" ("id_pedido");
+CREATE INDEX IF NOT EXISTS "idx_agotamiento_producto" ON "agotamiento" ("id_producto", "hasta");
 CREATE INDEX IF NOT EXISTS "idx_rechazo_fecha" ON "operacion_rechazada" ("fecha_hora");
 CREATE INDEX IF NOT EXISTS "idx_notificacion_pedido" ON "notificacion" ("id_pedido");
 
