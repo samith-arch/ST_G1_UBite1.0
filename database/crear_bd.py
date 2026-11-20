@@ -21,7 +21,7 @@ DB = os.path.join(DIR, "ubite.db")
 EXPORT = os.path.join(DIR, "ubite.db.sql")
 
 ORDEN = ["cliente", "usuario", "categoria", "producto", "pedido",
-         "detalle_pedido", "pago", "transaccion", "notificacion"]
+         "detalle_pedido", "pago", "transaccion", "operacion_rechazada", "notificacion"]
 
 
 def ejecutar(con, archivo):

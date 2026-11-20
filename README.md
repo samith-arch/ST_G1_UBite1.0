@@ -40,7 +40,7 @@ productos y la reducción de los tiempos de espera en el punto físico.
 ## 2. Restricciones
 
 - Proyecto académico desarrollado como prototipo local, sin despliegue en servidor
-  institucional ni integración con pasarelas de pago reales.
+  institucional ni pago en línea: el cliente paga en efectivo en la caja.
 - Tecnologías definidas por el equipo: Python 3, Flask, SQLite. La guía de la asignatura toma
   SQL Server como referencia, pero permite otras tecnologías aprobadas; SQLite se aprobó en la
   Fase 1 porque no necesita instalar ni administrar un servidor, guarda toda la base en un
@@ -140,7 +140,7 @@ producción en esta fase.
 ## 11. Riesgos y deuda técnica
 
 - Implementado: flujo del cliente (QR, menú con stock, pedido, seguimiento, aviso de
-  pedido listo, modificar y cancelar en cola) y panel del cajero (cola con prioridad,
+  pedido listo, modificar y cancelar en cola) y panel del cajero (cola de pedidos,
   preparación, listo, cobro y entrega, cancelación en caja, pedido presencial cobrado al
   registrarlo e historial del día). Los pedidos por QR usan el código A-001 y los
   presenciales P-001.
@@ -303,7 +303,7 @@ uvicorn api:app --port 8000                     # API en http://127.0.0.1:8000/d
 | `ia/entrenar_modelo.py` | Entrena la red (Keras: 62 → 8 ReLU → 1), la prueba con las dos últimas semanas y guarda `modelo/modelo_demanda.keras` |
 | `ia/api.py` | FastAPI: `POST /predecir` (unidades por franja de un producto) y `POST /alertas` (productos que se agotarían con el stock actual) |
 
-Con la API encendida, el administrador ve en **Alertas de reposición** (`/admin/alertas`) qué productos se agotarían antes del cierre. Flask envía el stock real desde la media hora actual (o desde las 7:00 del siguiente día de apertura si ya cerró) y muestra cuántas unidades faltan. Si la API está apagada, la pantalla lo avisa y el resto de la aplicación sigue igual. La dirección se cambia con `UBITE_IA_URL` en el `.env`.
+Con la API encendida, el inventario (`/inventario`) muestra en **Avisos de stock** los productos agotados, los que están en el mínimo y los que, según la red, se acabarían antes del cierre, con cuántas unidades faltan y un botón para registrar la entrada. Flask envía el stock real desde la media hora actual (o desde las 7:00 del siguiente día de apertura si ya cerró). Si la API está apagada, el inventario lo avisa y muestra solo agotados y mínimos; el resto de la aplicación sigue igual. La dirección se cambia con `UBITE_IA_URL` en el `.env`.
 
 ### 9. Tablero en Power BI
 
