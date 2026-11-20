@@ -5,7 +5,8 @@
 {% block panel %}
 {% set filtrado = filtros.buscar or filtros.desde or filtros.hasta or filtros.estado or filtros.origen %}
 <p class="etiqueta mb-1">{{ "Resultado de la búsqueda" if filtrado else "Todos los pedidos guardados" }}</p>
-<h1 class="titulo display-5 mb-4 d-none d-lg-block">Historial de pedidos</h1>
+<h1 class="titulo display-5 mb-3 d-none d-lg-block">Historial</h1>
+{% include "caja/_pestanas_historial.html" %}
 
 {% set activos = [filtros.desde, filtros.hasta, filtros.estado, filtros.origen]|select|list|length %}
 {% call f.barra(url_for('caja.historial'), filtros.buscar, "Código, cliente o celular…", activos, url_for('caja.historial')) %}

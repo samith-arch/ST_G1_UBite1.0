@@ -852,3 +852,26 @@ body.cliente { background: radial-gradient(900px 380px at 85% 0, rgba(240, 160, 
 .cartel-qr .lema-qr { font-family: var(--f-logo); font-weight: 700; font-size: 1.6rem; }
 .cartel-qr .lema-qr span { color: var(--acento); }
 @media print { .cartel-qr { background: #F3E3CC !important; } }
+
+/* historial: pestañas y operaciones */
+.pestanas { display: flex; gap: 4px; padding: 4px; border-radius: 14px; background: var(--lavado); width: max-content; max-width: 100%; overflow-x: auto; }
+.pestanas a { padding: 8px 16px; border-radius: 10px; color: var(--tinta-suave); font-weight: 700; font-size: .9rem; text-decoration: none; white-space: nowrap; }
+.pestanas a.activa { background: var(--superficie); color: var(--tinta-oscura); box-shadow: var(--sombra); }
+.enlace-kpi { display: flex; text-decoration: none; color: inherit; }
+.lista-motivos { list-style: none; padding: 0; margin: 6px 0 0; display: grid; gap: 4px; font-size: .9rem; }
+.lista-motivos li { display: flex; justify-content: space-between; gap: 12px; border-bottom: 1px dashed var(--linea); padding-bottom: 3px; }
+.fila-rechazada td { background: rgba(26, 16, 11, .035); }
+.celda-motivo { min-width: 13rem; }
+.tarjeta .tabla-ubite td { vertical-align: top; }
+
+/* inventario: avisos de stock */
+.avisos-stock { scroll-margin-top: 90px; }
+.lista-avisos { list-style: none; padding: 0; margin: 0; }
+.lista-avisos li { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 12px 0 12px 14px; border-top: 1px solid var(--linea); border-left: 3px solid var(--linea); }
+.lista-avisos li.nivel-0 { border-left-color: var(--tinta-oscura); }
+.lista-avisos li.nivel-1 { border-left-color: var(--acento); }
+.lista-avisos .estado-aviso { font-size: .78rem; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: var(--tinta-suave); }
+.lista-avisos li.nivel-1 .estado-aviso { color: var(--acento-oscuro); }
+.falta { color: var(--acento-oscuro); font-weight: 700; font-size: .8rem; }
+.cuenta-menu { margin-left: auto; min-width: 1.4rem; padding: 1px 7px; border-radius: 999px; background: var(--acento); color: #FFFFFF; font-size: .72rem; font-weight: 800; text-align: center; }
+@media (max-width: 575.98px) { .lista-avisos li { flex-direction: column; align-items: flex-start; } }

@@ -1,7 +1,7 @@
 from flask import Blueprint, flash, redirect, render_template, request, url_for
 from flask_login import current_user
 
-from .. import gestion
+from .. import alertas_ia, gestion
 from ..database import db
 from ..models import Categoria, Producto
 from ..servicios import ErrorNegocio
@@ -19,7 +19,14 @@ def lista():
     todos = gestion.inventario()
     productos = gestion.inventario(**filtros) if any(filtros.values()) else todos
     bajos = [p for p in todos if p.activo and p.stock_actual <= p.stock_minimo]
+    try:
+        ia = alertas_ia.alertas(espera=3)
+        estimado, ia_error = {f["id_producto"]: f for f in ia["filas"]}, None
+    except alertas_ia.ServicioNoDisponible as e:
+        ia, estimado, ia_error = None, {}, (e.args[0] if e.args and e.args[0] else None)
+    avisos = alertas_ia.avisos_stock(todos, estimado)
     return render_template("inventario/lista.html", productos=productos, bajos=bajos, total=len(todos),
+                           ia=ia, estimado=estimado, ia_error=ia_error, avisos=avisos,
                            filtros=filtros, estado=gestion.estado_producto,
                            categorias=Categoria.query.order_by(Categoria.nombre).all(),
                            tope=max([p.stock_actual for p in todos] + [1]))

@@ -208,6 +208,28 @@ class Transaccion(db.Model):
         return t
 
 
+
+class OperacionRechazada(db.Model):
+    # lo que el sistema no dejo hacer y por que; puede no tener pedido (un registro que no paso)
+    __tablename__ = "operacion_rechazada"
+    __table_args__ = (
+        db.CheckConstraint(
+            "operacion IN ('registro_pedido', 'modificacion_pedido', 'cambio_estado', 'pago', 'cancelacion')",
+            name="ck_rechazo_operacion"),
+    )
+
+    id_rechazo = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    id_pedido = db.Column(db.Integer, db.ForeignKey("pedido.id_pedido"))
+    id_usuario = db.Column(db.Integer, db.ForeignKey("usuario.id_usuario"))
+    operacion = db.Column(db.Text, nullable=False)
+    origen = db.Column(db.Text)
+    fecha_hora = db.Column(db.DateTime, nullable=False, default=ahora)
+    motivo = db.Column(db.Text, nullable=False)
+    detalle = db.Column(db.Text)
+
+    pedido = db.relationship("Pedido")
+    usuario = db.relationship("Usuario")
+
 class Notificacion(db.Model):
     __tablename__ = "notificacion"
     __table_args__ = (

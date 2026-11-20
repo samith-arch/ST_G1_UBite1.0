@@ -9,7 +9,7 @@
   <a class="marca mb-4" href="{{ url_for(menu_personal[0][0]) }}">{{ logo("claro") }}<span class="sub-logo">Cafetería UMB · Personal</span></a>
   <nav>
     {% set operacion = ["caja.cola", "caja.presencial", "inventario.lista", "caja.historial"] %}
-    {% macro enlace(ruta, texto, icono) %}<a href="{{ url_for(ruta) }}" class="{{ 'activo' if seccion == ruta }}"><i class="bi {{ icono }}"></i>{{ texto }}</a>{% endmacro %}
+    {% macro enlace(ruta, texto, icono) %}<a href="{{ url_for(ruta) }}" class="{{ 'activo' if seccion == ruta }}"><i class="bi {{ icono }}"></i>{{ texto }}{% if ruta == "inventario.lista" and por_reponer %}<span class="cuenta-menu" title="Productos en el mínimo o agotados">{{ por_reponer }}</span>{% endif %}</a>{% endmacro %}
     {% if es_admin %}
       {% for ruta, texto, icono in menu_personal if ruta not in operacion and ruta == "admin.reporte" %}{{ enlace(ruta, texto, icono) }}{% endfor %}
       <p class="grupo-menu">Operación</p>

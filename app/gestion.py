@@ -2,12 +2,12 @@ import re
 from collections import Counter, defaultdict
 from datetime import timedelta
 
-from sqlalchemy import case, func
+from sqlalchemy import case, func, literal, union_all
 from sqlalchemy.orm import selectinload
 from werkzeug.security import generate_password_hash
 
 from .database import db, reintentar, transaccion
-from .models import (Categoria, Cliente, DetallePedido, Pago, Pedido, Producto, Transaccion,
+from .models import (Categoria, Cliente, DetallePedido, OperacionRechazada, Pago, Pedido, Producto, Transaccion,
                      Usuario, ahora)
 from .servicios import ACTIVOS, ErrorNegocio, limpiar_nombre
 
@@ -131,6 +131,7 @@ def reporte(fecha, periodo="dia"):
         "en_app": en_app,
         "en_efectivo": len(pagados) - en_app,
         "pct_app": round(en_app / len(pagados) * 100) if pagados else 0,
+        "pct_qr": round(sum(1 for p in validos if p.origen == "qr") / len(validos) * 100) if validos else 0,
         "ticket": total / len(pagados) if pagados else 0,
         "barras": _barras(pagados, periodo, desde, hasta),
         "mas_vendidos": vendidos.most_common(5),
@@ -260,6 +261,61 @@ def historial(buscar="", desde=None, hasta=None, estado="", origen="", pagina=1)
                .with_entities(func.coalesce(func.sum(Pago.monto), 0)).scalar())
     paginas = q.order_by(Pedido.fecha_hora.desc()).paginate(page=pagina, per_page=POR_PAGINA, error_out=False)
     return paginas, {"pedidos": pedidos, "entregados": entregados, "vendido": vendido}
+
+
+class Paginas:
+    # lo mismo que usa la plantilla de la paginacion de flask-sqlalchemy
+    def __init__(self, items, page, total):
+        self.items, self.page, self.total = items, page, total
+        self.pages = max((total + POR_PAGINA - 1) // POR_PAGINA, 0)
+        self.has_prev, self.has_next = page > 1, page < self.pages
+        self.prev_num, self.next_num = page - 1, page + 1
+
+
+OPERACIONES = {"registro_pedido": "Registro de pedido", "modificacion_pedido": "Modificación",
+               "cambio_estado": "Cambio de estado", "pago": "Cobro", "cancelacion": "Cancelación"}
+
+
+def operaciones(buscar="", desde=None, hasta=None, resultado="", operacion="", pagina=1):
+    # todo lo que paso con los pedidos: lo que se guardo y lo que el sistema rechazo
+    t, r = Transaccion, OperacionRechazada
+    hechas = (db.select(t.fecha_hora.label("fecha"), t.tipo.label("operacion"),
+                        case((t.resultado == "revertida", "rechazada"), else_="confirmada").label("resultado"),
+                        Pedido.codigo.label("codigo"), Pedido.origen.label("origen"),
+                        Usuario.nombre.label("quien"), literal(None).label("motivo"),
+                        t.descripcion.label("detalle"))
+              .join(Pedido, Pedido.id_pedido == t.id_pedido)
+              .outerjoin(Usuario, Usuario.id_usuario == t.id_usuario))
+    rechazadas = (db.select(r.fecha_hora, r.operacion, literal("rechazada"), Pedido.codigo,
+                            func.coalesce(Pedido.origen, r.origen), Usuario.nombre, r.motivo, r.detalle)
+                  .outerjoin(Pedido, Pedido.id_pedido == r.id_pedido)
+                  .outerjoin(Usuario, Usuario.id_usuario == r.id_usuario))
+    todo = union_all(hechas, rechazadas).subquery()
+    q = db.select(todo)
+    if buscar.strip():
+        patron = f"%{buscar.strip()}%"
+        q = q.where(todo.c.codigo.ilike(patron) | todo.c.motivo.ilike(patron) | todo.c.detalle.ilike(patron))
+    if desde:
+        q = q.where(func.date(todo.c.fecha) >= desde.isoformat())
+    if hasta:
+        q = q.where(func.date(todo.c.fecha) <= hasta.isoformat())
+    if operacion:
+        q = q.where(todo.c.operacion == operacion)
+    sub = q.subquery()
+    conteo = dict(db.session.execute(
+        db.select(sub.c.resultado, func.count()).group_by(sub.c.resultado)).all())
+    motivos = db.session.execute(
+        db.select(func.coalesce(sub.c.motivo, "Operación revertida"), func.count().label("n"))
+        .where(sub.c.resultado == "rechazada").group_by(sub.c.motivo)
+        .order_by(db.desc("n")).limit(3)).all()
+    if resultado:
+        q = q.where(todo.c.resultado == resultado)
+    total = db.session.execute(db.select(func.count()).select_from(q.subquery())).scalar()
+    filas = db.session.execute(q.order_by(todo.c.fecha.desc())
+                               .limit(POR_PAGINA).offset((pagina - 1) * POR_PAGINA)).all()
+    paginas = Paginas(filas, pagina, total)
+    return paginas, {"confirmadas": conteo.get("confirmada", 0), "rechazadas": conteo.get("rechazada", 0),
+                     "motivos": [tuple(m) for m in motivos]}
 
 
 # clientes y usuarios

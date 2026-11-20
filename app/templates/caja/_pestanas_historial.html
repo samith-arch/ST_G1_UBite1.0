@@ -1,0 +1,5 @@
+{% set en_operaciones = request.args.get("vista") == "operaciones" %}
+<nav class="pestanas mb-4" aria-label="Vistas del historial">
+  <a class="{{ 'activa' if not en_operaciones }}" href="{{ url_for('caja.historial') }}">Pedidos</a>
+  <a class="{{ 'activa' if en_operaciones }}" href="{{ url_for('caja.historial', vista='operaciones') }}">Operaciones y rechazos</a>
+</nav>

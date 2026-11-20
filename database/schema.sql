@@ -7,6 +7,7 @@ BEGIN TRANSACTION;
 DROP TABLE IF EXISTS "producto_insumo";
 DROP TABLE IF EXISTS "insumo";
 DROP TABLE IF EXISTS "notificacion";
+DROP TABLE IF EXISTS "operacion_rechazada";
 DROP TABLE IF EXISTS "transaccion";
 DROP TABLE IF EXISTS "pago";
 DROP TABLE IF EXISTS "detalle_pedido";
@@ -111,6 +112,20 @@ CREATE TABLE IF NOT EXISTS "transaccion" (
 	FOREIGN KEY("id_usuario") REFERENCES "usuario"("id_usuario")
 );
 
+CREATE TABLE IF NOT EXISTS "operacion_rechazada" (
+	"id_rechazo"	INTEGER,
+	"id_pedido"	INTEGER,
+	"id_usuario"	INTEGER,
+	"operacion"	TEXT NOT NULL CHECK("operacion" IN ('registro_pedido', 'modificacion_pedido', 'cambio_estado', 'pago', 'cancelacion')),
+	"origen"	TEXT,
+	"fecha_hora"	DATETIME NOT NULL DEFAULT (datetime('now','localtime')),
+	"motivo"	TEXT NOT NULL,
+	"detalle"	TEXT,
+	PRIMARY KEY("id_rechazo" AUTOINCREMENT),
+	FOREIGN KEY("id_pedido") REFERENCES "pedido"("id_pedido"),
+	FOREIGN KEY("id_usuario") REFERENCES "usuario"("id_usuario")
+);
+
 CREATE TABLE IF NOT EXISTS "notificacion" (
 	"id_notificacion"	INTEGER,
 	"id_pedido"	INTEGER NOT NULL,
@@ -127,6 +142,7 @@ CREATE INDEX IF NOT EXISTS "idx_pedido_fecha" ON "pedido" ("fecha_hora");
 CREATE INDEX IF NOT EXISTS "idx_detalle_pedido" ON "detalle_pedido" ("id_pedido");
 CREATE INDEX IF NOT EXISTS "idx_pago_pedido" ON "pago" ("id_pedido");
 CREATE INDEX IF NOT EXISTS "idx_transaccion_pedido" ON "transaccion" ("id_pedido");
+CREATE INDEX IF NOT EXISTS "idx_rechazo_fecha" ON "operacion_rechazada" ("fecha_hora");
 CREATE INDEX IF NOT EXISTS "idx_notificacion_pedido" ON "notificacion" ("id_pedido");
 
 -- un pedido no puede tener dos pagos aprobados

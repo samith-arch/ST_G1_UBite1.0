@@ -9,7 +9,7 @@ from flask import (Blueprint, Response, flash, redirect, render_template, reques
 from flask_login import current_user
 from markupsafe import Markup
 
-from .. import alertas_ia, gestion
+from .. import gestion
 from ..database import db
 from ..models import Usuario
 from ..servicios import ErrorNegocio
@@ -64,12 +64,8 @@ def exportar():
 @bp.route("/alertas")
 @rol_requerido("administrador")
 def alertas():
-    try:
-        datos, error = alertas_ia.alertas(), None
-    except alertas_ia.ServicioNoDisponible as e:
-        datos, error = None, str(e) if e.args and e.args[0] else None
-    return render_template("admin/alertas.html", a=datos, error=error, caido=datos is None,
-                           url_ia=alertas_ia.URL_IA)
+    # las alertas de la red neuronal ahora se ven dentro del inventario
+    return redirect(url_for("inventario.lista", _anchor="avisos"))
 
 
 @bp.route("/clientes")

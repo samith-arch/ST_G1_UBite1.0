@@ -25,7 +25,6 @@ MENU_ADMIN = [
     ("caja.cola", "Pedidos en curso", "bi-grid"),
     ("caja.presencial", "Pedido presencial", "bi-bag"),
     ("inventario.lista", "Inventario", "bi-box-seam"),
-    ("admin.alertas", "Alertas de reposición", "bi-exclamation-triangle"),
     ("caja.historial", "Historial", "bi-clock-history"),
     ("admin.clientes", "Clientes", "bi-person-lines-fill"),
     ("admin.usuarios", "Usuarios", "bi-people"),
@@ -38,7 +37,7 @@ MENU_CAJERO = [
     ("caja.historial", "Historial", "bi-clock-history"),
 ]
 # en el celular solo caben cuatro, los demas del admin van en "Mas"
-INFERIOR_ADMIN = [MENU_ADMIN[0], MENU_ADMIN[3], MENU_ADMIN[7], MENU_ADMIN[8]]
+INFERIOR_ADMIN = [MENU_ADMIN[0], MENU_ADMIN[3], MENU_ADMIN[6], MENU_ADMIN[7]]
 INFERIOR_CAJERO = [("caja.cola", "Pedidos", "bi-grid"), ("caja.presencial", "Presencial", "bi-bag"),
                    ("inventario.lista", "Inventario", "bi-box-seam"),
                    ("caja.historial", "Historial", "bi-clock-history")]
@@ -54,6 +53,9 @@ def datos_menu():
         seccion = "inventario.lista"
     elif seccion in ("admin.usuario", "admin.nuevo_usuario", "admin.editar_usuario", "admin.eliminar_usuario"):
         seccion = "admin.usuarios"
-    return {"es_admin": admin, "seccion": seccion,
+    from ..models import Producto
+    por_reponer = Producto.query.filter(Producto.activo.is_(True),
+                                        Producto.stock_actual <= Producto.stock_minimo).count()
+    return {"es_admin": admin, "seccion": seccion, "por_reponer": por_reponer,
             "menu_personal": MENU_ADMIN if admin else MENU_CAJERO,
             "menu_inferior": INFERIOR_ADMIN if admin else INFERIOR_CAJERO}

@@ -25,15 +25,39 @@
 {% set agotados = productos|selectattr("stock_actual", "equalto", 0)|list|length %}
 <div class="row g-3 mb-4">
   <div class="col-6 col-xl-3"><div class="kpi"><span class="numero">{{ total }}</span><span class="rotulo">Productos</span></div></div>
-  <div class="col-6 col-xl-3"><div class="kpi"><span class="numero">{{ categorias|length }}</span><span class="rotulo">Categorías</span></div></div>
+  <div class="col-6 col-xl-3"><div class="kpi oscuro"><span class="numero">{{ ia.agotan if ia else "—" }}</span><span class="rotulo">Se acabarían hoy</span><span class="nota">{{ "según la red neuronal" if ia else "servicio de IA apagado" }}</span></div></div>
   <div class="col-6 col-xl-3"><div class="kpi"><span class="numero">{{ bajos|length }}</span><span class="rotulo">En o bajo el mínimo</span></div></div>
   <div class="col-6 col-xl-3"><div class="kpi"><span class="numero">{{ agotados }}</span><span class="rotulo">Agotados{{ " en la lista" if productos|length != total }}</span></div></div>
 </div>
-{% if bajos %}
-<div class="aviso mb-4">
-  Reponer pronto: {{ bajos|map(attribute="nombre")|join(", ") }}.
-</div>
-{% endif %}
+<section id="avisos" class="tarjeta avisos-stock mb-4">
+  <div class="d-flex flex-wrap justify-content-between align-items-baseline gap-2 mb-2">
+    <h2 class="fs-5 fw-bolder mb-0">Avisos de stock</h2>
+    <span class="small suave">
+      {% if ia %}Estimación hasta el cierre, desde las {{ ia.desde }}{% if ia.fecha != ia.fecha.today() %} del {{ ia.fecha.strftime('%d/%m') }}{% endif %}
+      {% else %}Sin estimación de la IA{% endif %}
+    </span>
+  </div>
+  {% if avisos %}
+  <ul class="lista-avisos">
+    {% for a in avisos %}
+    <li class="nivel-{{ a.nivel }}">
+      <div class="min-w-0">
+        <p class="mb-0"><span class="fw-bold">{{ a.p.nombre }}</span> · <span class="estado-aviso">{{ a.titulo }}</span></p>
+        <p class="small suave mb-0">{{ a.texto }}</p>
+      </div>
+      <a class="btn btn-contorno btn-chico flex-none" href="{{ url_for('inventario.entrada', producto=a.p.id_producto) }}">Registrar entrada{% if a.reponer %} · {{ a.reponer }}{% endif %}</a>
+    </li>
+    {% endfor %}
+  </ul>
+  {% else %}
+  <p class="mb-0 suave">Todo el inventario alcanza{{ " para lo que se estima vender hoy" if ia }}.</p>
+  {% endif %}
+  {% if not ia %}
+  <p class="small suave mt-3 mb-0">{{ ia_error or "El servicio de IA no responde, así que solo se muestran los agotados y los que están en el mínimo. La venta y el inventario funcionan normal." }}</p>
+  {% elif ia.sin_modelo %}
+  <p class="small suave mt-3 mb-0">La red todavía no conoce {{ ia.sin_modelo|join(", ") }}. Hay que correr el ETL y volver a entrenar para incluirlos.</p>
+  {% endif %}
+</section>
 
 {% set activos = [filtros.categoria, filtros.estado]|select|list|length %}
 {% call f.barra(url_for('inventario.lista'), filtros.buscar, "Buscar producto…", activos, url_for('inventario.lista')) %}
@@ -52,7 +76,7 @@
 {% if productos|length != total %}<p class="small suave">Mostrando {{ productos|length }} de {{ total }} productos.</p>{% endif %}
 <div class="tarjeta d-none d-md-block">
   <table class="table tabla-ubite align-middle mb-0">
-    <thead><tr><th>Producto</th><th>Categoría</th><th>Precio</th><th>Stock actual / mínimo</th><th>Estado</th></tr></thead>
+    <thead><tr><th>Producto</th><th>Categoría</th><th>Precio</th><th>Stock actual / mínimo</th><th class="text-end">Venta estimada hoy</th><th>Estado</th></tr></thead>
     <tbody>
     {% for p in productos %}
     <tr class="fila-buscable {{ 'text-body-secondary' if not p.activo }}" data-nombre="{{ p.nombre|lower }}">
@@ -65,6 +89,8 @@
         <span class="mono text-nowrap">{{ p.stock_actual }} / {{ p.stock_minimo }}</span>
         <div class="medidor flex-fill {{ 'vacio' if p.stock_actual == 0 else ('bajo' if p.stock_actual <= p.stock_minimo) }}"><span style="width: {{ [p.stock_actual / tope * 100, 3]|max }}%"></span></div>
       </div></td>
+      {% set e = estimado.get(p.id_producto) %}
+      <td class="mono text-end text-nowrap">{% if e %}{{ "%.0f"|format(e.estimado_resto_del_dia) }}{% if e.se_agota %} <span class="falta">faltan {{ e.faltan }}</span>{% endif %}{% else %}<span class="suave">—</span>{% endif %}</td>
       <td>{{ chip(p) }}</td>
     </tr>
     {% endfor %}
@@ -77,7 +103,7 @@
   <div class="fila-inventario fila-buscable" data-nombre="{{ p.nombre|lower }}">
         <div class="flex-fill min-w-0">
       <div class="d-flex justify-content-between gap-2"><span class="fw-bold">{{ p.nombre }}</span><span class="fw-bolder">$ {{ p.precio|pesos }}</span></div>
-      <div class="d-flex justify-content-between align-items-center gap-2 small suave mt-1"><span>{{ p.categoria.nombre }} · {{ p.stock_actual }} / {{ p.stock_minimo }}</span>{{ chip(p) }}</div>
+      <div class="d-flex justify-content-between align-items-center gap-2 small suave mt-1"><span>{{ p.categoria.nombre }} · {{ p.stock_actual }} / {{ p.stock_minimo }}{% set e = estimado.get(p.id_producto) %}{% if e %} · hoy {{ "%.0f"|format(e.estimado_resto_del_dia) }}{% endif %}</span>{{ chip(p) }}</div>
       <div class="medidor mt-2 {{ 'vacio' if p.stock_actual == 0 else ('bajo' if p.stock_actual <= p.stock_minimo) }}"><span style="width: {{ [p.stock_actual / tope * 100, 3]|max }}%"></span></div>
     </div>
   </div>

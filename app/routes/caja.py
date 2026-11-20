@@ -113,6 +113,8 @@ def _dia(nombre):
 @bp.route("/historial")
 @rol_requerido(*PERSONAL)
 def historial():
+    if request.args.get("vista") == "operaciones":
+        return _historial_operaciones()
     filtros = {"buscar": request.args.get("buscar", "")[:40], "desde": _dia("desde"), "hasta": _dia("hasta"),
                "estado": request.args.get("estado", ""), "origen": request.args.get("origen", "")}
     if filtros["estado"] not in ESTADOS:
@@ -130,3 +132,22 @@ def historial():
     hoy = gestion.hoy()
     return render_template("caja/historial.html", paginas=paginas, resumen=resumen, filtros=filtros,
                            args=args, hoy=hoy, atras=lambda dias: (hoy - timedelta(days=dias)).isoformat())
+
+
+def _historial_operaciones():
+    filtros = {"buscar": request.args.get("buscar", "")[:40], "desde": _dia("desde"), "hasta": _dia("hasta"),
+               "resultado": request.args.get("resultado", ""), "operacion": request.args.get("operacion", "")}
+    if filtros["resultado"] not in ("confirmada", "rechazada"):
+        filtros["resultado"] = ""
+    if filtros["operacion"] not in gestion.OPERACIONES:
+        filtros["operacion"] = ""
+    if filtros["desde"] and filtros["hasta"] and filtros["desde"] > filtros["hasta"]:
+        filtros["desde"], filtros["hasta"] = filtros["hasta"], filtros["desde"]
+    pagina = max(request.args.get("pagina", 1, type=int), 1)
+    paginas, resumen = gestion.operaciones(pagina=pagina, **filtros)
+    args = {k: (v.isoformat() if isinstance(v, date) else v) for k, v in filtros.items() if v}
+    args["vista"] = "operaciones"
+    hoy = gestion.hoy()
+    return render_template("caja/operaciones.html", paginas=paginas, resumen=resumen, filtros=filtros,
+                           args=args, hoy=hoy, OPERACIONES=gestion.OPERACIONES,
+                           atras=lambda dias: (hoy - timedelta(days=dias)).isoformat())

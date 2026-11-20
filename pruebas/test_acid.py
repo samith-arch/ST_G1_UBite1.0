@@ -7,7 +7,7 @@ from sqlalchemy.exc import IntegrityError
 
 from app import servicios
 from app.database import db
-from app.models import Cliente, Pago, Pedido, Producto, Transaccion, Usuario
+from app.models import Cliente, OperacionRechazada, Pago, Pedido, Producto, Transaccion, Usuario
 from app.servicios import ErrorNegocio
 from conftest import BASE_PRUEBA
 
@@ -41,6 +41,17 @@ def test_un_producto_sin_stock_cancela_todo_el_pedido(app):
     assert e.value.faltantes
     db.session.expire_all()
     assert db.session.get(Producto, 1).stock_actual == agua
+
+
+def test_el_pedido_rechazado_queda_en_el_historial(app):
+    antes = Pedido.query.count()
+    with pytest.raises(ErrorNegocio):
+        servicios.registrar_pedido("Prueba", "3001112233", {8: 999})
+    db.session.expire_all()
+    rechazo = OperacionRechazada.query.order_by(OperacionRechazada.id_rechazo.desc()).first()
+    assert Pedido.query.count() == antes
+    assert (rechazo.operacion, rechazo.motivo, rechazo.id_pedido) == ("registro_pedido", "Sin stock suficiente", None)
+    assert "quedan" in rechazo.detalle
 
 
 # consistencia: la base rechaza datos que rompen las reglas aunque el codigo falle
@@ -143,14 +154,14 @@ def test_lo_confirmado_queda_guardado(app):
 # errores de la operacion
 
 def test_no_se_cobra_dos_veces_un_pedido_pagado(app, cajero):
-    pedido = servicios.buscar_pedido("A-001")  # ya pagado en la app y listo
+    pedido = servicios.buscar_pedido("A-001")  # ya pagado en caja y listo
     with pytest.raises(ErrorNegocio) as e:
         servicios.entregar_o_rechazar(pedido.id_pedido, cajero, cobrar=True)
     assert e.value.titulo == "Este pedido ya está pagado"
     db.session.expire_all()
     assert Pago.query.filter_by(id_pedido=pedido.id_pedido, estado="aprobado").count() == 1
-    ultima = Transaccion.query.order_by(Transaccion.id_transaccion.desc()).first()
-    assert ultima.resultado == "revertida"
+    rechazo = OperacionRechazada.query.order_by(OperacionRechazada.id_rechazo.desc()).first()
+    assert (rechazo.operacion, rechazo.motivo, rechazo.pedido.codigo) == ("pago", "Pago duplicado", "A-001")
 
 
 def test_el_doble_toque_no_duplica_el_pedido(app):

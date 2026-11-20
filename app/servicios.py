@@ -3,7 +3,11 @@ import re
 from sqlalchemy import case, exists, func
 
 from .database import db, reintentar, transaccion
-from .models import (Cliente, DetallePedido, Notificacion, Pago, Pedido,
+import logging
+from functools import wraps
+
+from .database import BaseOcupada
+from .models import (Cliente, DetallePedido, Notificacion, OperacionRechazada, Pago, Pedido,
                      Producto, Transaccion, ahora)
 
 ACTIVOS = ("en_cola", "en_preparacion", "listo")
@@ -22,15 +26,51 @@ def limpiar_nombre(texto):
 class ErrorNegocio(Exception):
     # titulo y mensaje se muestran al usuario; filas es el cuadro "que paso"
     def __init__(self, titulo, mensaje, detalle=None, etiqueta=None, filas=None,
-                 nota=None, faltantes=None):
+                 nota=None, faltantes=None, motivo=None):
         super().__init__(mensaje)
         self.titulo = titulo
+        self.motivo = motivo or titulo
         self.mensaje = mensaje
         self.detalle = detalle or []
         self.etiqueta = etiqueta
         self.filas = filas or []
         self.nota = nota
         self.faltantes = faltantes or {}
+
+
+def registrar_rechazo(operacion, motivo, detalle, codigo=None, usuario=None, origen=None):
+    # la operacion ya se deshizo; el rechazo se guarda aparte para que quede en el historial
+    try:
+        with transaccion("registrar_rechazo"):
+            pedido = buscar_pedido(codigo) if codigo else None
+            db.session.add(OperacionRechazada(
+                pedido=pedido, id_usuario=usuario.id_usuario if usuario else None,
+                operacion=operacion, origen=origen or (pedido.origen if pedido else None),
+                motivo=motivo, detalle=(detalle or "")[:400]))
+    except Exception:
+        logging.getLogger("ubite").exception("no se pudo guardar el rechazo de %s", operacion)
+
+
+def con_rechazo(operacion, datos):
+    # datos(args, kwargs) -> (codigo, usuario, origen) para saber a quien pertenece el intento
+    def decorador(funcion):
+        @wraps(funcion)
+        def envoltura(*args, **kwargs):
+            try:
+                return funcion(*args, **kwargs)
+            except ErrorNegocio as e:
+                codigo, usuario, origen = datos(args, kwargs)
+                registrar_rechazo(operacion, e.motivo, getattr(e, "resumen", None) or e.mensaje,
+                                  codigo, usuario, origen)
+                raise
+            except BaseOcupada:
+                codigo, usuario, origen = datos(args, kwargs)
+                registrar_rechazo(operacion, "Base de datos ocupada",
+                                  "Otra operación tenía la base ocupada y se agotaron los reintentos.",
+                                  codigo, usuario, origen)
+                raise
+        return envoltura
+    return decorador
 
 
 def menu_por_categoria():
@@ -78,14 +118,16 @@ def _sin_stock(faltan, nombres):
                         "Otra persona pidió la última unidad un instante antes. Para no venderte "
                         "algo que no hay, el sistema deshizo la operación completa.",
                         etiqueta="Pedido no registrado", filas=filas,
-                        nota="Rollback: como un paso falló, ningún paso quedó guardado.")
+                        nota="Rollback: como un paso falló, ningún paso quedó guardado.",
+                        motivo="Sin stock suficiente")
     e.agotados = nombres
+    e.resumen = "; ".join(f"{n}: {t}" for n, t in faltan.items())
     return e
 
 
 def _validar(items):
     if not any(c > 0 for c in items.values()):
-        raise ErrorNegocio("Tu pedido está vacío", "Agrega al menos un producto.")
+        raise ErrorNegocio("Tu pedido está vacío", "Agrega al menos un producto.", motivo="Pedido vacío")
     lineas, faltan, nombres, disponibles = [], {}, [], {}
     for id_producto, cantidad in items.items():
         if cantidad <= 0:
@@ -116,13 +158,20 @@ def siguiente_codigo(origen):
     return f"{letra}-{max(numeros, default=0) + 1:03d}"
 
 
+def _datos_registro(a, k):
+    return None, k.get("usuario", a[4] if len(a) > 4 else None), k.get("origen", a[3] if len(a) > 3 else "qr")
+
+
+@con_rechazo("registro_pedido", _datos_registro)
 @reintentar
 def registrar_pedido(nombre, telefono, items, origen="qr", usuario=None):
     nombre = limpiar_nombre(nombre)
     if nombre is None:
-        raise ErrorNegocio("Nombre no válido", "El nombre solo puede tener letras y espacios (2 a 60 caracteres).")
+        raise ErrorNegocio("Nombre no válido", "El nombre solo puede tener letras y espacios (2 a 60 caracteres).",
+                          motivo="Datos del cliente no válidos")
     if (telefono or origen == "qr") and not CELULAR.match(telefono or ""):
-        raise ErrorNegocio("Celular no válido", "El celular debe tener 10 dígitos y empezar por 3.")
+        raise ErrorNegocio("Celular no válido", "El celular debe tener 10 dígitos y empezar por 3.",
+                          motivo="Datos del cliente no válidos")
     with transaccion("registrar_pedido"):
         lineas = _validar(items)
 
@@ -157,24 +206,10 @@ def registrar_pedido(nombre, telefono, items, origen="qr", usuario=None):
         return pedido.codigo
 
 
-def _dejar_constancia(codigo, tipo, descripcion, usuario=None):
-    # la operacion original ya se deshizo; esto va en su propia transaccion
-    with transaccion("constancia_revertida"):
-        pedido = buscar_pedido(codigo)
-        if pedido is not None:
-            Transaccion.registrar(pedido, tipo, resultado="revertida", usuario=usuario,
-                                  descripcion=descripcion)
-
-
+@con_rechazo("modificacion_pedido", lambda a, k: (a[0], None, None))
 @reintentar
 def modificar_pedido(codigo, items):
-    try:
-        _modificar(codigo, items)
-    except ErrorNegocio as e:
-        if e.faltantes:
-            _dejar_constancia(codigo, "modificacion_pedido",
-                              "Sin stock: " + "; ".join(f"{k}: {v}" for k, v in e.filas[:-3]))
-        raise
+    _modificar(codigo, items)
 
 
 def _modificar(codigo, items):
@@ -185,7 +220,7 @@ def _modificar(codigo, items):
         if pedido.estado != "en_cola" or pedido.pagado:
             raise ErrorNegocio("Ya no se puede modificar",
                                "El pedido ya está en preparación o ya se pagó.",
-                               etiqueta="Operación rechazada")
+                               etiqueta="Operación rechazada", motivo="El estado del pedido no lo permite")
 
         antes = {d.id_producto: d for d in pedido.detalles}
         despues = {int(k): v for k, v in items.items() if v > 0}
@@ -222,6 +257,7 @@ def _modificar(codigo, items):
             e.etiqueta = "Cambio no guardado"
             e.filas[-3] = ("Pedido", "quedó como estaba")
             e.faltantes = disponibles
+            e.resumen = "; ".join(f"{n}: {t}" for n, t in faltan.items())
             raise e
 
         pedido.calcular_total()
@@ -229,6 +265,7 @@ def _modificar(codigo, items):
                               descripcion="Cantidades cambiadas en cola; stock ajustado")
 
 
+@con_rechazo("cancelacion", lambda a, k: (a[0], k.get("usuario", a[1] if len(a) > 1 else None), None))
 @reintentar
 def cancelar_pedido(codigo, usuario=None):
     with transaccion("cancelar_pedido"):
@@ -242,15 +279,14 @@ def cancelar_pedido(codigo, usuario=None):
             if pedido.estado != "en_cola" or pago:
                 raise ErrorNegocio("Ya no se puede cancelar",
                                    "Tu pedido ya está en preparación o ya se pagó. "
-                                   "Acércate a la caja.", etiqueta="Operación rechazada")
+                                   "Acércate a la caja.", etiqueta="Operación rechazada",
+                                   motivo="El estado del pedido no lo permite")
             nota = "Cancelado por el cliente en cola"
         else:
             if pedido.estado not in ACTIVOS:
                 raise ErrorNegocio("Ya no se puede cancelar",
-                                   f"El pedido {pedido.codigo} ya fue entregado o cancelado.")
-            if pago and pago.metodo == "app":
-                raise ErrorNegocio("Pagado en la app",
-                                   "La devolución de un pago en línea se hace por la pasarela.")
+                                   f"El pedido {pedido.codigo} ya fue entregado o cancelado.",
+                                   motivo="El estado del pedido no lo permite")
             nota = f"Cancelado en caja estando {pedido.estado.replace('_', ' ')}"
             if pago:
                 nota += f"; se devolvieron $ {pago.monto:,.0f} en efectivo".replace(",", ".")
@@ -262,6 +298,12 @@ def cancelar_pedido(codigo, usuario=None):
                               descripcion=nota + "; stock devuelto")
 
 
+def _codigo_de(id_pedido):
+    p = db.session.get(Pedido, id_pedido)
+    return p.codigo if p else None
+
+
+@con_rechazo("cambio_estado", lambda a, k: (_codigo_de(a[0]), a[2] if len(a) > 2 else k.get("usuario"), None))
 @reintentar
 def cambiar_estado(id_pedido, nuevo, usuario):
     # devuelve el codigo y, si quedo listo y hay suscripcion, el aviso push a enviar
@@ -275,7 +317,8 @@ def cambiar_estado(id_pedido, nuevo, usuario):
         except ValueError:
             raise ErrorNegocio("Cambio no permitido",
                                f"{pedido.codigo} está {anterior.replace('_', ' ')}. "
-                               "Puede que otra persona ya lo haya movido.")
+                               "Puede que otra persona ya lo haya movido.",
+                               motivo="Cambio de estado no permitido")
         Transaccion.registrar(pedido, "cambio_estado", usuario=usuario,
                               descripcion=f"{anterior} -> {nuevo}")
         aviso = None
@@ -303,7 +346,8 @@ def entregar_pedido(id_pedido, usuario, cobrar=False):
         if pedido.estado != "listo":
             raise ErrorNegocio("Cambio no permitido",
                                f"{pedido.codigo} está {pedido.estado.replace('_', ' ')}. "
-                               "Puede que otra persona ya lo haya entregado.")
+                               "Puede que otra persona ya lo haya entregado.",
+                               motivo="Cambio de estado no permitido")
         pago = next((p for p in pedido.pagos if p.estado == "aprobado"), None)
         if cobrar and pago:
             # el cajero vio el pedido sin pagar, pero mientras tanto se pago (E5)
@@ -317,7 +361,8 @@ def entregar_pedido(id_pedido, usuario, cobrar=False):
                 filas=[(f"Pedido {codigo}", "pagado en la app" if metodo == "app" else "pagado en caja"),
                        ("Referencia", pago.referencia or "efectivo"),
                        ("Intento", "pago en efectivo"), ("Resultado", "revertido")],
-                nota="La transacción se revirtió y quedó registrada como revertida en el historial.")
+                nota="La transacción se revirtió y el intento quedó registrado en el historial.",
+                motivo="Pago duplicado")
         pedido.cambiar_estado("entregado")
         if pago:
             Transaccion.registrar(pedido, "cambio_estado", usuario=usuario,
@@ -330,15 +375,9 @@ def entregar_pedido(id_pedido, usuario, cobrar=False):
         return pedido.codigo
 
 
+@con_rechazo("pago", lambda a, k: (_codigo_de(a[0]), a[1], None))
 def entregar_o_rechazar(id_pedido, usuario, cobrar):
-    try:
-        return entregar_pedido(id_pedido, usuario, cobrar)
-    except ErrorNegocio as e:
-        if e.filas:
-            pedido = db.session.get(Pedido, id_pedido)
-            _dejar_constancia(pedido.codigo, "pago", "Cobro en efectivo rechazado: el pedido ya "
-                              "tenía un pago aprobado", usuario)
-        raise
+    return entregar_pedido(id_pedido, usuario, cobrar)
 
 
 @reintentar

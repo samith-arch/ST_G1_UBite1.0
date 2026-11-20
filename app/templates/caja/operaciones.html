@@ -1,0 +1,104 @@
+{% extends "caja/_base.html" %}
+{% import "_filtros.html" as f %}
+{% set titulo_barra = "Historial" %}
+{% block titulo_pagina %}Historial de operaciones{% endblock %}
+{% block panel %}
+{% set filtrado = filtros.buscar or filtros.desde or filtros.hasta or filtros.resultado or filtros.operacion %}
+<p class="etiqueta mb-1">{{ "Resultado de la búsqueda" if filtrado else "Todo lo que se hizo y lo que el sistema no dejó hacer" }}</p>
+<h1 class="titulo display-5 mb-3 d-none d-lg-block">Historial</h1>
+{% include "caja/_pestanas_historial.html" %}
+
+{% set activos = [filtros.desde, filtros.hasta, filtros.resultado, filtros.operacion]|select|list|length %}
+{% call f.barra(url_for('caja.historial'), filtros.buscar, "Código, motivo o detalle…", activos, url_for('caja.historial', vista='operaciones')) %}
+  <input type="hidden" name="vista" value="operaciones">
+  {% call f.grupo("Fecha") %}
+    <div class="d-flex flex-wrap gap-3">
+      <label class="small suave d-flex align-items-center gap-2 mb-0">Desde
+        <input class="form-control linea-campo mono fecha-reporte" type="date" name="desde" max="{{ hoy.isoformat() }}"
+               value="{{ filtros.desde.isoformat() if filtros.desde }}">
+      </label>
+      <label class="small suave d-flex align-items-center gap-2 mb-0">Hasta
+        <input class="form-control linea-campo mono fecha-reporte" type="date" name="hasta" max="{{ hoy.isoformat() }}"
+               value="{{ filtros.hasta.isoformat() if filtros.hasta }}">
+      </label>
+    </div>
+    <div class="atajos mt-2">
+      {% for texto, dias in (("Hoy", 0), ("Últimos 7 días", 6), ("Últimos 30 días", 29)) %}
+      <a href="{{ url_for('caja.historial', **dict(args, desde=atras(dias), hasta=hoy.isoformat())) }}">{{ texto }}</a>
+      {% endfor %}
+    </div>
+  {% endcall %}
+  {% call f.grupo("Resultado") %}
+    {{ f.opciones("resultado", [("confirmada", "Confirmadas"), ("rechazada", "Rechazadas")], filtros.resultado, "Todas") }}
+  {% endcall %}
+  {% call f.grupo("Operación") %}
+    {{ f.opciones("operacion", OPERACIONES.items()|list, filtros.operacion, "Todas") }}
+  {% endcall %}
+{% endcall %}
+
+<div class="row g-3 mb-4">
+  <div class="col-6 col-xl-3"><a class="kpi enlace-kpi" href="{{ url_for('caja.historial', **dict(args, resultado='confirmada', pagina=1)) }}">
+    <span class="numero">{{ resumen.confirmadas }}</span><span class="rotulo">Confirmadas</span></a></div>
+  <div class="col-6 col-xl-3"><a class="kpi oscuro enlace-kpi" href="{{ url_for('caja.historial', **dict(args, resultado='rechazada', pagina=1)) }}">
+    <span class="numero">{{ resumen.rechazadas }}</span><span class="rotulo">Rechazadas</span></a></div>
+  <div class="col-12 col-xl-6"><div class="kpi">
+    <span class="rotulo">Motivos de rechazo más comunes</span>
+    {% if resumen.motivos %}
+    <ul class="lista-motivos">
+      {% for m, n in resumen.motivos %}<li><span>{{ m }}</span><span class="mono">{{ n }}</span></li>{% endfor %}
+    </ul>
+    {% else %}<span class="nota">Ningún rechazo en este periodo.</span>{% endif %}
+  </div></div>
+</div>
+
+<div class="tarjeta mb-3 d-none d-md-block"><div class="table-responsive">
+<table class="table tabla-ubite align-middle">
+  <thead><tr><th>Fecha</th><th>Operación</th><th>Pedido</th><th>Quién</th><th>Resultado</th><th>Motivo y detalle</th></tr></thead>
+  <tbody>
+  {% for o in paginas.items %}
+  <tr class="{{ 'fila-rechazada' if o.resultado == 'rechazada' }}">
+    <td class="text-nowrap">{{ o.fecha.strftime('%d/%m/%Y') }}<span class="d-block suave small">{{ o.fecha.strftime('%I:%M %p').lower() }}</span></td>
+    <td class="text-nowrap">{{ OPERACIONES.get(o.operacion, o.operacion) }}</td>
+    <td class="mono fw-bolder text-nowrap">{{ o.codigo or "Sin pedido" }}</td>
+    <td>{{ o.quien or ("Cliente por QR" if o.origen == "qr" else "Cliente") }}</td>
+    <td><span class="chip {{ 'chip-mal' if o.resultado == 'rechazada' else 'chip-ok' }}">{{ "Rechazada" if o.resultado == "rechazada" else "Confirmada" }}</span></td>
+    <td class="celda-motivo">
+      {% if o.resultado == "rechazada" %}<strong>{{ o.motivo or "Operación revertida" }}</strong>{% endif %}
+      {% if o.detalle %}<span class="{{ 'd-block' if o.resultado == 'rechazada' }} suave small">{{ o.detalle|replace(" -> ", " → ")|replace("_", " ") }}</span>{% endif %}
+    </td>
+  </tr>
+  {% else %}
+  <tr><td colspan="6" class="suave">{{ "No hay operaciones que coincidan con la búsqueda." if filtrado else "Todavía no hay operaciones registradas." }}</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+</div></div>
+
+<div class="d-md-none mb-3">
+  {% for o in paginas.items %}
+  <div class="fila-inventario {{ 'fila-rechazada' if o.resultado == 'rechazada' }}">
+    <div class="flex-fill min-w-0">
+      <div class="d-flex justify-content-between gap-2"><span class="fw-bold">{{ OPERACIONES.get(o.operacion, o.operacion) }}</span><span class="mono fw-bolder">{{ o.codigo or "Sin pedido" }}</span></div>
+      <div class="d-flex justify-content-between align-items-center gap-2 small suave mt-1">
+        <span>{{ o.fecha.strftime('%d/%m %I:%M %p').lower() }} · {{ o.quien or "Cliente" }}</span>
+        <span class="chip {{ 'chip-mal' if o.resultado == 'rechazada' else 'chip-ok' }}">{{ "Rechazada" if o.resultado == "rechazada" else "Confirmada" }}</span>
+      </div>
+      {% if o.resultado == "rechazada" %}<p class="small mb-0 mt-1"><strong>{{ o.motivo or "Operación revertida" }}</strong>{% if o.detalle %} · <span class="suave">{{ o.detalle }}</span>{% endif %}</p>
+      {% elif o.detalle %}<p class="small suave mb-0 mt-1">{{ o.detalle|replace(" -> ", " → ")|replace("_", " ") }}</p>{% endif %}
+    </div>
+  </div>
+  {% else %}
+  <p class="suave">{{ "No hay operaciones que coincidan con la búsqueda." if filtrado else "Todavía no hay operaciones registradas." }}</p>
+  {% endfor %}
+</div>
+
+{% if paginas.pages > 1 %}
+<nav class="d-flex flex-wrap justify-content-between align-items-center gap-2 acciones-modulo" aria-label="Páginas del historial">
+  <span class="small suave">Página {{ paginas.page }} de {{ paginas.pages }} · {{ paginas.total }} operaciones</span>
+  <div class="d-flex gap-2">
+    {% if paginas.has_prev %}<a class="btn btn-contorno" href="{{ url_for('caja.historial', **dict(args, pagina=paginas.prev_num)) }}"><i class="bi bi-chevron-left"></i> Anteriores</a>{% endif %}
+    {% if paginas.has_next %}<a class="btn btn-contorno" href="{{ url_for('caja.historial', **dict(args, pagina=paginas.next_num)) }}">Más antiguas <i class="bi bi-chevron-right"></i></a>{% endif %}
+  </div>
+</nav>
+{% endif %}
+{% endblock %}
